@@ -76,6 +76,8 @@
                 <ui:ToggleSwitch x:Name="ToggleReduceAnimations" Click="ToggleReduceAnimations_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
+
+
             <!-- Card 5: Application Theme -->
             <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
