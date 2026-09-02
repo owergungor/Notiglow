@@ -1,0 +1,45 @@
+## Visual Studio / .NET / C#
+[Bb]in/
+[Oo]bj/
+[Rr]elease/
+[Dd]ebug/
+[Pp]ublish/
+[Tt]estResults/
+[Bb]uild/
+
+## User-specific files & IDE configuration
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.swp
+*~
+
+## Build outputs, releases, installer & packages
+*.zip
+*.7z
+*.rar
+*.iso
+*.msi
+*.exe
+*.dll
+*.pdb
+GlowBorder-Portable.zip
+
+## Exception: Keep source files, tests, scripts
+!**/GlowBorder.Setup.iss
+
+## OS Generated Files
+[Tt]humbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+## Logs and Temp files
+*.log
+*.tmp
+*.temp

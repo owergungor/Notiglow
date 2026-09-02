@@ -1,0 +1,18 @@
+<Window x:Class="GlowBorder.Overlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:GlowBorder.Overlay"
+        Title="GlowBorderOverlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        IsHitTestVisible="False"
+        Focusable="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual">
+    <Grid IsHitTestVisible="False">
+        <local:GlowBorderControl x:Name="GlowControl" IsHitTestVisible="False" />
+    </Grid>
+</Window>

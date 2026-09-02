@@ -1,0 +1,182 @@
+<ui:FluentWindow x:Class="GlowBorder.UI.OnboardingWindow"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+                  mc:Ignorable="d" 
+                  Title="Welcome to NotiGlow" 
+                  Width="760" Height="580"
+                  MinWidth="640" MinHeight="480"
+                  MaxWidth="820" MaxHeight="620"
+                  WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+                  ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
+                  Background="{DynamicResource WindowBackground}"
+                  Foreground="{DynamicResource TextPrimary}">
+    <Grid Background="{DynamicResource WindowBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Custom TitleBar -->
+        <ui:TitleBar Grid.Row="0" Title="Welcome to NotiGlow" Icon="{ui:FontIcon &#xE714;}"/>
+
+        <!-- Main Step Content inside ScrollViewer -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24,16,24,16">
+            <StackPanel VerticalAlignment="Center">
+                <!-- Header -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Sparkle24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Welcome to NotiGlow" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Transform your Windows notifications into sleek fullscreen edge glow animations" Foreground="{DynamicResource TextSecondary}" FontSize="14" Margin="0,6,0,0" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <!-- Card Content -->
+                <Border Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="12" Padding="24" Margin="0,0,0,16">
+                    <Grid Name="PnlSteps">
+                        <!-- Step 1: Notification Access -->
+                        <StackPanel Name="Step1">
+                            <TextBlock Text="Step 1 of 3: Grant Notification Access" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentColor}" Margin="0,0,0,12"/>
+                            <TextBlock Text="NotiGlow needs Windows Notification Listener permission to detect when your favorite applications post notifications." TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            <ui:CardControl Padding="16" Margin="0,0,0,16" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                <StackPanel>
+                                    <TextBlock x:Name="TxtOnboardingAccessStatus" Text="Permission Status: Checking..." FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Click the button below if Windows asks for notification access or opens settings." Foreground="{DynamicResource TextSecondary}" FontSize="12"/>
+                                </StackPanel>
+                            </ui:CardControl>
+                            <ui:Button x:Name="BtnGrantAccess" Appearance="Primary" Click="BtnGrantAccess_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Settings24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Request Notification Permission" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+                        </StackPanel>
+
+                        <!-- Step 2: Pre-configured Profiles (Informational Only) -->
+                        <StackPanel Name="Step2" Visibility="Collapsed">
+                            <TextBlock Text="Step 2 of 3: Default Application Profiles" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentColor}" Margin="0,0,0,12"/>
+                            <TextBlock Text="NotiGlow comes pre-configured with popular profiles for Discord, WhatsApp, Steam, Spotify, Telegram, and Teams." TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            
+                            <!-- Information Grid with Mini Profile Cards -->
+                            <UniformGrid Columns="2" Margin="0,0,0,8">
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#5865F2" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="Discord" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#25D366" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="WhatsApp" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#66C0F4" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="Steam" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#1DB954" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="Spotify" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#24A1DE" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="Telegram" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+
+                                <ui:CardControl Padding="10,8" Margin="4" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Background="#6264A7" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" Text="Microsoft Teams" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="{DynamicResource ControlBackground}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="Default profile" FontSize="10" Foreground="{DynamicResource TextMuted}"/>
+                                        </Border>
+                                    </Grid>
+                                </ui:CardControl>
+                            </UniformGrid>
+                        </StackPanel>
+
+                        <!-- Step 3: Test Animation -->
+                        <StackPanel Name="Step3" Visibility="Collapsed">
+                            <TextBlock Text="Step 3 of 3: Test Glow Animation" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentColor}" Margin="0,0,0,12"/>
+                            <TextBlock Text="Click the button below to see a live demonstration of the 4-edge border glow animation on your screen." TextWrapping="Wrap" FontSize="14" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,16"/>
+                            <ui:Button x:Name="BtnOnboardingTest" Appearance="Primary" Click="BtnOnboardingTest_Click" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Run Test Animation" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer Navigation -->
+        <Border Grid.Row="2" Padding="24,12,24,16" Background="{DynamicResource WindowBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0,1,0,0">
+            <Grid>
+                <ui:Button x:Name="BtnBack" Content="Back" Appearance="Secondary" Click="BtnBack_Click" Visibility="Collapsed" VerticalAlignment="Center"/>
+                <ui:Button x:Name="BtnNext" Content="Next Step" Icon="{ui:SymbolIcon ArrowRight24}" Appearance="Primary" HorizontalAlignment="Right" Click="BtnNext_Click" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ui:FluentWindow>
