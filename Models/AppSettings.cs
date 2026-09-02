@@ -25,18 +25,7 @@ namespace GlowBorder.Models
         public bool ReduceDurationInGames { get; set; } = true;
         public double GamingDurationMultiplier { get; set; } = 0.5; // 50% of original
         public bool OnlyImportantInGames { get; set; } = false;
-        public List<string> TrackedGames { get; set; } = new List<string>
-        {
-            "cs2.exe",
-            "cyberpunk2077.exe",
-            "eldenring.exe",
-            "forzahorizon5.exe",
-            "assettocorsa.exe",
-            "leagueoflegends.exe",
-            "valorant.exe",
-            "gta5.exe",
-            "rdr2.exe"
-        };
+        public List<string> TrackedGames { get; set; } = new List<string>();
 
         // Global defaults for new app profiles
         public string DefaultColorHex { get; set; } = "#5865F2";

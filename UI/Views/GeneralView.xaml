@@ -21,9 +21,9 @@
                     <TextBlock Text="Control how NotiGlow behaves and handles ambient animations." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
@@ -86,12 +86,12 @@
                         <TextBlock Text="Choose the application appearance theme." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
-                <ComboBox x:Name="CmbTheme" Width="200" MinWidth="180" Height="36" SelectionChanged="CmbTheme_SelectionChanged" VerticalAlignment="Center">
-                    <ComboBoxItem Content="Dark" Tag="Dark"/>
-                    <ComboBoxItem Content="Light" Tag="Light"/>
-                    <ComboBoxItem Content="System" Tag="System"/>
-                    <ComboBoxItem Content="Liquid Glass" Tag="LiquidGlass"/>
-                </ComboBox>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <ToggleButton x:Name="BtnThemeDark" Content="Dark" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
+                    <ToggleButton x:Name="BtnThemeLight" Content="Light" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
+                    <ToggleButton x:Name="BtnThemeSystem" Content="System" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
+                    <ToggleButton x:Name="BtnThemeNightBlue" Content="Night Blue" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click"/>
+                </StackPanel>
             </ui:CardControl>
 
             <!-- Live Screen Preview -->

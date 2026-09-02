@@ -27,16 +27,16 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Add a new custom application profile">
+                <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Add a new custom application profile" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Add24" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Add Application" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
 
-                <ui:Button x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>

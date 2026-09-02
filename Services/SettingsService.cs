@@ -22,6 +22,19 @@ namespace GlowBorder.Services
             Current = Load();
         }
 
+        private static readonly System.Collections.Generic.HashSet<string> LegacyDemoGames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "cs2.exe",
+            "cyberpunk2077.exe",
+            "eldenring.exe",
+            "forzahorizon5.exe",
+            "assettocorsa.exe",
+            "leagueoflegends.exe",
+            "valorant.exe",
+            "gta5.exe",
+            "rdr2.exe"
+        };
+
         public AppSettings Load()
         {
             try
@@ -31,7 +44,13 @@ namespace GlowBorder.Services
                     string json = File.ReadAllText(_settingsPath);
                     var settings = JsonSerializer.Deserialize<AppSettings>(json);
                     if (settings != null)
+                    {
+                        if (settings.TrackedGames != null)
+                        {
+                            settings.TrackedGames.RemoveAll(g => LegacyDemoGames.Contains(g.Trim()));
+                        }
                         return settings;
+                    }
                 }
             }
             catch (Exception ex)

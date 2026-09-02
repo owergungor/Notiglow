@@ -20,19 +20,19 @@
                     <TextBlock Text="Control how NotiGlow behaves when rapid multiple notifications arrive within a short time window." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
 
-            <RadioButton x:Name="RadRestart" GroupName="BurstMode" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadRestart" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowClockwise24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="ArrowClockwise24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Restart Animation (Default)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Immediately resets the animation timer and restarts the glow animation from 0 ms for the new notification." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
@@ -42,11 +42,11 @@
                 </ui:CardControl>
             </RadioButton>
 
-            <RadioButton x:Name="RadExtend" GroupName="BurstMode" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadExtend" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Timer24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Timer24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Extend Active Animation" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Extends the ongoing animation duration so the glow remains visible continuously during notification bursts." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
@@ -56,11 +56,11 @@
                 </ui:CardControl>
             </RadioButton>
 
-            <RadioButton x:Name="RadQueue" GroupName="BurstMode" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadQueue" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="SquareMultiple24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="SquareMultiple24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Queue Notifications" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Queues incoming notifications and plays glow animations sequentially one after another." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
@@ -70,11 +70,11 @@
                 </ui:CardControl>
             </RadioButton>
 
-            <RadioButton x:Name="RadIgnore" GroupName="BurstMode" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadIgnore" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="DismissCircle24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="DismissCircle24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Ignore While Animating" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Ignores new incoming notifications while a glow animation is already playing." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>

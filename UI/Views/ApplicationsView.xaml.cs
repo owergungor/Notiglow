@@ -88,7 +88,7 @@ namespace GlowBorder.UI.Views
 
             foreach (ComboBoxItem item in CmbEditStyle.Items)
             {
-                if (item.Tag?.ToString() == _editingProfile.Style.ToString())
+                if (string.Equals(item.Tag?.ToString(), _editingProfile.Style.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     CmbEditStyle.SelectedItem = item;
                     break;
@@ -97,7 +97,7 @@ namespace GlowBorder.UI.Views
 
             foreach (ComboBoxItem item in CmbEditPriority.Items)
             {
-                if (item.Tag?.ToString() == _editingProfile.Priority.ToString())
+                if (string.Equals(item.Tag?.ToString(), _editingProfile.Priority.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     CmbEditPriority.SelectedItem = item;
                     break;
@@ -124,6 +124,16 @@ namespace GlowBorder.UI.Views
             _editingProfile.Intensity = Math.Round(SldIntensity.Value) / 100.0;
             _editingProfile.DurationMs = (int)SldDuration.Value;
 
+            if (CmbEditStyle.SelectedItem is ComboBoxItem styleItem && Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
+            {
+                _editingProfile.Style = style;
+            }
+
+            if (CmbEditPriority.SelectedItem is ComboBoxItem prioItem && Enum.TryParse<NotificationPriority>(prioItem.Tag?.ToString(), true, out var prio))
+            {
+                _editingProfile.Priority = prio;
+            }
+
             EditEdgePreview.UpdatePreview(_editingProfile);
         }
 
@@ -146,17 +156,9 @@ namespace GlowBorder.UI.Views
 
         private void BtnTestNotification_Click(object sender, RoutedEventArgs e)
         {
-            if (_glowManager == null) return;
-
-            var testItem = new NotificationItem
-            {
-                AppId = _editingProfile?.AppId ?? "Discord",
-                AppName = _editingProfile?.Name ?? "Discord",
-                Title = "New message from friend",
-                Timestamp = DateTime.Now
-            };
-
-            _glowManager.TriggerNotification(testItem);
+            if (_glowManager == null || _editingProfile == null) return;
+            UpdateEditorPreview();
+            _glowManager.TriggerProfile(_editingProfile);
         }
 
         private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)
@@ -178,12 +180,12 @@ namespace GlowBorder.UI.Views
             _editingProfile.GlowSize = Math.Round(SldGlowSize.Value);
             _editingProfile.ColorHex = EditColorPicker.SelectedColorHex;
 
-            if (CmbEditStyle.SelectedItem is ComboBoxItem styleItem && Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), out var style))
+            if (CmbEditStyle.SelectedItem is ComboBoxItem styleItem && Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
             {
                 _editingProfile.Style = style;
             }
 
-            if (CmbEditPriority.SelectedItem is ComboBoxItem prioItem && Enum.TryParse<NotificationPriority>(prioItem.Tag?.ToString(), out var prio))
+            if (CmbEditPriority.SelectedItem is ComboBoxItem prioItem && Enum.TryParse<NotificationPriority>(prioItem.Tag?.ToString(), true, out var prio))
             {
                 _editingProfile.Priority = prio;
             }
@@ -212,7 +214,15 @@ namespace GlowBorder.UI.Views
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null) return;
-            var testProfile = new AppProfile
+
+            if (PnlEditProfile.Visibility == Visibility.Visible && _editingProfile != null)
+            {
+                UpdateEditorPreview();
+                _glowManager.TriggerProfile(_editingProfile);
+                return;
+            }
+
+            var profile = _profileService?.Profiles.FirstOrDefault() ?? new AppProfile
             {
                 AppId = "TestApp",
                 Name = "NotiGlow Test",
@@ -223,7 +233,7 @@ namespace GlowBorder.UI.Views
                 Thickness = 4,
                 GlowSize = 30
             };
-            _glowManager.TriggerProfile(testProfile);
+            _glowManager.TriggerProfile(profile);
         }
     }
 }

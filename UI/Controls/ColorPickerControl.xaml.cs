@@ -108,6 +108,7 @@ namespace GlowBorder.UI.Controls
                 };
 
                 border.Child = checkIcon;
+                GlowBorder.UI.Animations.ButtonPressAnimationBehavior.Attach(border);
 
                 Action handleSelection = () =>
                 {

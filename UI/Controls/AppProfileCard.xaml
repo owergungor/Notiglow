@@ -32,16 +32,16 @@
             </Border>
 
             <!-- Column 2: Preview Button -->
-            <ui:Button Grid.Column="2" x:Name="BtnPreview" Content="Preview" Icon="{ui:SymbolIcon Play24}" Appearance="Secondary" Click="BtnPreview_Click" Margin="0,0,6,0" ToolTip="Preview" VerticalAlignment="Center"/>
+            <ui:Button Grid.Column="2" x:Name="BtnPreview" Content="Preview" Icon="{ui:SymbolIcon Play24}" Appearance="Secondary" Click="BtnPreview_Click" Margin="0,0,6,0" ToolTip="Preview" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 3: Edit Button -->
-            <ui:Button Grid.Column="3" x:Name="BtnEdit" Content="Edit" Icon="{ui:SymbolIcon Edit24}" Appearance="Secondary" Click="BtnEdit_Click" Margin="0,0,6,0" ToolTip="Edit" VerticalAlignment="Center"/>
+            <ui:Button Grid.Column="3" x:Name="BtnEdit" Content="Edit" Icon="{ui:SymbolIcon Edit24}" Appearance="Secondary" Click="BtnEdit_Click" Margin="0,0,6,0" ToolTip="Edit" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 4: Copy Button -->
-            <ui:Button Grid.Column="4" x:Name="BtnDuplicate" Content="Copy" Icon="{ui:SymbolIcon Copy24}" Appearance="Secondary" Click="BtnDuplicate_Click" Margin="0,0,6,0" ToolTip="Copy" VerticalAlignment="Center"/>
+            <ui:Button Grid.Column="4" x:Name="BtnDuplicate" Content="Copy" Icon="{ui:SymbolIcon Copy24}" Appearance="Secondary" Click="BtnDuplicate_Click" Margin="0,0,6,0" ToolTip="Copy" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 5: Delete Button -->
-            <ui:Button Grid.Column="5" x:Name="BtnDelete" Content="Delete" Icon="{ui:SymbolIcon Delete24}" Appearance="Secondary" Click="BtnDelete_Click" Margin="0,0,12,0" ToolTip="Delete" VerticalAlignment="Center"/>
+            <ui:Button Grid.Column="5" x:Name="BtnDelete" Content="Delete" Icon="{ui:SymbolIcon Delete24}" Appearance="Secondary" Click="BtnDelete_Click" Margin="0,0,12,0" ToolTip="Delete" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 6: Toggle Enabled -->
             <ui:ToggleSwitch Grid.Column="6" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="Enable / Disable Profile"/>

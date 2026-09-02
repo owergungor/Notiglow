@@ -10,6 +10,7 @@
                   MinHeight="600" MinWidth="900"
                   WindowStartupLocation="CenterScreen"
                   ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
+                  Loaded="Window_Loaded"
                   Background="{DynamicResource WindowBackground}">
     <Grid Background="{DynamicResource WindowBackground}">
         <Grid.RowDefinitions>
@@ -18,49 +19,67 @@
         </Grid.RowDefinitions>
 
         <!-- Custom TitleBar -->
-        <ui:TitleBar Grid.Row="0" Title="NotiGlow 2.0 — Ambient Notification Utility" Icon="{ui:FontIcon &#xE714;}" Foreground="{DynamicResource TextPrimary}"/>
+        <ui:TitleBar Grid.Row="0" Title="NotiGlow 2.0 — Ambient Notification Utility" Icon="{ui:FontIcon &#xE714;}" Foreground="{DynamicResource TextPrimary}" ButtonsForeground="{DynamicResource TextPrimary}"/>
 
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="230"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Navigation View Pane -->
-            <Border Grid.Column="0" Background="{DynamicResource SidebarBackground}">
-                <ui:NavigationView x:Name="RootNavigationView" PaneDisplayMode="Left" SelectionChanged="RootNavigationView_SelectionChanged" Background="{DynamicResource SidebarBackground}" Foreground="{DynamicResource TextPrimary}">
-                    <ui:NavigationView.Resources>
-                        <Style TargetType="{x:Type ui:NavigationViewItem}">
-                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                            <Setter Property="Margin" Value="4,2"/>
-                        </Style>
-                    </ui:NavigationView.Resources>
+            <!-- Navigation View Sidebar Container with Active Selection Overlay -->
+            <Grid Grid.Column="0" x:Name="SidebarGrid" Background="{DynamicResource SidebarBackground}">
+                <!-- Active Selection Box Overlay (Layer behind items with rounded border & indicator) -->
+                <Canvas x:Name="SidebarOverlayCanvas" IsHitTestVisible="False" ClipToBounds="True">
+                    <Border x:Name="ActiveSelectionBox"
+                            CornerRadius="8"
+                            Height="40"
+                            Background="{DynamicResource NavActiveBackground}"
+                            IsHitTestVisible="False"
+                            Visibility="Collapsed"
+                            SnapsToDevicePixels="True">
+                        <!-- Sol Aktif Indicator (3px x 24px, CornerRadius 1.5px) -->
+                        <Border Width="3"
+                                Height="24"
+                                CornerRadius="1.5"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource NavIndicatorColor}"/>
+                    </Border>
+                </Canvas>
+
+                <!-- Navigation View Sidebar Pane (Base Layer) -->
+                <ui:NavigationView x:Name="RootNavigationView"
+                                   PaneDisplayMode="Left"
+                                   OpenPaneLength="230"
+                                   CompactPaneLength="52"
+                                   IsPaneOpen="True"
+                                   SelectionChanged="RootNavigationView_SelectionChanged"
+                                   SizeChanged="RootNavigationView_SizeChanged"
+                                   Background="Transparent"
+                                   Foreground="{DynamicResource TextSecondary}">
                     <ui:NavigationView.MenuItems>
-                        <ui:NavigationViewItem Content="General" Tag="General" Icon="{ui:SymbolIcon Home24}" TargetPageType="{x:Type views:GeneralView}"/>
-                        <ui:NavigationViewItem Content="Applications" Tag="Applications" Icon="{ui:SymbolIcon Apps24}" TargetPageType="{x:Type views:ApplicationsView}"/>
-                        <ui:NavigationViewItem Content="Appearance" Tag="Appearance" Icon="{ui:SymbolIcon PaintBrush24}" TargetPageType="{x:Type views:AppearanceView}"/>
-                        <ui:NavigationViewItem Content="Display" Tag="Display" Icon="{ui:SymbolIcon Desktop24}" TargetPageType="{x:Type views:DisplayView}"/>
-                        <ui:NavigationViewItem Content="Gaming" Tag="Gaming" Icon="{ui:SymbolIcon Games24}" TargetPageType="{x:Type views:GamingView}"/>
-                        <ui:NavigationViewItem Content="Notifications" Tag="Notifications" Icon="{ui:SymbolIcon Alert24}" TargetPageType="{x:Type views:NotificationsView}"/>
-                        <ui:NavigationViewItem Content="Advanced" Tag="Advanced" Icon="{ui:SymbolIcon Wrench24}" TargetPageType="{x:Type views:AdvancedView}"/>
+                        <ui:NavigationViewItem x:Name="NavItemGeneral" Content="General" Tag="General" Icon="{ui:SymbolIcon Home24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemApplications" Content="Applications" Tag="Applications" Icon="{ui:SymbolIcon Apps24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemAppearance" Content="Appearance" Tag="Appearance" Icon="{ui:SymbolIcon PaintBrush24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemDisplay" Content="Display" Tag="Display" Icon="{ui:SymbolIcon Desktop24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemGaming" Content="Gaming" Tag="Gaming" Icon="{ui:SymbolIcon Games24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemNotifications" Content="Notifications" Tag="Notifications" Icon="{ui:SymbolIcon Alert24}" Click="NavItem_Click"/>
+                        <ui:NavigationViewItem x:Name="NavItemAdvanced" Content="Advanced" Tag="Advanced" Icon="{ui:SymbolIcon Wrench24}" Click="NavItem_Click"/>
                     </ui:NavigationView.MenuItems>
                 </ui:NavigationView>
-            </Border>
+            </Grid>
 
-            <!-- Vertical Divider -->
-            <Border Grid.Column="1" Width="1" Background="{DynamicResource DividerColor}"/>
-
-            <!-- Main Views Container -->
-            <Grid Grid.Column="2" x:Name="RootContentGrid" Background="{DynamicResource WindowBackground}">
-                <views:GeneralView x:Name="ViewGeneral" Visibility="Visible"/>
-                <views:ApplicationsView x:Name="ViewApplications" Visibility="Collapsed"/>
-                <views:AppearanceView x:Name="ViewAppearance" Visibility="Collapsed"/>
-                <views:DisplayView x:Name="ViewDisplay" Visibility="Collapsed"/>
-                <views:GamingView x:Name="ViewGaming" Visibility="Collapsed"/>
-                <views:NotificationsView x:Name="ViewNotifications" Visibility="Collapsed"/>
-                <views:AdvancedView x:Name="ViewAdvanced" Visibility="Collapsed"/>
+            <!-- Single Authoritative Main Views Container (Expands dynamically to fill entire remaining space) -->
+            <Grid Grid.Column="1" x:Name="RootContentGrid" Background="{DynamicResource WindowBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <views:GeneralView x:Name="ViewGeneral" Visibility="Visible" HorizontalAlignment="Stretch"/>
+                <views:ApplicationsView x:Name="ViewApplications" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                <views:AppearanceView x:Name="ViewAppearance" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                <views:DisplayView x:Name="ViewDisplay" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                <views:GamingView x:Name="ViewGaming" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                <views:NotificationsView x:Name="ViewNotifications" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
+                <views:AdvancedView x:Name="ViewAdvanced" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
             </Grid>
         </Grid>
     </Grid>

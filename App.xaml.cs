@@ -67,6 +67,7 @@ namespace GlowBorder
             {
                 LoggerService.LogStartupPhase("START");
                 LoggerService.LogStartupPhase("Runtime initialized");
+                GlowBorder.UI.Animations.ButtonPressAnimationBehavior.InitializeGlobal();
 
                 // Single Instance Check
                 const string mutexName = "GlowBorder_SingleInstance_Mutex_8697";
@@ -189,13 +190,6 @@ namespace GlowBorder
                 _ = InitializeNotificationServiceAsync();
 
                 LoggerService.LogStartupPhase("READY");
-
-                if (!_settingsService.Current.FirstRunCompleted)
-                {
-                    var onboarding = new OnboardingWindow(_notificationService, _glowManager, _settingsService);
-                    if (!isAutoStart) onboarding.Owner = _mainWindow;
-                    onboarding.ShowDialog();
-                }
             }
             catch (Exception ex)
             {
@@ -315,6 +309,13 @@ namespace GlowBorder
                     SetBrush(res, "ComboBoxBorderBrush", "#2C3352");
                     SetBrush(res, "ComboBoxDropDownBackground", "#1D2136");
                     SetBrush(res, "ComboBoxDropDownBorderBrush", "#2C3352");
+                    SetBrush(res, "NavActiveBackground", "#242A45");
+                    SetBrush(res, "NavActiveHoverBackground", "#2C3354");
+                    SetBrush(res, "NavIndicatorColor", "#5865F2");
+                    SetBrush(res, "SliderTrackBackground", "#363E5E");
+                    SetBrush(res, "SliderTrackHoverBackground", "#46507A");
+                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
+                    SetBrush(res, "SliderThumbBorder", "#5865F2");
                 }
                 else if (isDark)
                 {
@@ -344,6 +345,13 @@ namespace GlowBorder
                     SetBrush(res, "ComboBoxBorderBrush", "#383838");
                     SetBrush(res, "ComboBoxDropDownBackground", "#202020");
                     SetBrush(res, "ComboBoxDropDownBorderBrush", "#383838");
+                    SetBrush(res, "NavActiveBackground", "#2E2E2E");
+                    SetBrush(res, "NavActiveHoverBackground", "#363636");
+                    SetBrush(res, "NavIndicatorColor", "#5865F2");
+                    SetBrush(res, "SliderTrackBackground", "#404552");
+                    SetBrush(res, "SliderTrackHoverBackground", "#505668");
+                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
+                    SetBrush(res, "SliderThumbBorder", "#5865F2");
                 }
                 else
                 {
@@ -373,6 +381,13 @@ namespace GlowBorder
                     SetBrush(res, "ComboBoxBorderBrush", "#D9D9DE");
                     SetBrush(res, "ComboBoxDropDownBackground", "#FFFFFF");
                     SetBrush(res, "ComboBoxDropDownBorderBrush", "#D9D9DE");
+                    SetBrush(res, "NavActiveBackground", "#E6E6E6");
+                    SetBrush(res, "NavActiveHoverBackground", "#DADAE0");
+                    SetBrush(res, "NavIndicatorColor", "#5865F2");
+                    SetBrush(res, "SliderTrackBackground", "#D0D3DB");
+                    SetBrush(res, "SliderTrackHoverBackground", "#B8BAC6");
+                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
+                    SetBrush(res, "SliderThumbBorder", "#5865F2");
                 }
             }
             catch (Exception ex)

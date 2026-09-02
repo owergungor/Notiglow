@@ -82,6 +82,7 @@ namespace GlowBorder.Services
 
             // Apply adjustments (Gaming multipliers, OLED Mode, Accessibility)
             profile = AdjustProfileParameters(profile, settings);
+            LoggerService.LogInfo($"Triggering glow animation for profile '{profile.Name}' (AppId='{profile.AppId}'): Style={profile.Style}, Color={profile.ColorHex}, Duration={profile.DurationMs}ms, Intensity={profile.Intensity:0.00}");
 
             // Handle Burst Mode logic
             if (_isAnimating)

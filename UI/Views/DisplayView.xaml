@@ -20,19 +20,19 @@
                     <TextBlock Text="Choose which displays show the glow border animation when notifications trigger." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
 
-            <RadioButton x:Name="RadActiveMonitor" GroupName="MonitorMode" Click="MonitorMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadActiveMonitor" GroupName="MonitorMode" Checked="MonitorMode_Checked" Click="MonitorMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Target24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Target24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Active Monitor" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Show glow on the monitor containing the active window / mouse cursor focus." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
@@ -42,11 +42,11 @@
                 </ui:CardControl>
             </RadioButton>
 
-            <RadioButton x:Name="RadPrimaryMonitor" GroupName="MonitorMode" Click="MonitorMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadPrimaryMonitor" GroupName="MonitorMode" Checked="MonitorMode_Checked" Click="MonitorMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Desktop24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Primary Monitor (Default)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Always use the primary Windows display for notification glow animations." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
@@ -56,11 +56,11 @@
                 </ui:CardControl>
             </RadioButton>
 
-            <RadioButton x:Name="RadAllMonitors" GroupName="MonitorMode" Click="MonitorMode_Click" Margin="0,0,0,24" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <RadioButton x:Name="RadAllMonitors" GroupName="MonitorMode" Checked="MonitorMode_Checked" Click="MonitorMode_Click" Margin="0,0,0,24" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
                     <ui:CardControl.Header>
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Desktop24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="All Monitors" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="Show glow edge animations on every connected display simultaneously." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>

@@ -12,6 +12,15 @@ namespace GlowBorder.Tests
         [TestInitialize]
         public void Setup()
         {
+            try
+            {
+                string path1 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GlowBorder", "profiles.json");
+                if (System.IO.File.Exists(path1)) System.IO.File.Delete(path1);
+
+                string path2 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowBorder", "profiles.json");
+                if (System.IO.File.Exists(path2)) System.IO.File.Delete(path2);
+            }
+            catch { }
             _profileService = new ProfileService();
         }
 

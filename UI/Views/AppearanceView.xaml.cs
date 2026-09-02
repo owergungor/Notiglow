@@ -71,7 +71,7 @@ namespace GlowBorder.UI.Views
 
             _settingsService.Save(settings);
 
-            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity);
+            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle);
         }
 
         private void Default_Changed(object sender, SelectionChangedEventArgs e) => UpdatePreview();

@@ -21,9 +21,9 @@
                     <TextBlock Text="Configure global default animation parameters and preview screen glow." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
@@ -45,7 +45,7 @@
                                 <TextBlock Text="Fallback motion effect for newly added app profiles." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ComboBox x:Name="CmbDefaultStyle" Width="160" SelectionChanged="Default_Changed" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbDefaultStyle" Width="165" SelectionChanged="Default_Changed" VerticalAlignment="Center">
                             <ComboBoxItem Content="Pulse" Tag="Pulse"/>
                             <ComboBoxItem Content="Sweep" Tag="Sweep"/>
                             <ComboBoxItem Content="Ambient" Tag="Ambient"/>

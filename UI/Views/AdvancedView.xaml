@@ -20,9 +20,9 @@
                     <TextBlock Text="Performance tuning, OLED burn-in protection, diagnostic tools, and backup options." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
@@ -35,7 +35,7 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Desktop24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="OLED Friendly Mode" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                             <TextBlock Text="Reduces static bright elements to help minimize OLED image retention." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
@@ -79,8 +79,8 @@
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnExport" Content="Export Settings" Icon="{ui:SymbolIcon ArrowUpload24}" Appearance="Primary" Click="BtnExport_Click" Margin="0,0,8,0"/>
-                    <ui:Button x:Name="BtnImport" Content="Import Settings" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary" Click="BtnImport_Click" Margin="0,0,8,0"/>
+                    <ui:Button x:Name="BtnExport" Content="Export Settings" Icon="{ui:SymbolIcon ArrowUpload24}" Appearance="Primary" Click="BtnExport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
+                    <ui:Button x:Name="BtnImport" Content="Import Settings" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary" Click="BtnImport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
                     <ui:Button x:Name="BtnReset" Content="Factory Reset" Icon="{ui:SymbolIcon Delete24}" Appearance="Danger" Click="BtnReset_Click"/>
                 </StackPanel>
             </ui:CardControl>

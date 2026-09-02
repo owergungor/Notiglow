@@ -89,19 +89,60 @@ namespace GlowBorder.UI.Views
             _settingsService.Save(settings);
         }
 
-        private void BtnAddGame_Click(object sender, RoutedEventArgs e)
+        private void BtnAddGamePicker_Click(object sender, RoutedEventArgs e)
         {
-            string exe = TxtAddGameExe.Text.Trim();
-            if (string.IsNullOrWhiteSpace(exe)) return;
-
-            if (!exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) exe += ".exe";
-
-            var settings = _settingsService.Current;
-            if (!settings.TrackedGames.Contains(exe, StringComparer.OrdinalIgnoreCase))
+            try
             {
-                settings.TrackedGames.Add(exe);
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*",
+                    Title = "Select Game Executable",
+                    CheckFileExists = true,
+                    Multiselect = false
+                };
+
+                if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.FileName))
+                {
+                    AddGameToSettings(dialog.FileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Error picking game executable file", ex);
+            }
+        }
+
+        private void AddGameToSettings(string gameEntry)
+        {
+            if (string.IsNullOrWhiteSpace(gameEntry) || _settingsService == null) return;
+
+            string trimmed = gameEntry.Trim();
+            var settings = _settingsService.Current;
+
+            bool exists = settings.TrackedGames.Exists(g =>
+                g.Equals(trimmed, StringComparison.OrdinalIgnoreCase) ||
+                System.IO.Path.GetFileName(g).Equals(System.IO.Path.GetFileName(trimmed), StringComparison.OrdinalIgnoreCase));
+
+            if (!exists)
+            {
+                settings.TrackedGames.Add(trimmed);
                 _settingsService.Save(settings);
-                TxtAddGameExe.Text = string.Empty;
+                ListTrackedGames.ItemsSource = null;
+                ListTrackedGames.ItemsSource = settings.TrackedGames;
+            }
+        }
+
+        private void BtnRemoveGame_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is string gameItem && _settingsService != null)
+            {
+                var settings = _settingsService.Current;
+                if (settings.TrackedGames.Remove(gameItem))
+                {
+                    _settingsService.Save(settings);
+                    ListTrackedGames.ItemsSource = null;
+                    ListTrackedGames.ItemsSource = settings.TrackedGames;
+                }
             }
         }
 

@@ -79,7 +79,17 @@ namespace GlowBorder.UI.Views
             }
         }
 
+        private void MonitorMode_Checked(object sender, RoutedEventArgs e)
+        {
+            SaveMonitorModeSelection();
+        }
+
         private void MonitorMode_Click(object sender, RoutedEventArgs e)
+        {
+            SaveMonitorModeSelection();
+        }
+
+        private void SaveMonitorModeSelection()
         {
             if (_settingsService == null) return;
 
@@ -88,8 +98,11 @@ namespace GlowBorder.UI.Views
             else if (RadAllMonitors.IsChecked == true) mode = MonitorMode.AllMonitors;
 
             var settings = _settingsService.Current;
-            settings.MonitorMode = mode;
-            _settingsService.Save(settings);
+            if (settings.MonitorMode != mode)
+            {
+                settings.MonitorMode = mode;
+                _settingsService.Save(settings);
+            }
         }
 
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)

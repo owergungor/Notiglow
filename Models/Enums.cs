@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace GlowBorder.Models
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum GlowStyle
     {
         Pulse,
@@ -9,6 +12,7 @@ namespace GlowBorder.Models
         Ripple
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum NotificationPriority
     {
         Low,
@@ -16,6 +20,7 @@ namespace GlowBorder.Models
         High
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum MonitorMode
     {
         ActiveMonitor,
@@ -23,6 +28,7 @@ namespace GlowBorder.Models
         AllMonitors
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum BurstMode
     {
         Restart,
@@ -31,6 +37,7 @@ namespace GlowBorder.Models
         Ignore
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AppTheme
     {
         Dark,

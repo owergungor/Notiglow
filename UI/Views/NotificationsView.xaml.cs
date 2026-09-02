@@ -45,7 +45,17 @@ namespace GlowBorder.UI.Views
             }
         }
 
+        private void BurstMode_Checked(object sender, RoutedEventArgs e)
+        {
+            SaveBurstModeSelection();
+        }
+
         private void BurstMode_Click(object sender, RoutedEventArgs e)
+        {
+            SaveBurstModeSelection();
+        }
+
+        private void SaveBurstModeSelection()
         {
             if (_settingsService == null) return;
 
@@ -55,8 +65,11 @@ namespace GlowBorder.UI.Views
             else if (RadIgnore.IsChecked == true) mode = BurstMode.Ignore;
 
             var settings = _settingsService.Current;
-            settings.BurstMode = mode;
-            _settingsService.Save(settings);
+            if (settings.BurstMode != mode)
+            {
+                settings.BurstMode = mode;
+                _settingsService.Save(settings);
+            }
         }
 
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)

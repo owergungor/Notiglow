@@ -20,9 +20,9 @@
                     <TextBlock Text="Automatically reduce glow intensity or suppress alerts while gaming." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
@@ -32,7 +32,7 @@
             <ui:CardControl Padding="18" Margin="0,0,0,16" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Games24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="Games24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="Gaming Mode" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                             <TextBlock Text="Enables gaming-specific notification and performance behavior." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
@@ -88,30 +88,39 @@
                 <ui:ToggleSwitch x:Name="ToggleOnlyImportantInGames" Click="ToggleOnlyImportantInGames_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
-            <!-- Tracked Games List & Add Game -->
-            <TextBlock Text="Tracked Game Executables" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
-            <ui:CardControl Padding="18" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel>
-                        <TextBlock Text="Add Game Executable (.exe)" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Enter executable name (e.g. cs2.exe, cyberpunk2077.exe)" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+            <!-- Tracked Games Section Header & Add a Game Action Button -->
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Tracked Game Executables" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                <ui:Button Grid.Column="1" x:Name="BtnAddGamePickerTop" Appearance="Primary" Click="BtnAddGamePicker_Click" VerticalAlignment="Center" ToolTip="Select game executable via file browser" Foreground="{DynamicResource TextPrimary}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Add a Game" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
-                </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBox x:Name="TxtAddGameExe" Width="220" Margin="0,0,10,0"/>
-                    <ui:Button Content="Add Game" Appearance="Secondary" Click="BtnAddGame_Click" VerticalAlignment="Center"/>
-                </StackPanel>
-            </ui:CardControl>
+                </ui:Button>
+            </Grid>
 
-            <ListView x:Name="ListTrackedGames" MinHeight="100" MaxHeight="220" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="6,4">
-                            <TextBlock Text="{Binding .}" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Border CornerRadius="8" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+                <ListView x:Name="ListTrackedGames" MinHeight="100" MaxHeight="260" Background="Transparent" BorderThickness="0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="8,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding .}" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                <ui:Button Grid.Column="1" Appearance="Transparent" Click="BtnRemoveGame_Click" ToolTip="Remove game" Padding="6,4" Margin="8,0,0,0">
+                                    <ui:SymbolIcon Symbol="Delete24" Foreground="{DynamicResource TextSecondary}"/>
+                                </ui:Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

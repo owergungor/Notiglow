@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using GlowBorder.Core.Helpers;
 using GlowBorder.Models;
 using GlowBorder.Services;
@@ -35,16 +36,43 @@ namespace GlowBorder.UI.Views
             ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
             ToggleReduceAnimations.IsChecked = current.ReduceAnimations;
 
-            foreach (ComboBoxItem item in CmbTheme.Items)
-            {
-                if (item.Tag?.ToString() == current.Theme.ToString())
-                {
-                    CmbTheme.SelectedItem = item;
-                    break;
-                }
-            }
+            UpdateThemeButtons(current.Theme);
 
-            EdgePreview.UpdatePreview(current.DefaultColorHex, current.DefaultThickness, current.DefaultGlowSize, current.DefaultIntensity);
+            EdgePreview.UpdatePreview(current.DefaultColorHex, current.DefaultThickness, current.DefaultGlowSize, current.DefaultIntensity, current.DefaultStyle);
+        }
+
+        private void UpdateThemeButtons(AppTheme theme)
+        {
+            BtnThemeDark.IsChecked = (theme == AppTheme.Dark);
+            BtnThemeLight.IsChecked = (theme == AppTheme.Light);
+            BtnThemeSystem.IsChecked = (theme == AppTheme.System);
+            BtnThemeNightBlue.IsChecked = (theme == AppTheme.LiquidGlass);
+        }
+
+        private void ThemeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null || sender is not ToggleButton clickedButton) return;
+
+            AppTheme selectedTheme;
+            if (clickedButton == BtnThemeDark)
+                selectedTheme = AppTheme.Dark;
+            else if (clickedButton == BtnThemeLight)
+                selectedTheme = AppTheme.Light;
+            else if (clickedButton == BtnThemeSystem)
+                selectedTheme = AppTheme.System;
+            else if (clickedButton == BtnThemeNightBlue)
+                selectedTheme = AppTheme.LiquidGlass;
+            else
+                return;
+
+            UpdateThemeButtons(selectedTheme);
+
+            var settings = _settingsService.Current;
+            if (settings.Theme != selectedTheme)
+            {
+                settings.Theme = selectedTheme;
+                _settingsService.Save(settings);
+            }
         }
 
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
@@ -93,18 +121,6 @@ namespace GlowBorder.UI.Views
             var settings = _settingsService.Current;
             settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
             _settingsService.Save(settings);
-        }
-
-        private void CmbTheme_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_settingsService == null || CmbTheme.SelectedItem is not ComboBoxItem item) return;
-
-            if (Enum.TryParse<AppTheme>(item.Tag?.ToString(), out var theme))
-            {
-                var settings = _settingsService.Current;
-                settings.Theme = theme;
-                _settingsService.Save(settings);
-            }
         }
     }
 }
