@@ -6,18 +6,35 @@
 [Pp]ublish/
 [Tt]estResults/
 [Bb]uild/
+artifacts/
 
 ## User-specific files & IDE configuration
 .vs/
 .idea/
 .vscode/
-*.suo
 *.user
+*.suo
 *.userosscache
 *.sln.docstates
 *.userprefs
 *.swp
 *~
+
+## Secrets, Credentials & Certificates
+.env
+.env.*
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+*.crt
+*.secret
+
+## Runtime Local User Data & Configs (AppData / Local configs)
+settings.json
+profiles.json
+*.runtime.json
 
 ## Build outputs, releases, installer & packages
 *.zip
@@ -30,9 +47,6 @@
 *.pdb
 GlowBorder-Portable.zip
 
-## Exception: Keep source files, tests, scripts
-!**/GlowBorder.Setup.iss
-
 ## OS Generated Files
 [Tt]humbs.db
 [Dd]esktop.ini
@@ -43,3 +57,9 @@ $RECYCLE.BIN/
 *.log
 *.tmp
 *.temp
+startup.log
+app.log
+glowborder.log
+
+## Inno Setup output
+Output/
