@@ -1,8 +1,8 @@
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class ApplicationMatchingTests
@@ -14,11 +14,14 @@ namespace GlowBorder.Tests
         {
             try
             {
-                string path1 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GlowBorder", "profiles.json");
+                string path1 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NotiGlow", "profiles.json");
                 if (System.IO.File.Exists(path1)) System.IO.File.Delete(path1);
 
-                string path2 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowBorder", "profiles.json");
+                string path2 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NotiGlow", "profiles.json");
                 if (System.IO.File.Exists(path2)) System.IO.File.Delete(path2);
+
+                string legacyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowBorder", "profiles.json");
+                if (System.IO.File.Exists(legacyPath)) System.IO.File.Delete(legacyPath);
             }
             catch { }
             _profileService = new ProfileService();

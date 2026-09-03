@@ -1,9 +1,9 @@
 using System.Text.Json;
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class ThemeSelectionTests
@@ -97,7 +97,7 @@ namespace GlowBorder.Tests
         [TestMethod]
         public void TitleBar_Icon_Resource_Check()
         {
-            var assembly = typeof(GlowBorder.UI.MainWindow).Assembly;
+            var assembly = typeof(NotiGlow.UI.MainWindow).Assembly;
             using var resourceStream = assembly.GetManifestResourceStream("NotiGlow.g.resources");
             Assert.IsNotNull(resourceStream, "NotiGlow.g.resources should exist");
             using var reader = new System.Resources.ResourceReader(resourceStream);
@@ -129,7 +129,7 @@ namespace GlowBorder.Tests
             var thread = new System.Threading.Thread(() =>
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
-                var window = new GlowBorder.UI.MainWindow();
+                var window = new NotiGlow.UI.MainWindow();
                 Assert.IsNotNull(window.SelectionOverlayCanvas, "SidebarOverlayCanvas should exist in visual tree");
                 Assert.IsNotNull(window.SelectionBox, "ActiveSelectionBox should exist in visual tree");
             });

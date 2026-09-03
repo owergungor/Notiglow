@@ -1,9 +1,9 @@
 using System.IO;
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class SettingsMigrationTests
@@ -15,7 +15,7 @@ namespace GlowBorder.Tests
             var profileService = new ProfileService();
             var importExport = new SettingsImportExportService(settingsService, profileService);
 
-            string tempFile = Path.Combine(Path.GetTempPath(), $"glowborder_test_{System.Guid.NewGuid()}.json");
+            string tempFile = Path.Combine(Path.GetTempPath(), $"notiglow_test_{System.Guid.NewGuid()}.json");
 
             try
             {

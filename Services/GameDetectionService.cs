@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using GlowBorder.Core.Win32;
+using NotiGlow.Core.Win32;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class GameDetectionService
     {

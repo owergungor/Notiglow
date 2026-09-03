@@ -15,7 +15,7 @@ using Clipboard = System.Windows.Clipboard;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using VerticalAlignment = System.Windows.VerticalAlignment;
 
-namespace GlowBorder.UI.Controls
+namespace NotiGlow.UI.Controls
 {
     public partial class ColorPickerControl : UserControl
     {
@@ -108,7 +108,7 @@ namespace GlowBorder.UI.Controls
                 };
 
                 border.Child = checkIcon;
-                GlowBorder.UI.Animations.ButtonPressAnimationBehavior.Attach(border);
+                NotiGlow.UI.Animations.ButtonPressAnimationBehavior.Attach(border);
 
                 Action handleSelection = () =>
                 {

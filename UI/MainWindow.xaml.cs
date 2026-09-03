@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
-using GlowBorder.Services;
+using NotiGlow.Services;
 using Wpf.Ui.Controls;
 
-namespace GlowBorder.UI
+namespace NotiGlow.UI
 {
     public partial class MainWindow : FluentWindow
     {
@@ -61,14 +61,14 @@ namespace GlowBorder.UI
             var helper = new System.Windows.Interop.WindowInteropHelper(this);
             var source = System.Windows.Interop.HwndSource.FromHwnd(helper.Handle);
             source?.AddHook(WndProc);
-            GlowBorder.Core.Win32.NativeMethods.AllowMessageInUIPI(helper.Handle, GlowBorder.Core.Win32.NativeMethods.WM_SHOW_GLOWBORDER);
+            NotiGlow.Core.Win32.NativeMethods.AllowMessageInUIPI(helper.Handle, NotiGlow.Core.Win32.NativeMethods.WM_SHOW_NOTIGLOW);
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            if (msg == (int)GlowBorder.Core.Win32.NativeMethods.WM_SHOW_GLOWBORDER)
+            if (msg == (int)NotiGlow.Core.Win32.NativeMethods.WM_SHOW_NOTIGLOW)
             {
-                LoggerService.LogInfo("Received WM_SHOW_GLOWBORDER signal. Restoring and activating MainWindow.");
+                LoggerService.LogInfo("Received WM_SHOW_NOTIGLOW signal. Restoring and activating MainWindow.");
                 Show();
                 WindowState = WindowState.Normal;
                 Activate();

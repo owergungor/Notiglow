@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using GlowBorder.Models;
-using GlowBorder.Services;
-using GlowBorder.UI;
+using NotiGlow.Models;
+using NotiGlow.Services;
+using NotiGlow.UI;
 using Wpf.Ui.Appearance;
 
-namespace GlowBorder
+namespace NotiGlow
 {
     public partial class App : System.Windows.Application
     {
@@ -67,17 +67,28 @@ namespace GlowBorder
             {
                 LoggerService.LogStartupPhase("START");
                 LoggerService.LogStartupPhase("Runtime initialized");
-                GlowBorder.UI.Animations.ButtonPressAnimationBehavior.InitializeGlobal();
+                NotiGlow.UI.Animations.ButtonPressAnimationBehavior.InitializeGlobal();
 
                 // Single Instance Check
-                const string mutexName = "GlowBorder_SingleInstance_Mutex_8697";
+                const string mutexName = "NotiGlow_SingleInstance_Mutex_8697";
+                const string legacyMutexName = "GlowBorder_SingleInstance_Mutex_8697";
                 bool isNewInstance = false;
                 try
                 {
                     _singleInstanceMutex = new System.Threading.Mutex(true, mutexName, out isNewInstance);
                     if (isNewInstance)
                     {
-                        _hasMutexOwnership = true;
+                        // Check if a legacy instance is still running
+                        if (System.Threading.Mutex.TryOpenExisting(legacyMutexName, out var legacyMutex))
+                        {
+                            legacyMutex.Dispose();
+                            isNewInstance = false;
+                            _hasMutexOwnership = false;
+                        }
+                        else
+                        {
+                            _hasMutexOwnership = true;
+                        }
                     }
                     else
                     {
@@ -109,8 +120,8 @@ namespace GlowBorder
                 {
                     if (IsAnotherInstanceRunning())
                     {
-                        LoggerService.LogInfo("Another active GlowBorder process found. Signaling existing instance and exiting.");
-                        GlowBorder.Core.Win32.NativeMethods.SignalExistingInstance();
+                        LoggerService.LogInfo("Another active NotiGlow/GlowBorder process found. Signaling existing instance and exiting.");
+                        NotiGlow.Core.Win32.NativeMethods.SignalExistingInstance();
                         Shutdown();
                         return;
                     }
@@ -121,7 +132,7 @@ namespace GlowBorder
                 }
 
                 // Initialize Services
-                LoggerService.LogInfo("Starting Glow Border application...");
+                LoggerService.LogInfo("Starting NotiGlow application...");
 
                 _settingsService = new SettingsService();
                 LoggerService.LogStartupPhase("Settings loaded");
@@ -216,7 +227,8 @@ namespace GlowBorder
             try
             {
                 var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
-                var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName);
+                var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName)
+                    .Concat(System.Diagnostics.Process.GetProcessesByName("GlowBorder"));
                 foreach (var p in processes)
                 {
                     if (p.Id != currentProcess.Id)
@@ -244,9 +256,9 @@ namespace GlowBorder
             try
             {
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string logPath = Path.Combine(localAppData, "GlowBorder", "startup.log");
+                string logPath = Path.Combine(localAppData, "NotiGlow", "startup.log");
                 string shortMsg = ex.Message;
-                string message = $"Glow Border could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
+                string message = $"NotiGlow could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
 
                 System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
@@ -432,7 +444,7 @@ namespace GlowBorder
             var testProfile = new AppProfile
             {
                 AppId = "TestProfile",
-                Name = "Glow Border Test",
+                Name = "NotiGlow Test",
                 ColorHex = _settingsService.Current.DefaultColorHex,
                 DurationMs = _settingsService.Current.DefaultDurationMs,
                 Intensity = _settingsService.Current.DefaultIntensity,

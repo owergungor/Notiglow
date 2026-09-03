@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Windows.Foundation.Metadata;
 using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class NotificationService
     {

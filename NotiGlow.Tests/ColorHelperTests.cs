@@ -1,9 +1,9 @@
 using System.Windows.Media;
-using GlowBorder.Core.Helpers;
+using NotiGlow.Core.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Color = System.Windows.Media.Color;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class ColorHelperTests

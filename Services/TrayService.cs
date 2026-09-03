@@ -2,9 +2,9 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class TrayService : IDisposable
     {

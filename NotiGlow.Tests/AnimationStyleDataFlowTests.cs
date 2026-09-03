@@ -1,11 +1,11 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class AnimationStyleDataFlowTests

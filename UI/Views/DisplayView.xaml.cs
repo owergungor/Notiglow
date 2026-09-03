@@ -1,13 +1,13 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using Wpf.Ui.Controls;
 using TextBlock = System.Windows.Controls.TextBlock;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace GlowBorder.UI.Views
+namespace NotiGlow.UI.Views
 {
     public partial class DisplayView : System.Windows.Controls.UserControl
     {

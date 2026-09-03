@@ -1,10 +1,10 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using GlowBorder.Services;
+using NotiGlow.Services;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace GlowBorder.UI.Views
+namespace NotiGlow.UI.Views
 {
     public partial class GamingView : UserControl
     {
@@ -149,7 +149,7 @@ namespace GlowBorder.UI.Views
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null || _settingsService == null) return;
-            var testProfile = new GlowBorder.Models.AppProfile
+            var testProfile = new NotiGlow.Models.AppProfile
             {
                 AppId = "TestApp",
                 Name = "NotiGlow Test",

@@ -2,11 +2,11 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Interop;
-using GlowBorder.Core.Helpers;
-using GlowBorder.Core.Win32;
-using GlowBorder.Models;
+using NotiGlow.Core.Helpers;
+using NotiGlow.Core.Win32;
+using NotiGlow.Models;
 
-namespace GlowBorder.Overlay
+namespace NotiGlow.Overlay
 {
     public partial class OverlayWindow : Window
     {

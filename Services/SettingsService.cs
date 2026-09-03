@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class SettingsService
     {
@@ -15,9 +15,24 @@ namespace GlowBorder.Services
         public SettingsService()
         {
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string folder = Path.Combine(appData, "GlowBorder");
+            string folder = Path.Combine(appData, "NotiGlow");
             Directory.CreateDirectory(folder);
             _settingsPath = Path.Combine(folder, "settings.json");
+
+            // Migrate legacy GlowBorder settings if present and NotiGlow settings don't exist yet
+            try
+            {
+                string legacySettingsPath = Path.Combine(appData, "GlowBorder", "settings.json");
+                if (!File.Exists(_settingsPath) && File.Exists(legacySettingsPath))
+                {
+                    File.Copy(legacySettingsPath, _settingsPath, true);
+                    LoggerService.LogInfo("Migrated legacy GlowBorder settings.json to NotiGlow.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Legacy settings migration notice: {ex.Message}");
+            }
 
             Current = Load();
         }

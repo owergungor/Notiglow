@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace GlowBorder.Models
+namespace NotiGlow.Models
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum GlowStyle

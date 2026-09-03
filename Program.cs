@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
-using GlowBorder.Services;
+using NotiGlow.Services;
 
-namespace GlowBorder
+namespace NotiGlow
 {
     public static class Program
     {
@@ -14,7 +14,7 @@ namespace GlowBorder
             try
             {
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string folder = Path.Combine(localAppData, "GlowBorder");
+                string folder = Path.Combine(localAppData, "NotiGlow");
                 Directory.CreateDirectory(folder);
                 string startupLog = Path.Combine(folder, "startup.log");
                 File.AppendAllText(startupLog, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] [ENTRY] Program.Main entered.{Environment.NewLine}");
@@ -30,7 +30,7 @@ namespace GlowBorder
                 LoggerService.LogStartupError("Main Entry Point Exception", ex);
 
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string logPath = Path.Combine(localAppData, "GlowBorder", "startup.log");
+                string logPath = Path.Combine(localAppData, "NotiGlow", "startup.log");
 
                 string shortMsg = ex.Message;
                 string message = $"NotiGlow could not start.\n\nStartup error: {shortMsg}\n\nDetailed information was written to:\n{logPath}";

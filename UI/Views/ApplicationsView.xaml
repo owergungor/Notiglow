@@ -1,8 +1,8 @@
-<UserControl x:Class="GlowBorder.UI.Views.ApplicationsView"
+<UserControl x:Class="NotiGlow.UI.Views.ApplicationsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:controls="clr-namespace:GlowBorder.UI.Controls"
+             xmlns:controls="clr-namespace:NotiGlow.UI.Controls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
@@ -75,7 +75,19 @@
 
                                 <StackPanel Margin="0,0,0,16">
                                     <TextBlock Text="App Identifier / Executable Name" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ui:TextBox x:Name="TxtEditAppId" PlaceholderText="e.g. discord or discord.exe"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:TextBox x:Name="TxtEditAppId" PlaceholderText="e.g. discord or discord.exe" Grid.Column="0"/>
+                                        <ui:Button x:Name="BtnBrowseAppId" Grid.Column="1" Margin="8,0,0,0" Appearance="Secondary" Click="BtnBrowseAppId_Click" ToolTip="Select executable file (.exe)" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="FolderOpen24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Browse..." FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </ui:Button>
+                                    </Grid>
                                 </StackPanel>
 
                                 <!-- Animation Style -->
@@ -118,16 +130,7 @@
                                     <Slider x:Name="SldIntensity" Minimum="10" Maximum="100" Value="80" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldIntensity_ValueChanged"/>
                                 </StackPanel>
 
-                                <!-- Line Thickness -->
-                                <StackPanel Margin="0,0,0,16">
-                                    <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="Border Line Thickness" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock x:Name="TxtThicknessVal" Text="4 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
-                                    </Grid>
-                                    <Slider x:Name="SldThickness" Minimum="1" Maximum="10" Value="4" SmallChange="1" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldThickness_ValueChanged"/>
-                                </StackPanel>
-
-                                <!-- Glow Size -->
+                                 <!-- Glow Size -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
                                         <TextBlock Text="Glow Blur Size" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>

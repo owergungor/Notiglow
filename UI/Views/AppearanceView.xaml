@@ -1,8 +1,8 @@
-<UserControl x:Class="GlowBorder.UI.Views.AppearanceView"
+<UserControl x:Class="NotiGlow.UI.Views.AppearanceView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:controls="clr-namespace:GlowBorder.UI.Controls"
+             xmlns:controls="clr-namespace:NotiGlow.UI.Controls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
@@ -45,7 +45,155 @@
                                 <TextBlock Text="Fallback motion effect for newly added app profiles." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ComboBox x:Name="CmbDefaultStyle" Width="165" SelectionChanged="Default_Changed" VerticalAlignment="Center">
+                        <ComboBox x:Name="CmbDefaultStyle"
+                                  Width="165"
+                                  Height="72"
+                                  MinHeight="72"
+                                  VerticalAlignment="Center"
+                                  SelectionChanged="Default_Changed">
+                            <ComboBox.Resources>
+                                <Style TargetType="ComboBoxItem">
+                                    <Setter Property="MinHeight" Value="32"/>
+                                    <Setter Property="Height" Value="32"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="Padding" Value="10,0"/>
+                                </Style>
+                            </ComboBox.Resources>
+                            <ComboBox.Style>
+                                <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                    <Setter Property="Height" Value="72"/>
+                                    <Setter Property="MinHeight" Value="72"/>
+                                    <Setter Property="Padding" Value="14,0,10,0"/>
+                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ComboBox">
+                                                <Grid Height="72" VerticalAlignment="Center">
+                                                    <Border x:Name="ContentBorder"
+                                                            Height="72"
+                                                            MinHeight="72"
+                                                            Width="{TemplateBinding Width}"
+                                                            Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                                                            HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Stretch">
+                                                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <ContentPresenter x:Name="PART_ContentPresenter"
+                                                                              Grid.Column="0"
+                                                                              Margin="{TemplateBinding Padding}"
+                                                                              Content="{TemplateBinding SelectionBoxItem}"
+                                                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                              VerticalAlignment="Center"
+                                                                              IsHitTestVisible="False"
+                                                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                                                            <ui:SymbolIcon x:Name="ChevronIcon"
+                                                                           Grid.Column="1"
+                                                                           Margin="8,0,14,0"
+                                                                           Symbol="ChevronDown24"
+                                                                           FontSize="12"
+                                                                           Foreground="{DynamicResource ComboBoxDropDownGlyphForeground}"
+                                                                           VerticalAlignment="Center"
+                                                                           RenderTransformOrigin="0.5,0.5">
+                                                                <ui:SymbolIcon.RenderTransform>
+                                                                    <RotateTransform Angle="0"/>
+                                                                </ui:SymbolIcon.RenderTransform>
+                                                            </ui:SymbolIcon>
+
+                                                            <ToggleButton x:Name="ToggleButton"
+                                                                          Grid.Column="0"
+                                                                          Grid.ColumnSpan="2"
+                                                                          Focusable="False"
+                                                                          ClickMode="Press"
+                                                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                          HorizontalAlignment="Stretch"
+                                                                          VerticalAlignment="Stretch"
+                                                                          Background="Transparent"
+                                                                          BorderThickness="0">
+                                                                <ToggleButton.Template>
+                                                                    <ControlTemplate TargetType="ToggleButton">
+                                                                        <Border Background="Transparent" BorderThickness="0"/>
+                                                                    </ControlTemplate>
+                                                                </ToggleButton.Template>
+                                                            </ToggleButton>
+
+                                                            <TextBox x:Name="PART_EditableTextBox"
+                                                                     Grid.Column="0"
+                                                                     Visibility="Collapsed"
+                                                                     VerticalAlignment="Center"
+                                                                     Margin="{TemplateBinding Padding}"/>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <Border x:Name="AccentBorder"
+                                                            Height="2"
+                                                            VerticalAlignment="Bottom"
+                                                            HorizontalAlignment="Stretch"
+                                                            Background="{DynamicResource ComboBoxBorderBrushFocused}"
+                                                            CornerRadius="{DynamicResource ControlCornerRadius}"
+                                                            Visibility="Collapsed"/>
+
+                                                    <Popup x:Name="Popup"
+                                                           IsOpen="{TemplateBinding IsDropDownOpen}"
+                                                           Placement="Bottom"
+                                                           PlacementTarget="{Binding ElementName=ContentBorder}"
+                                                           AllowsTransparency="True"
+                                                           Focusable="False"
+                                                           PopupAnimation="Fade"
+                                                           VerticalOffset="2">
+                                                        <Border x:Name="DropDownBorder"
+                                                                MinWidth="{Binding ActualWidth, ElementName=ContentBorder}"
+                                                                MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                                                Background="{DynamicResource ComboBoxDropDownBackground}"
+                                                                BorderBrush="{DynamicResource ComboBoxDropDownBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="{DynamicResource PopupCornerRadius}"
+                                                                Padding="0,4,0,6"
+                                                                SnapsToDevicePixels="True">
+                                                            <Border.Effect>
+                                                                <DropShadowEffect ShadowDepth="8" Direction="270" Color="#000000" Opacity="0.3" BlurRadius="16"/>
+                                                            </Border.Effect>
+                                                            <ScrollViewer VerticalScrollBarVisibility="Auto" SnapsToDevicePixels="True">
+                                                                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                                            </ScrollViewer>
+                                                        </Border>
+                                                    </Popup>
+                                                </Grid>
+
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsDropDownOpen" Value="True">
+                                                        <Setter TargetName="ChevronIcon" Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <RotateTransform Angle="180"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource ComboBoxBackgroundPointerOver}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                        <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource ComboBoxBackgroundFocused}"/>
+                                                        <Setter TargetName="AccentBorder" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource ComboBoxBackgroundDisabled}"/>
+                                                        <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrushDisabled}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ComboBox.Style>
                             <ComboBoxItem Content="Pulse" Tag="Pulse"/>
                             <ComboBoxItem Content="Sweep" Tag="Sweep"/>
                             <ComboBoxItem Content="Ambient" Tag="Ambient"/>

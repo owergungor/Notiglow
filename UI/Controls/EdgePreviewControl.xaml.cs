@@ -3,12 +3,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using GlowBorder.Models;
+using NotiGlow.Models;
 using UserControl = System.Windows.Controls.UserControl;
 using Color = System.Windows.Media.Color;
 using Point = System.Windows.Point;
 
-namespace GlowBorder.UI.Controls
+namespace NotiGlow.UI.Controls
 {
     public partial class EdgePreviewControl : UserControl
     {
@@ -26,7 +26,7 @@ namespace GlowBorder.UI.Controls
 
         public void UpdatePreview(string colorHex, double thickness, double glowSize, double intensity, GlowStyle style = GlowStyle.Pulse)
         {
-            Color mainColor = GlowBorder.Core.Helpers.ColorHelper.ParseColor(colorHex);
+            Color mainColor = NotiGlow.Core.Helpers.ColorHelper.ParseColor(colorHex);
 
             // Scale parameters for mini preview box
             double scaledGlow = Math.Clamp(glowSize / 4.0, 5, 30);

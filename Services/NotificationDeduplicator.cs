@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class NotificationDeduplicator
     {

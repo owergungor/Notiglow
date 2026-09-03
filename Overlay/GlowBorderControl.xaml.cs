@@ -3,13 +3,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using GlowBorder.Models;
+using NotiGlow.Models;
 using UserControl = System.Windows.Controls.UserControl;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 using Point = System.Windows.Point;
 
-namespace GlowBorder.Overlay
+namespace NotiGlow.Overlay
 {
     public partial class GlowBorderControl : UserControl
     {
@@ -27,7 +27,7 @@ namespace GlowBorder.Overlay
             _onCompletedCallback = onCompleted;
             StopAnimation();
 
-            Color mainColor = GlowBorder.Core.Helpers.ColorHelper.ParseColor(profile.ColorHex);
+            Color mainColor = NotiGlow.Core.Helpers.ColorHelper.ParseColor(profile.ColorHex);
             Color transparentColor = Color.FromArgb(0, mainColor.R, mainColor.G, mainColor.B);
 
             // Update edge sizes & bloom layers

@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace GlowBorder.Core.Helpers
+namespace NotiGlow.Core.Helpers
 {
     public static class DpiHelper
     {

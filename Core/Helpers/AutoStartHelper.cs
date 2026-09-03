@@ -1,20 +1,21 @@
 using System;
 using Microsoft.Win32;
-using GlowBorder.Services;
+using NotiGlow.Services;
 
-namespace GlowBorder.Core.Helpers
+namespace NotiGlow.Core.Helpers
 {
     public static class AutoStartHelper
     {
         private const string RunRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
-        private const string AppName = "GlowBorder";
+        private const string AppName = "NotiGlow";
+        private const string LegacyAppName = "GlowBorder";
 
         public static bool IsAutoStartEnabled()
         {
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey, false);
-                var value = key?.GetValue(AppName);
+                var value = key?.GetValue(AppName) ?? key?.GetValue(LegacyAppName);
                 return value != null;
             }
             catch (Exception ex)
@@ -36,6 +37,9 @@ namespace GlowBorder.Core.Helpers
                     string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
                     if (!string.IsNullOrEmpty(exePath))
                     {
+                        // Remove legacy entry if present
+                        try { key.DeleteValue(LegacyAppName, false); } catch { }
+
                         key.SetValue(AppName, $"\"{exePath}\" --autostart");
                         LoggerService.LogInfo($"AutoStart enabled: {exePath}");
                     }
@@ -43,6 +47,7 @@ namespace GlowBorder.Core.Helpers
                 else
                 {
                     key.DeleteValue(AppName, false);
+                    try { key.DeleteValue(LegacyAppName, false); } catch { }
                     LoggerService.LogInfo("AutoStart disabled");
                 }
             }

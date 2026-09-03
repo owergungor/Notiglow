@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace GlowBorder.Core.Win32
+namespace NotiGlow.Core.Win32
 {
     public static class NativeMethods
     {
@@ -74,7 +74,8 @@ namespace GlowBorder.Core.Win32
         public static extern IntPtr GetForegroundWindow();
 
         public const uint HWND_BROADCAST = 0xffff;
-        public static readonly uint WM_SHOW_GLOWBORDER = RegisterWindowMessage("WM_SHOW_GLOWBORDER_NOTIGLOW");
+        public static readonly uint WM_SHOW_NOTIGLOW = RegisterWindowMessage("WM_SHOW_NOTIGLOW");
+        public static uint WM_SHOW_GLOWBORDER => WM_SHOW_NOTIGLOW;
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern uint RegisterWindowMessage(string lpString);
@@ -132,7 +133,8 @@ namespace GlowBorder.Core.Win32
             try
             {
                 var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
-                var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName);
+                var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName)
+                    .Concat(System.Diagnostics.Process.GetProcessesByName("GlowBorder"));
 
                 foreach (var p in processes)
                 {
@@ -145,7 +147,7 @@ namespace GlowBorder.Core.Win32
                         {
                             ShowWindow(hwnd, SW_RESTORE);
                             SetForegroundWindow(hwnd);
-                            PostMessage(hwnd, WM_SHOW_GLOWBORDER, IntPtr.Zero, IntPtr.Zero);
+                            PostMessage(hwnd, WM_SHOW_NOTIGLOW, IntPtr.Zero, IntPtr.Zero);
                         }
 
                         // Also post to all thread windows of the target process
@@ -155,7 +157,7 @@ namespace GlowBorder.Core.Win32
                             {
                                 EnumThreadWindows((uint)thread.Id, (h, l) =>
                                 {
-                                    PostMessage(h, WM_SHOW_GLOWBORDER, IntPtr.Zero, IntPtr.Zero);
+                                    PostMessage(h, WM_SHOW_NOTIGLOW, IntPtr.Zero, IntPtr.Zero);
                                     return true;
                                 }, IntPtr.Zero);
                             }
@@ -167,7 +169,7 @@ namespace GlowBorder.Core.Win32
             catch { }
 
             // Broadcast fallback
-            PostMessage((IntPtr)HWND_BROADCAST, WM_SHOW_GLOWBORDER, IntPtr.Zero, IntPtr.Zero);
+            PostMessage((IntPtr)HWND_BROADCAST, WM_SHOW_NOTIGLOW, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }

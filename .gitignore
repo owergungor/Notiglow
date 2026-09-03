@@ -45,6 +45,7 @@ profiles.json
 *.exe
 *.dll
 *.pdb
+NotiGlow-Portable.zip
 GlowBorder-Portable.zip
 
 ## OS Generated Files
@@ -59,6 +60,7 @@ $RECYCLE.BIN/
 *.temp
 startup.log
 app.log
+notiglow.log
 glowborder.log
 
 ## Inno Setup output

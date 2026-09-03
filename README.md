@@ -1,4 +1,4 @@
-# NotiGlow (Glow Border 2.0) ✨
+# NotiGlow ✨
 
 > **Modern, High-Performance 4-Edge Ambient Screen Glow Notification Utility for Windows 11 & Windows 10**
 
@@ -50,12 +50,12 @@
 ## 🚀 Getting Started
 
 ### Option 1: Portable Zip (No Installation Required)
-1. Download `GlowBorder-Portable.zip` from the [Latest Release](https://github.com/owergungor/Notiglow/releases).
+1. Download `NotiGlow-Portable.zip` from the [Latest Release](https://github.com/owergungor/Notiglow/releases).
 2. Extract the archive to any folder.
 3. Run `NotiGlow.exe`.
 
 ### Option 2: Windows Installer
-1. Download and run `GlowBorder-Setup.exe`.
+1. Download and run `NotiGlow-Setup.exe`.
 2. Follow the setup wizard to install Start Menu shortcuts and optional Windows startup integration.
 
 ---
@@ -93,15 +93,15 @@ Windows requires explicit user authorization for apps monitoring system toasts:
 dotnet restore
 
 # Build project
-dotnet build GlowBorder.csproj
+dotnet build NotiGlow.csproj
 
 # Publish Release executable (win-x64)
-dotnet publish GlowBorder.csproj -c Release -r win-x64 --self-contained false
+dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained false
 ```
 
 ### Run Unit Tests
 ```powershell
-dotnet test GlowBorder.Tests/GlowBorder.Tests.csproj
+dotnet test NotiGlow.Tests/NotiGlow.Tests.csproj
 ```
 
 ---

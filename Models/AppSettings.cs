@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GlowBorder.Models
+namespace NotiGlow.Models
 {
     public class AppSettings
     {

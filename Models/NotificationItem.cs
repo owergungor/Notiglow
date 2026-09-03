@@ -1,6 +1,6 @@
 using System;
 
-namespace GlowBorder.Models
+namespace NotiGlow.Models
 {
     public class NotificationItem
     {

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GlowBorder.csproj">
+    <ProjectReference Include="..\NotiGlow.csproj">
       <GlobalPropertiesToRemove>UseWPF</GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class LoggerService
     {
@@ -16,7 +16,7 @@ namespace GlowBorder.Services
             {
                 if (_logFilePath == null)
                 {
-                    string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowBorder", "logs");
+                    string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NotiGlow", "logs");
                     Directory.CreateDirectory(folder);
                     _logFilePath = Path.Combine(folder, "app.log");
                 }
@@ -30,7 +30,7 @@ namespace GlowBorder.Services
             {
                 if (_startupLogFilePath == null)
                 {
-                    string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GlowBorder");
+                    string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NotiGlow");
                     Directory.CreateDirectory(folder);
                     _startupLogFilePath = Path.Combine(folder, "startup.log");
                 }

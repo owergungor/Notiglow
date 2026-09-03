@@ -2,12 +2,12 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using GlowBorder.Core.Helpers;
-using GlowBorder.Models;
-using GlowBorder.Services;
+using NotiGlow.Core.Helpers;
+using NotiGlow.Models;
+using NotiGlow.Services;
 using UserControl = System.Windows.Controls.UserControl;
 
-namespace GlowBorder.UI.Views
+namespace NotiGlow.UI.Views
 {
     public partial class GeneralView : UserControl
     {

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace GlowBorder.Core.Win32
+namespace NotiGlow.Core.Win32
 {
     public static class MonitorHelper
     {

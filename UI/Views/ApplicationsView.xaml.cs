@@ -1,13 +1,14 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using GlowBorder.Models;
-using GlowBorder.Services;
-using GlowBorder.UI.Controls;
+using NotiGlow.Core.Helpers;
+using NotiGlow.Models;
+using NotiGlow.Services;
+using NotiGlow.UI.Controls;
 using UserControl = System.Windows.Controls.UserControl;
 using MessageBox = System.Windows.MessageBox;
 
-namespace GlowBorder.UI.Views
+namespace NotiGlow.UI.Views
 {
     public partial class ApplicationsView : UserControl
     {
@@ -64,6 +65,7 @@ namespace GlowBorder.UI.Views
             {
                 AppId = profile.AppId,
                 Name = profile.Name,
+                ExecutablePath = profile.ExecutablePath,
                 Enabled = profile.Enabled,
                 ColorHex = profile.ColorHex,
                 DurationMs = profile.DurationMs,
@@ -81,7 +83,6 @@ namespace GlowBorder.UI.Views
 
             SldDuration.Value = _editingProfile.DurationMs;
             SldIntensity.Value = Math.Round(_editingProfile.Intensity * 100);
-            SldThickness.Value = Math.Round(_editingProfile.Thickness);
             SldGlowSize.Value = Math.Round(_editingProfile.GlowSize);
 
             EditColorPicker.SelectedColorHex = _editingProfile.ColorHex;
@@ -115,11 +116,9 @@ namespace GlowBorder.UI.Views
             double sec = SldDuration.Value / 1000.0;
             TxtDurationVal.Text = (sec % 1 == 0) ? $"{sec:0}s ({SldDuration.Value} ms)" : $"{sec:0.0}s ({SldDuration.Value} ms)";
             TxtIntensityVal.Text = $"{Math.Round(SldIntensity.Value):0}%";
-            TxtThicknessVal.Text = $"{Math.Round(SldThickness.Value):0} px";
             TxtGlowSizeVal.Text = $"{Math.Round(SldGlowSize.Value):0} px";
 
             _editingProfile.ColorHex = EditColorPicker.SelectedColorHex;
-            _editingProfile.Thickness = Math.Round(SldThickness.Value);
             _editingProfile.GlowSize = Math.Round(SldGlowSize.Value);
             _editingProfile.Intensity = Math.Round(SldIntensity.Value) / 100.0;
             _editingProfile.DurationMs = (int)SldDuration.Value;
@@ -161,12 +160,68 @@ namespace GlowBorder.UI.Views
             _glowManager.TriggerProfile(_editingProfile);
         }
 
+        private void BtnBrowseAppId_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Select Executable File",
+                    Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
+                    CheckFileExists = true,
+                    Multiselect = false
+                };
+
+                bool? result = dialog.ShowDialog();
+                if (result == true)
+                {
+                    string selectedPath = dialog.FileName;
+                    if (ExecutablePathHelper.TryApplySelectedExecutable(TxtEditAppId.Text, selectedPath, out string newAppId, out string? error))
+                    {
+                        TxtEditAppId.Text = newAppId;
+                        if (_editingProfile != null)
+                        {
+                            _editingProfile.ExecutablePath = selectedPath;
+                        }
+
+                        // Auto-fill Application Name if empty or default placeholder
+                        if (string.IsNullOrWhiteSpace(TxtEditAppName.Text) || TxtEditAppName.Text == "New Application")
+                        {
+                            try
+                            {
+                                string friendlyName = System.IO.Path.GetFileNameWithoutExtension(selectedPath);
+                                if (!string.IsNullOrWhiteSpace(friendlyName))
+                                {
+                                    TxtEditAppName.Text = char.ToUpperInvariant(friendlyName[0]) + (friendlyName.Length > 1 ? friendlyName.Substring(1) : "");
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(error))
+                    {
+                        MessageBox.Show(error, "Invalid File Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Failed to show OpenFileDialog for application selection", ex);
+            }
+        }
+
         private void BtnSaveProfile_Click(object sender, RoutedEventArgs e)
         {
             if (_editingProfile == null || _profileService == null) return;
 
             _editingProfile.Name = TxtEditAppName.Text.Trim();
-            _editingProfile.AppId = TxtEditAppId.Text.Trim();
+            _editingProfile.AppId = ExecutablePathHelper.ResolveAppIdentifier(TxtEditAppId.Text.Trim());
+
+            if (!string.IsNullOrEmpty(_editingProfile.ExecutablePath) &&
+                !string.Equals(System.IO.Path.GetFileName(_editingProfile.ExecutablePath), _editingProfile.AppId, StringComparison.OrdinalIgnoreCase))
+            {
+                _editingProfile.ExecutablePath = null;
+            }
 
             if (string.IsNullOrEmpty(_editingProfile.Name) || string.IsNullOrEmpty(_editingProfile.AppId))
             {
@@ -176,7 +231,6 @@ namespace GlowBorder.UI.Views
 
             _editingProfile.DurationMs = (int)SldDuration.Value;
             _editingProfile.Intensity = Math.Round(SldIntensity.Value) / 100.0;
-            _editingProfile.Thickness = Math.Round(SldThickness.Value);
             _editingProfile.GlowSize = Math.Round(SldGlowSize.Value);
             _editingProfile.ColorHex = EditColorPicker.SelectedColorHex;
 
@@ -206,7 +260,6 @@ namespace GlowBorder.UI.Views
         private void BtnCloseEditor_Click(object sender, RoutedEventArgs e) => PnlEditProfile.Visibility = Visibility.Collapsed;
         private void SldDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void SldIntensity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
-        private void SldThickness_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void SldGlowSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void EditColorPicker_ColorChanged(object? sender, string e) => UpdateEditorPreview();
         private void EditControl_Changed(object sender, SelectionChangedEventArgs e) => UpdateEditorPreview();

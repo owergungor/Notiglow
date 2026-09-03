@@ -8,7 +8,7 @@ using System.Windows.Media.Animation;
 using Point = System.Windows.Point;
 using ButtonBase = System.Windows.Controls.Primitives.ButtonBase;
 
-namespace GlowBorder.UI.Animations
+namespace NotiGlow.UI.Animations
 {
     /// <summary>
     /// Convenient alias for ButtonPressAnimationBehavior.

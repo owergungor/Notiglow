@@ -4,11 +4,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
-using GlowBorder.UI.Animations;
+using NotiGlow.UI.Animations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wpf.Ui.Controls;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class ButtonPressAnimationBehaviorTests

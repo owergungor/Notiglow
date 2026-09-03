@@ -2,12 +2,12 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using GlowBorder.Core.Helpers;
-using GlowBorder.Models;
+using NotiGlow.Core.Helpers;
+using NotiGlow.Models;
 using UserControl = System.Windows.Controls.UserControl;
 using Color = System.Windows.Media.Color;
 
-namespace GlowBorder.UI.Controls
+namespace NotiGlow.UI.Controls
 {
     public partial class AppProfileCard : UserControl
     {

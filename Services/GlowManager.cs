@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using GlowBorder.Core.Win32;
-using GlowBorder.Models;
-using GlowBorder.Overlay;
+using NotiGlow.Core.Win32;
+using NotiGlow.Models;
+using NotiGlow.Overlay;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class GlowManager
     {

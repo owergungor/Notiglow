@@ -1,8 +1,8 @@
 using System.Text.Json;
-using GlowBorder.Models;
+using NotiGlow.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace GlowBorder.Tests
+namespace NotiGlow.Tests
 {
     [TestClass]
     public class SerializationTests

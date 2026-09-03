@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class SettingsContainer
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using GlowBorder.Models;
+using NotiGlow.Models;
 
-namespace GlowBorder.Services
+namespace NotiGlow.Services
 {
     public class ProfileService
     {
@@ -19,9 +19,24 @@ namespace GlowBorder.Services
         public ProfileService()
         {
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string folder = Path.Combine(appData, "GlowBorder");
+            string folder = Path.Combine(appData, "NotiGlow");
             Directory.CreateDirectory(folder);
             _profilesPath = Path.Combine(folder, "profiles.json");
+
+            // Migrate legacy GlowBorder profiles if present and NotiGlow profiles don't exist yet
+            try
+            {
+                string legacyProfilesPath = Path.Combine(appData, "GlowBorder", "profiles.json");
+                if (!File.Exists(_profilesPath) && File.Exists(legacyProfilesPath))
+                {
+                    File.Copy(legacyProfilesPath, _profilesPath, true);
+                    LoggerService.LogInfo("Migrated legacy GlowBorder profiles.json to NotiGlow.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Legacy profile migration notice: {ex.Message}");
+            }
 
             Load();
         }

@@ -1,11 +1,12 @@
 using System.Text.Json.Serialization;
 
-namespace GlowBorder.Models
+namespace NotiGlow.Models
 {
     public class AppProfile
     {
         public string AppId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string? ExecutablePath { get; set; }
         public bool Enabled { get; set; } = true;
         public string ColorHex { get; set; } = "#5865F2";
         public int DurationMs { get; set; } = 4000;
@@ -32,6 +33,7 @@ namespace GlowBorder.Models
             {
                 AppId = $"{AppId}_copy_{System.Guid.NewGuid().ToString().Substring(0, 4)}",
                 Name = $"{Name}{newNameSuffix}",
+                ExecutablePath = ExecutablePath,
                 Enabled = Enabled,
                 ColorHex = ColorHex,
                 DurationMs = DurationMs,
