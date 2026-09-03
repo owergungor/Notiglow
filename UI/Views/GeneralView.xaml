@@ -49,8 +49,9 @@
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="CheckmarkCircle24" Foreground="#FF25D366" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon x:Name="IconListenerStatus" Symbol="CheckmarkCircle24" Foreground="#FF25D366" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     <TextBlock x:Name="TxtListenerStatus" Text="Active &amp; Listening" Foreground="#FF25D366" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                    <ui:Button x:Name="BtnFixAccess" Content="Open Settings" Appearance="Secondary" Margin="12,0,0,0" Padding="8,4" FontSize="12" Visibility="Collapsed" Click="BtnFixAccess_Click"/>
                 </StackPanel>
             </ui:CardControl>
 

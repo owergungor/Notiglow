@@ -23,6 +23,11 @@ namespace NotiGlow.Tests
                     }
 
                     var window = new NotiGlow.UI.MainWindow();
+                    var settings = new NotiGlow.Services.SettingsService();
+                    var profile = new NotiGlow.Services.ProfileService();
+                    var notif = new NotiGlow.Services.NotificationService();
+                    var glow = new NotiGlow.Services.GlowManager(settings, profile);
+                    window.Initialize(settings, profile, notif, glow);
                 }
                 catch (Exception ex)
                 {

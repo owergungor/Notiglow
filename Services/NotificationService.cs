@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
-using Windows.Foundation.Metadata;
-using Windows.UI.Notifications;
 using Windows.UI.Notifications.Management;
 using NotiGlow.Models;
 
@@ -11,67 +10,62 @@ namespace NotiGlow.Services
 {
     public class NotificationService
     {
-        private UserNotificationListener? _listener;
-        private bool _isListening = false;
+        private readonly INotificationReader _reader;
         private readonly HashSet<uint> _processedNotificationIds = new();
+        private readonly object _lock = new();
+
+        private CancellationTokenSource? _pollCts;
+        private Task? _pollTask;
+        private bool _isListening = false;
 
         public event EventHandler<NotificationItem>? NotificationReceived;
         public event EventHandler<UserNotificationListenerAccessStatus>? AccessStatusChanged;
 
         public bool IsListening => _isListening;
+        public bool AutoStartPolling { get; set; } = true;
         public UserNotificationListenerAccessStatus CurrentAccessStatus { get; private set; } = UserNotificationListenerAccessStatus.Unspecified;
+
+        public NotificationService() : this(new WindowsNotificationReader())
+        {
+        }
+
+        public NotificationService(INotificationReader reader)
+        {
+            _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        }
 
         public async Task InitializeAsync()
         {
-            if (!ApiInformation.IsTypePresent("Windows.UI.Notifications.Management.UserNotificationListener"))
-            {
-                LoggerService.LogError("UserNotificationListener API is not supported on this system.");
-                return;
-            }
-
             try
             {
-                _listener = UserNotificationListener.Current;
-                CurrentAccessStatus = await _listener.RequestAccessAsync();
+                CurrentAccessStatus = await _reader.RequestAccessAsync();
                 AccessStatusChanged?.Invoke(this, CurrentAccessStatus);
 
                 if (CurrentAccessStatus == UserNotificationListenerAccessStatus.Allowed)
                 {
-                    StartListening();
+                    await StartListeningAsync();
                 }
                 else
                 {
-                    LoggerService.LogWarning($"UserNotificationListener access status: {CurrentAccessStatus}");
+                    LoggerService.LogWarning($"UserNotificationListener access status: {CurrentAccessStatus}. Windows notifications cannot be captured without permission.");
                 }
             }
             catch (Exception ex)
             {
-                LoggerService.LogError("Failed to initialize UserNotificationListener", ex);
+                LoggerService.LogError("Failed to initialize NotificationService", ex);
             }
         }
 
         public async Task<UserNotificationListenerAccessStatus> RequestAccessAsync()
         {
-            if (_listener == null)
-            {
-                if (ApiInformation.IsTypePresent("Windows.UI.Notifications.Management.UserNotificationListener"))
-                {
-                    _listener = UserNotificationListener.Current;
-                }
-                else
-                {
-                    return UserNotificationListenerAccessStatus.Unspecified;
-                }
-            }
-
             try
             {
-                CurrentAccessStatus = await _listener.RequestAccessAsync();
+                CurrentAccessStatus = await _reader.RequestAccessAsync();
                 AccessStatusChanged?.Invoke(this, CurrentAccessStatus);
 
                 if (CurrentAccessStatus == UserNotificationListenerAccessStatus.Allowed && !_isListening)
                 {
-                    StartListening();
+                    await StartListeningAsync();
                 }
 
                 return CurrentAccessStatus;
@@ -99,93 +93,169 @@ namespace NotiGlow.Services
             }
         }
 
-        private void StartListening()
+        public async Task StartListeningAsync()
         {
-            if (_listener == null || _isListening) return;
+            if (_isListening) return;
 
             try
             {
-                _listener.NotificationChanged += OnNotificationChanged;
+                // Snapshot existing notifications in Action Center so historical notifications do not fire on startup
+                var existing = await _reader.GetCurrentNotificationsAsync();
+                lock (_lock)
+                {
+                    foreach (var notif in existing)
+                    {
+                        _processedNotificationIds.Add(notif.NotificationId);
+                    }
+                }
+
+                // Try native WinRT event subscription first (works if packaged/identity present)
+                bool eventSubscribed = _reader.TrySubscribeNotificationChanged(OnNativeNotificationChangedTrigger);
+
                 _isListening = true;
-                LoggerService.LogInfo("Started listening to Windows notifications.");
+                _pollCts = new CancellationTokenSource();
+
+                if (AutoStartPolling)
+                {
+                    // Start background polling loop
+                    // When native event is subscribed, polling runs at a relaxed pace (1000ms) as backup.
+                    // When native event is not available (unpackaged app), polling runs at high responsiveness (200ms).
+                    int pollIntervalMs = eventSubscribed ? 1000 : 200;
+                    _pollTask = Task.Run(() => PollingLoopAsync(pollIntervalMs, _pollCts.Token));
+
+                    LoggerService.LogInfo($"Started listening to Windows notifications (Mode: {(eventSubscribed ? "Event+BackupPoll" : "ActivePoll")}, Interval: {pollIntervalMs}ms).");
+                }
+                else
+                {
+                    LoggerService.LogInfo("Started listening to Windows notifications (Mode: ManualPolling).");
+                }
             }
             catch (Exception ex)
             {
-                LoggerService.LogError("Failed to subscribe to NotificationChanged", ex);
+                LoggerService.LogError("Failed to start listening for notifications", ex);
             }
         }
 
         public void Stop()
         {
-            if (_listener != null && _isListening)
+            if (!_isListening) return;
+
+            try
+            {
+                _isListening = false;
+                _pollCts?.Cancel();
+                _pollCts?.Dispose();
+                _pollCts = null;
+
+                _reader.UnsubscribeNotificationChanged();
+                LoggerService.LogInfo("Stopped listening to Windows notifications.");
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Error stopping NotificationService", ex);
+            }
+        }
+
+        private void OnNativeNotificationChangedTrigger()
+        {
+            _ = PollOnceAsync();
+        }
+
+        public async Task<int> PollOnceAsync()
+        {
+            try
+            {
+                var currentNotifications = await _reader.GetCurrentNotificationsAsync();
+                var newNotifications = new List<RawNotificationData>();
+
+                lock (_lock)
+                {
+                    foreach (var n in currentNotifications)
+                    {
+                        if (!_processedNotificationIds.Contains(n.NotificationId))
+                        {
+                            _processedNotificationIds.Add(n.NotificationId);
+                            newNotifications.Add(n);
+                        }
+                    }
+
+                    // Keep processed IDs collection bounded
+                    if (_processedNotificationIds.Count > 500)
+                    {
+                        var activeIds = new HashSet<uint>();
+                        foreach (var n in currentNotifications) activeIds.Add(n.NotificationId);
+
+                        _processedNotificationIds.RemoveWhere(id => !activeIds.Contains(id));
+                    }
+                }
+
+                foreach (var raw in newNotifications)
+                {
+                    ProcessNewNotification(raw);
+                }
+
+                return newNotifications.Count;
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Error executing PollOnceAsync", ex);
+                return 0;
+            }
+        }
+
+        private async Task PollingLoopAsync(int intervalMs, CancellationToken ct)
+        {
+            while (!ct.IsCancellationRequested)
             {
                 try
                 {
-                    _listener.NotificationChanged -= OnNotificationChanged;
-                    _isListening = false;
-                    LoggerService.LogInfo("Stopped listening to Windows notifications.");
+                    await PollOnceAsync();
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {
-                    LoggerService.LogError("Error unsubscribing from NotificationChanged", ex);
+                    LoggerService.LogError("Error in notification polling loop", ex);
+                }
+
+                try
+                {
+                    await Task.Delay(intervalMs, ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
                 }
             }
         }
 
-        private void OnNotificationChanged(UserNotificationListener sender, UserNotificationChangedEventArgs args)
+        private void ProcessNewNotification(RawNotificationData raw)
         {
             try
             {
-                var notification = sender.GetNotification(args.UserNotificationId);
-                if (notification == null) return;
+                LoggerService.LogInfo($"Notification detected: ID={raw.NotificationId}");
 
-                lock (_processedNotificationIds)
-                {
-                    if (_processedNotificationIds.Contains(notification.Id)) return;
-                    _processedNotificationIds.Add(notification.Id);
+                string appId = !string.IsNullOrWhiteSpace(raw.AppId) ? raw.AppId : "UnknownApp";
+                string appName = !string.IsNullOrWhiteSpace(raw.AppName) ? raw.AppName : appId;
+                string title = raw.Title ?? "";
 
-                    if (_processedNotificationIds.Count > 200)
-                    {
-                        _processedNotificationIds.Clear();
-                    }
-                }
-
-                string appId = notification.AppInfo?.AppUserModelId ?? notification.AppInfo?.Id ?? "UnknownApp";
-                string appName = notification.AppInfo?.DisplayInfo?.DisplayName ?? appId;
-
-                string title = "";
-                try
-                {
-                    var binding = notification.Notification.Visual.GetBinding(KnownNotificationBindings.ToastGeneric);
-                    if (binding != null)
-                    {
-                        var textElements = binding.GetTextElements();
-                        if (textElements != null && textElements.Count > 0)
-                        {
-                            title = textElements[0].Text;
-                        }
-                    }
-                }
-                catch
-                {
-                    // Ignore text extraction errors for privacy
-                }
+                LoggerService.LogInfo($"Notification app identified: AppId='{appId}', AppName='{appName}', Title='{title}'");
 
                 var item = new NotificationItem
                 {
                     AppId = appId,
                     AppName = appName,
                     Title = title,
-                    Timestamp = DateTime.Now
+                    Timestamp = raw.CreationTime
                 };
-
-                LoggerService.LogInfo($"Notification Detected: AppId={appId}, AppName={appName}");
 
                 NotificationReceived?.Invoke(this, item);
             }
             catch (Exception ex)
             {
-                LoggerService.LogError("Error handling NotificationChanged event", ex);
+                LoggerService.LogError($"Error processing notification ID {raw.NotificationId}", ex);
             }
         }
     }

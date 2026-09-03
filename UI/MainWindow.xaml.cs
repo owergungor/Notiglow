@@ -89,7 +89,7 @@ namespace NotiGlow.UI
             _notificationService = notificationService;
             _glowManager = glowManager;
 
-            ViewGeneral.Initialize(_settingsService, _glowManager);
+            ViewGeneral.Initialize(_settingsService, _glowManager, _notificationService);
             ViewApplications.Initialize(_profileService, _glowManager);
             ViewAppearance.Initialize(_settingsService, _glowManager);
             ViewDisplay.Initialize(_settingsService, _glowManager);

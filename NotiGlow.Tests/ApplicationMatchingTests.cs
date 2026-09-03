@@ -67,5 +67,61 @@ namespace NotiGlow.Tests
             var profile = _profileService.GetProfile("some_unknown_game.exe", "Random Game");
             Assert.IsNull(profile);
         }
+
+        [TestMethod]
+        public void GetProfile_ProfileWithExeAppId_MatchesCleanAppId()
+        {
+            var customProfile = new AppProfile
+            {
+                AppId = "claude.exe",
+                Name = "Claude",
+                ExecutablePath = @"C:\Program Files\AnthropicClaude\claude.exe",
+                Enabled = true,
+                ColorHex = "#FF5409"
+            };
+            _profileService.AddOrUpdateProfile(customProfile);
+
+            var profile = _profileService.GetProfile("claude", "Claude");
+            Assert.IsNotNull(profile);
+            Assert.AreEqual("Claude", profile.Name);
+            Assert.AreEqual("claude.exe", profile.AppId);
+        }
+
+        [TestMethod]
+        public void GetProfile_ProfileWithExeAppId_MatchesExactExeAppId()
+        {
+            var customProfile = new AppProfile
+            {
+                AppId = "claude.exe",
+                Name = "Claude",
+                ExecutablePath = @"C:\Program Files\AnthropicClaude\claude.exe",
+                Enabled = true,
+                ColorHex = "#FF5409"
+            };
+            _profileService.AddOrUpdateProfile(customProfile);
+
+            var profile = _profileService.GetProfile("claude.exe", "");
+            Assert.IsNotNull(profile);
+            Assert.AreEqual("Claude", profile.Name);
+        }
+
+        [TestMethod]
+        public void GetProfile_ProfileWithExecutablePath_MatchesAumidPackage()
+        {
+            var customProfile = new AppProfile
+            {
+                AppId = "WhatsApp.Root.exe",
+                Name = "WhatsApp.Root",
+                ExecutablePath = @"C:\Program Files\WindowsApps\5319275a.whatsappdesktop_2.2632.100.0_x64__cv1g1gvanyjgm\WhatsApp.Root.exe",
+                Enabled = true,
+                ColorHex = "#25D366"
+            };
+            _profileService.AddOrUpdateProfile(customProfile);
+
+            // AUMID contains whatsapp
+            var profile = _profileService.GetProfile("5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App", "WhatsApp");
+            Assert.IsNotNull(profile);
+            Assert.IsTrue(profile.Name == "WhatsApp" || profile.Name == "WhatsApp.Root");
+        }
     }
 }

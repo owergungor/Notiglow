@@ -86,36 +86,83 @@ namespace NotiGlow.Services
             if (string.IsNullOrWhiteSpace(appId) && string.IsNullOrWhiteSpace(appName))
                 return null;
 
-            string normalizedAppId = CleanIdentityString(appId);
-            string normalizedAppName = CleanIdentityString(appName);
+            string rawAppId = appId?.Trim() ?? string.Empty;
+            string cleanAppId = CleanIdentityString(appId ?? string.Empty);
+            string rawAppName = appName?.Trim() ?? string.Empty;
+            string cleanAppName = CleanIdentityString(appName ?? string.Empty);
 
-            // Tier 1: Exact AppId or Name match
-            var exactMatch = _profiles.FirstOrDefault(p =>
-                (!string.IsNullOrEmpty(normalizedAppId) && (p.AppId.Equals(normalizedAppId, StringComparison.OrdinalIgnoreCase) || p.Name.Equals(normalizedAppId, StringComparison.OrdinalIgnoreCase))) ||
-                (!string.IsNullOrEmpty(normalizedAppName) && (p.AppId.Equals(normalizedAppName, StringComparison.OrdinalIgnoreCase) || p.Name.Equals(normalizedAppName, StringComparison.OrdinalIgnoreCase))));
+            // Tier 1: Exact or Clean AppId / Name / ExecutablePath match
+            foreach (var p in _profiles)
+            {
+                string pAppId = p.AppId.Trim();
+                string pCleanAppId = CleanIdentityString(p.AppId);
+                string pName = p.Name.Trim();
+                string pCleanName = CleanIdentityString(p.Name);
+                string pExeName = !string.IsNullOrEmpty(p.ExecutablePath) ? Path.GetFileName(p.ExecutablePath) : string.Empty;
+                string pCleanExeName = CleanIdentityString(pExeName);
 
-            if (exactMatch != null) return exactMatch;
+                if (MatchesAny(rawAppId, pAppId, pCleanAppId, pName, pCleanName, pExeName, pCleanExeName) ||
+                    MatchesAny(cleanAppId, pAppId, pCleanAppId, pName, pCleanName, pExeName, pCleanExeName) ||
+                    MatchesAny(rawAppName, pAppId, pCleanAppId, pName, pCleanName, pExeName, pCleanExeName) ||
+                    MatchesAny(cleanAppName, pAppId, pCleanAppId, pName, pCleanName, pExeName, pCleanExeName))
+                {
+                    return p;
+                }
+            }
 
-            // Tier 2: Package Family Name / AUMID containing profile AppId (e.g. "Microsoft.WhatsApp_8wekyb3d8bbwe!App" -> "WhatsApp")
+            // Tier 2: Package Family Name / AUMID containing profile identifiers
             foreach (var profile in _profiles)
             {
-                string targetAppId = profile.AppId.ToLowerInvariant();
-                string targetName = profile.Name.ToLowerInvariant();
+                string targetAppId = CleanIdentityString(profile.AppId).ToLowerInvariant();
+                string targetName = CleanIdentityString(profile.Name).ToLowerInvariant();
+                string targetExe = !string.IsNullOrEmpty(profile.ExecutablePath)
+                    ? CleanIdentityString(Path.GetFileName(profile.ExecutablePath)).ToLowerInvariant()
+                    : string.Empty;
 
-                if (!string.IsNullOrEmpty(normalizedAppId))
+                if (!string.IsNullOrEmpty(cleanAppId))
                 {
-                    if (IsWordOrPackageMatch(normalizedAppId, targetAppId) || IsWordOrPackageMatch(normalizedAppId, targetName))
+                    if (IsWordOrPackageMatch(cleanAppId, targetAppId) ||
+                        IsWordOrPackageMatch(cleanAppId, targetName) ||
+                        (!string.IsNullOrEmpty(targetExe) && IsWordOrPackageMatch(cleanAppId, targetExe)))
+                    {
                         return profile;
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(normalizedAppName))
+                if (!string.IsNullOrEmpty(cleanAppName))
                 {
-                    if (IsWordOrPackageMatch(normalizedAppName, targetAppId) || IsWordOrPackageMatch(normalizedAppName, targetName))
+                    if (IsWordOrPackageMatch(cleanAppName, targetAppId) ||
+                        IsWordOrPackageMatch(cleanAppName, targetName) ||
+                        (!string.IsNullOrEmpty(targetExe) && IsWordOrPackageMatch(cleanAppName, targetExe)))
+                    {
                         return profile;
+                    }
+                }
+
+                // Also check if profile name/appId is contained within the rawAppId (e.g. AUMID contains "WhatsApp")
+                if (!string.IsNullOrEmpty(rawAppId))
+                {
+                    if (IsWordOrPackageMatch(rawAppId, targetAppId) ||
+                        IsWordOrPackageMatch(rawAppId, targetName) ||
+                        (!string.IsNullOrEmpty(targetExe) && IsWordOrPackageMatch(rawAppId, targetExe)))
+                    {
+                        return profile;
+                    }
                 }
             }
 
             return null;
+        }
+
+        private static bool MatchesAny(string input, params string[] candidates)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return false;
+            foreach (var candidate in candidates)
+            {
+                if (!string.IsNullOrWhiteSpace(candidate) && candidate.Equals(input, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         private static string CleanIdentityString(string input)
@@ -139,7 +186,7 @@ namespace NotiGlow.Services
             int index = source.IndexOf(target, StringComparison.OrdinalIgnoreCase);
             if (index < 0) return false;
 
-            // Ensure not a accidental partial match of unrelated word
+            // Ensure not an accidental partial match of unrelated word
             bool leftBoundary = index == 0 || !char.IsLetterOrDigit(source[index - 1]);
             bool rightBoundary = (index + target.Length == source.Length) || !char.IsLetterOrDigit(source[index + target.Length]);
 

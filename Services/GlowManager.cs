@@ -48,6 +48,8 @@ namespace NotiGlow.Services
                 return;
             }
 
+            LoggerService.LogInfo($"Profile matched: Profile='{profile.Name}', AppId='{profile.AppId}', Style={profile.Style}");
+
             if (!profile.Enabled)
             {
                 LoggerService.LogInfo($"Notification from disabled profile ignored: {profile.Name}");

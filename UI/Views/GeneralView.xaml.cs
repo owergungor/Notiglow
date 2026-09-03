@@ -13,18 +13,59 @@ namespace NotiGlow.UI.Views
     {
         private SettingsService? _settingsService;
         private GlowManager? _glowManager;
+        private NotificationService? _notificationService;
 
         public GeneralView()
         {
             InitializeComponent();
         }
 
-        public void Initialize(SettingsService settingsService, GlowManager glowManager)
+        public void Initialize(SettingsService settingsService, GlowManager glowManager, NotificationService? notificationService = null)
         {
             _settingsService = settingsService;
             _glowManager = glowManager;
+            _notificationService = notificationService;
+
+            if (_notificationService != null)
+            {
+                _notificationService.AccessStatusChanged += (s, status) => Dispatcher?.Invoke(() => UpdateListenerStatus(status));
+                UpdateListenerStatus(_notificationService.CurrentAccessStatus);
+            }
 
             LoadSettings();
+        }
+
+        private void UpdateListenerStatus(Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
+        {
+            if (status == Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Allowed)
+            {
+                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
+                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
+                TxtListenerStatus.Text = "Active & Listening";
+                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
+                BtnFixAccess.Visibility = Visibility.Collapsed;
+            }
+            else if (status == Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Denied)
+            {
+                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
+                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
+                TxtListenerStatus.Text = "Access Denied by Windows";
+                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
+                BtnFixAccess.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
+                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
+                TxtListenerStatus.Text = "Permission Required";
+                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
+                BtnFixAccess.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void BtnFixAccess_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationService.OpenWindowsNotificationSettings();
         }
 
         private void LoadSettings()
