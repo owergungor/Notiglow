@@ -27,6 +27,9 @@
   <ItemGroup>
     <Resource Include="Assets\NotiGlowLogo.png" />
     <Resource Include="Assets\NotiGlow.ico" />
+    <None Update="Assets\NotiGlow.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

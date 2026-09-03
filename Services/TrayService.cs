@@ -17,6 +17,9 @@ namespace NotiGlow.Services
         private ToolStripMenuItem _enableMenuItem = null!;
         private ToolStripMenuItem _gamingMenuItem = null!;
 
+        public bool IsVisible => _notifyIcon.Visible;
+        public Icon? CurrentIcon => _notifyIcon.Icon;
+
         public TrayService(
             SettingsService settingsService,
             Action openSettingsAction,
@@ -28,30 +31,82 @@ namespace NotiGlow.Services
             _testAnimationAction = testAnimationAction;
             _exitAppAction = exitAppAction;
 
+            var icon = LoadTrayIcon();
+
             _notifyIcon = new NotifyIcon
             {
                 Text = "NotiGlow - Ambient Notification Utility",
-                Visible = true,
-                Icon = SystemIcons.Application
+                Icon = icon
             };
-
-            try
-            {
-                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "AppIcon.ico");
-                if (File.Exists(iconPath))
-                {
-                    _notifyIcon.Icon = new Icon(iconPath);
-                }
-            }
-            catch
-            {
-                // Fallback to SystemIcons.Application
-            }
 
             BuildContextMenu();
 
             _notifyIcon.DoubleClick += (s, e) => _openSettingsAction();
             _settingsService.SettingsChanged += OnSettingsChanged;
+
+            _notifyIcon.Visible = true;
+        }
+
+        private static Icon LoadTrayIcon()
+        {
+            // 1. Try WPF Pack URI resource (embedded in assembly)
+            try
+            {
+                var uri = new Uri("pack://application:,,,/Assets/NotiGlow.ico", UriKind.Absolute);
+                var streamInfo = System.Windows.Application.GetResourceStream(uri);
+                if (streamInfo?.Stream != null)
+                {
+                    using (streamInfo.Stream)
+                    {
+                        var icon = new Icon(streamInfo.Stream);
+                        LoggerService.LogInfo("Tray icon successfully loaded from pack URI resource.");
+                        return icon;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Failed loading tray icon from pack URI: {ex.Message}");
+            }
+
+            // 2. Try file from AppDomain.CurrentDomain.BaseDirectory (safe against working directory changes)
+            try
+            {
+                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "NotiGlow.ico");
+                if (File.Exists(iconPath))
+                {
+                    var icon = new Icon(iconPath);
+                    LoggerService.LogInfo("Tray icon successfully loaded from BaseDirectory/Assets.");
+                    return icon;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Failed loading tray icon from BaseDirectory: {ex.Message}");
+            }
+
+            // 3. Try extracting associated icon from the running process executable (.exe)
+            try
+            {
+                string? exePath = Environment.ProcessPath;
+                if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
+                {
+                    var extracted = Icon.ExtractAssociatedIcon(exePath);
+                    if (extracted != null)
+                    {
+                        LoggerService.LogInfo("Tray icon successfully extracted from running process executable.");
+                        return extracted;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Failed extracting associated icon from executable: {ex.Message}");
+            }
+
+            // 4. Fallback to SystemIcons.Application
+            LoggerService.LogWarning("Falling back to SystemIcons.Application for tray icon.");
+            return SystemIcons.Application;
         }
 
         private void BuildContextMenu()
