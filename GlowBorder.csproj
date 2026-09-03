@@ -17,10 +17,16 @@
     <FileVersion>1.0.0.0</FileVersion>
     <InformationalVersion>1.0.0-rc1</InformationalVersion>
     <StartupObject>GlowBorder.Program</StartupObject>
+    <ApplicationIcon>Assets\NotiGlow.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\NotiGlowLogo.png" />
+    <Resource Include="Assets\NotiGlow.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,4 +41,10 @@
     <Page Remove="GlowBorder.Tests\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Tools\**" />
+    <EmbeddedResource Remove="Tools\**" />
+    <None Remove="Tools\**" />
+    <Page Remove="Tools\**" />
+  </ItemGroup>
 </Project>

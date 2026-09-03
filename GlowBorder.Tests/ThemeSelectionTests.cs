@@ -95,6 +95,26 @@ namespace GlowBorder.Tests
         }
 
         [TestMethod]
+        public void TitleBar_Icon_Resource_Check()
+        {
+            var assembly = typeof(GlowBorder.UI.MainWindow).Assembly;
+            using var resourceStream = assembly.GetManifestResourceStream("NotiGlow.g.resources");
+            Assert.IsNotNull(resourceStream, "NotiGlow.g.resources should exist");
+            using var reader = new System.Resources.ResourceReader(resourceStream);
+            reader.GetResourceData("assets/notiglowlogo.png", out _, out byte[] data);
+            Assert.IsNotNull(data, "assets/notiglowlogo.png should exist in assembly resources");
+            Assert.IsTrue(data.Length > 4);
+            int len = BitConverter.ToInt32(data, 0);
+            using var ms = new System.IO.MemoryStream(data, 4, len);
+            var frame = System.Windows.Media.Imaging.BitmapFrame.Create(
+                ms,
+                System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+            Assert.AreEqual(1254, frame.PixelWidth);
+            Assert.AreEqual(1254, frame.PixelHeight);
+        }
+
+        [TestMethod]
         public void NavigationViewItem_Template_Check()
         {
             var navProps = typeof(Wpf.Ui.Controls.NavigationViewItem).GetProperties();

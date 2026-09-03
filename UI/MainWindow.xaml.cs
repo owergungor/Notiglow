@@ -17,6 +17,41 @@ namespace GlowBorder.UI
         public MainWindow()
         {
             InitializeComponent();
+            InitializeTitleBarIcon();
+        }
+
+        private void InitializeTitleBarIcon()
+        {
+            try
+            {
+                var assembly = typeof(MainWindow).Assembly;
+                using var resourceStream = assembly.GetManifestResourceStream("NotiGlow.g.resources");
+                if (resourceStream != null)
+                {
+                    using var reader = new System.Resources.ResourceReader(resourceStream);
+                    reader.GetResourceData("assets/notiglowlogo.png", out _, out byte[] data);
+                    if (data != null && data.Length > 4)
+                    {
+                        int len = BitConverter.ToInt32(data, 0);
+                        using var ms = new System.IO.MemoryStream(data, 4, len);
+                        var frame = System.Windows.Media.Imaging.BitmapFrame.Create(
+                            ms,
+                            System.Windows.Media.Imaging.BitmapCreateOptions.None,
+                            System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+                        frame.Freeze();
+
+                        if (AppTitleBarIcon != null)
+                        {
+                            AppTitleBarIcon.Source = frame;
+                        }
+                        Icon = frame;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"TitleBar icon resource loading fallback: {ex.Message}");
+            }
         }
 
         protected override void OnSourceInitialized(EventArgs e)

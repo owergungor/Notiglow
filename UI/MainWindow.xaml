@@ -19,7 +19,17 @@
         </Grid.RowDefinitions>
 
         <!-- Custom TitleBar -->
-        <ui:TitleBar Grid.Row="0" Title="NotiGlow 2.0 — Ambient Notification Utility" Icon="{ui:FontIcon &#xE714;}" Foreground="{DynamicResource TextPrimary}" ButtonsForeground="{DynamicResource TextPrimary}"/>
+        <ui:TitleBar x:Name="AppTitleBar"
+                     Grid.Row="0"
+                     Title="NotiGlow 2.0 — Ambient Notification Utility"
+                     Foreground="{DynamicResource TextPrimary}"
+                     ButtonsForeground="{DynamicResource TextPrimary}">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon x:Name="AppTitleBarIcon"
+                              Source="pack://application:,,,/NotiGlow;component/Assets/NotiGlowLogo.png"
+                              Width="16" Height="16" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
         <!-- Main Content Area -->
         <Grid Grid.Row="1">
