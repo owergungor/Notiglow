@@ -1,67 +1,100 @@
-## Visual Studio / .NET / C#
-[Bb]in/
-[Oo]bj/
-[Rr]elease/
-[Dd]ebug/
-[Pp]ublish/
-[Tt]estResults/
-[Bb]uild/
-artifacts/
+# ==============================================================================
+# Curry - .gitignore
+# ==============================================================================
 
-## User-specific files & IDE configuration
-.vs/
-.idea/
-.vscode/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-*.userprefs
-*.swp
-*~
+# Node / Frontend Build & Dependencies
+node_modules/
+.svelte-kit/
+build/
+dist/
+package/
+coverage/
+.nyc_output/
+*.tsbuildinfo
 
-## Secrets, Credentials & Certificates
-.env
-.env.*
-*.pfx
-*.p12
-*.key
-*.pem
-*.cer
-*.crt
-*.secret
+# Tauri & Rust Build Artifacts
+**/target/
+**/gen/schemas/
+*.pdb
 
-## Runtime Local User Data & Configs (AppData / Local configs)
-settings.json
-profiles.json
-*.runtime.json
-
-## Build outputs, releases, installer & packages
+# Installers & Release Binaries (distributed via GitHub Releases)
+*.exe
+*.msi
 *.zip
 *.7z
 *.rar
-*.iso
-*.msi
-*.exe
-*.dll
-*.pdb
-NotiGlow-Portable.zip
-GlowBorder-Portable.zip
+*.tar.gz
+*.dmg
+*.deb
+*.appimage
 
-## OS Generated Files
-[Tt]humbs.db
-[Dd]esktop.ini
+# IDE / Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# OS-Specific Metadata
+Thumbs.db
+Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+*.directory
 
-## Logs and Temp files
+# Secrets, Credentials & Local Environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.pfx
+*.p12
+*.secret
+
+# Logs & Diagnostics
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 *.tmp
 *.temp
-startup.log
-app.log
-notiglow.log
-glowborder.log
 
-## Inno Setup output
-Output/
+# Runtime Local Storage & Data (Do not commit user data)
+settings.json
+notifications.json
+glow_settings.json
+profiles.json
+*.runtime.json
+
+# ==============================================================================
+# Legacy C# / WPF Reference Project (Preserved locally, excluded from repository)
+# ==============================================================================
+/App.xaml
+/App.xaml.cs
+/AssemblyInfo.cs
+/Assets/
+/Core/
+/Models/
+/NotiGlow-Setup.iss
+/NotiGlow.Tests/
+/NotiGlow.csproj
+/Overlay/
+/Program.cs
+/Services/
+/Tools/
+/UI/
+/[Bb]in/
+/[Oo]bj/
+/[Rr]elease/
+/[Dd]ebug/
+/[Pp]ublish/
+/[Tt]estResults/
+/Output/
