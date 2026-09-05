@@ -5,12 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-09-05
 
-### Planned for v1.1.0
-- High-resolution visual showcase assets in repository.
-- Expanded corner radius customization for screen-edge glow.
-- Additional notification filtering by priority level and DND scheduling.
+### Added
+- **Self-Contained Windows Distribution**:
+  - Fully self-contained .NET 9 single-file packaging (`NotiGlow.exe`, ~187 MB) embedding the complete runtime and managed assemblies.
+  - Native DirectX and WPF rendering libraries (`wpfgfx_cor3.dll`, `D3DCompiler_47_cor3.dll` etc.) bundled alongside the executable to prevent startup extraction lag and `%TEMP%` file locks.
+  - Target Windows 10/11 x64 systems run immediately without needing .NET Desktop Runtime, SDKs, or developer tools.
+- **Windows Installer (`NotiGlow-Setup-x64.exe`)**:
+  - Modern Inno Setup 6 dual-mode installer supporting both standard user (`PrivilegesRequired=lowest`) and administrative installations.
+  - Start Menu program group integration and optional Desktop shortcut.
+  - Clean uninstaller (`unins000.exe`) with full Windows Settings / Control Panel uninstallation support.
+  - Application settings isolated in `%APPDATA%\NotiGlow\settings.json` to prevent Program Files write-permission issues.
+- **Portable ZIP Package (`NotiGlow_1.1.0_win-x64.zip`)**:
+  - Clean zero-install standalone archive containing only essential end-user runtime files.
+- **CI/CD Release Automation Hardening**:
+  - Updated GitHub Actions workflow for automated self-contained building, Inno Setup compilation, and SHA-256 generation.
 
 ## [1.0.0] - 2026-09-05
 
@@ -44,4 +54,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inno Setup installer script (`NotiGlow-Setup.iss`).
   - GitHub Actions CI pipeline for Windows x64 .NET 9 build and unit test verification (86 tests).
 
+[1.1.0]: https://github.com/owergungor/NotiGlow/releases/tag/v1.1.0
 [1.0.0]: https://github.com/owergungor/NotiGlow/releases/tag/v1.0.0
