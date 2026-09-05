@@ -1,0 +1,32 @@
+name: NotiGlow CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test NotiGlow
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: |
+          dotnet restore NotiGlow.csproj
+          dotnet restore NotiGlow.Tests/NotiGlow.Tests.csproj
+
+      - name: Build NotiGlow (Release)
+        run: dotnet build NotiGlow.csproj -c Release --no-restore
+
+      - name: Run Unit Tests
+        run: dotnet test NotiGlow.Tests/NotiGlow.Tests.csproj -c Release --no-restore --verbosity normal
