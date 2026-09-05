@@ -83,7 +83,7 @@ jobs:
           Write-Host "Created $zipPath with SHA256: $hash"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             release/NotiGlow_*_win-x64.zip
