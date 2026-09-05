@@ -8,6 +8,7 @@ UninstallDisplayIcon={app}\NotiGlow.exe
 OutputBaseFilename=NotiGlow-Setup
 Compression=lzma2
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64compatible
 WizardStyle=modern
 
 [Tasks]

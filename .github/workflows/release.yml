@@ -33,6 +33,20 @@ jobs:
       - name: Publish NotiGlow (win-x64)
         run: dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained false -o ./publish
 
+      - name: Validate Tag Format & Publish Output
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+') {
+            Write-Error "Invalid tag format '$tag'. Expected semantic version tag like v1.1.0."
+            exit 1
+          }
+          if (-not (Test-Path "./publish/NotiGlow.exe")) {
+            Write-Error "Published executable ./publish/NotiGlow.exe was not found."
+            exit 1
+          }
+          Write-Host "Tag $tag validated and publish output confirmed."
+
       - name: Create Release Archive & Checksum
         shell: pwsh
         run: |
@@ -41,6 +55,10 @@ jobs:
           $zipName = "NotiGlow_${cleanVersion}_win-x64.zip"
 
           Compress-Archive -Path ./publish/* -DestinationPath $zipName -Force
+          if (-not (Test-Path $zipName)) {
+            Write-Error "Failed to produce release archive $zipName."
+            exit 1
+          }
           $hash = (Get-FileHash -Path $zipName -Algorithm SHA256).Hash
           "$hash  $zipName" | Out-File -FilePath "SHA256.txt" -Encoding utf8
 
