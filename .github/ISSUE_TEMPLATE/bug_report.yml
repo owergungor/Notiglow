@@ -1,0 +1,72 @@
+name: Bug Report
+description: Create a report to help us fix a bug in NotiGlow
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please provide as much detail as possible to help us investigate and reproduce the bug.
+  - type: input
+    id: version
+    attributes:
+      label: NotiGlow Version
+      description: What version of NotiGlow are you running? (e.g., v1.0.0 or commit SHA)
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: Windows Version & Build
+      description: Run `winver` in PowerShell/Command Prompt to find your build number.
+      placeholder: Windows 11 Pro 23H2 (Build 22631.3007)
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Open NotiGlow
+        2. Set animation style to 'Sweep'
+        3. Trigger a test notification from Outlook
+        4. See error or unexpected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: Logs / Screenshots
+      description: Attach relevant screenshots or paste diagnostic messages if available.
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem (e.g., multi-monitor setup, HDR mode, running game).
+    validations:
+      required: false
