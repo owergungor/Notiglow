@@ -1,14 +1,22 @@
 [Setup]
+AppId={{8B84C3F0-7613-4B94-A3D9-9C9D7881B30E}
 AppName=NotiGlow
-AppVersion=1.0.0
+AppVersion=1.1.0
 AppPublisher=NotiGlow Project
+AppPublisherURL=https://github.com/owergungor/NotiGlow
+AppSupportURL=https://github.com/owergungor/NotiGlow/issues
+AppUpdatesURL=https://github.com/owergungor/NotiGlow/releases
 DefaultDirName={autopf}\NotiGlow
 DefaultGroupName=NotiGlow
 UninstallDisplayIcon={app}\NotiGlow.exe
-OutputBaseFilename=NotiGlow-Setup
-Compression=lzma2
+OutputDir=release
+OutputBaseFilename=NotiGlow-Setup-x64
+SetupIconFile=Assets\NotiGlow.ico
+Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
 WizardStyle=modern
 
 [Tasks]

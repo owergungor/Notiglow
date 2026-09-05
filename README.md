@@ -65,36 +65,35 @@ When a notification arrives from any application (e.g., Slack, Discord, Outlook,
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Distribution
 
-### Portable Release (Recommended)
+### 1. Windows Installer (`NotiGlow-Setup-x64.exe`)
 
-1. Navigate to the [v1.0.0 GitHub Release](https://github.com/owergungor/NotiGlow/releases/tag/v1.0.0).
-2. Download **`NotiGlow_1.0.0_win-x64.zip`** ([Direct Download](https://github.com/owergungor/NotiGlow/releases/download/v1.0.0/NotiGlow_1.0.0_win-x64.zip)).
-3. Verify the file integrity:
-   - **SHA-256**: `5A152E0F3D5C8323710C878ADCF85EEC6FFB8517A2077825A0BD08772C3B3610`
-4. Extract the ZIP archive into a preferred directory (e.g., `C:\Tools\NotiGlow`).
-5. Run `NotiGlow.exe`.
+The easiest way to install and use NotiGlow on any 64-bit Windows PC:
+1. Download **`NotiGlow-Setup-x64.exe`** from the latest GitHub Release.
+2. Run the installer. It configures the application in `Program Files\NotiGlow`, creates Start Menu and optional Desktop shortcuts, and provides clean Windows Settings uninstallation.
+3. The installer includes all self-contained .NET dependencies—**no manual .NET runtime installation required**.
 
-### Windows Installer
+### 2. Portable Archive (`NotiGlow-win-x64.zip`)
 
-An Inno Setup script is included in the repository root (`NotiGlow-Setup.iss`). To compile a standalone installer on your workstation:
-1. Install [Inno Setup 6](https://jrsoftware.org/isdl.php).
-2. Run the compiler:
-   ```powershell
-   iscc NotiGlow-Setup.iss
-   ```
-3. The installer binary will be generated in `Output\NotiGlow-Setup.exe`.
+For users who prefer running NotiGlow without an installer:
+1. Download **`NotiGlow-win-x64.zip`** (or versioned `NotiGlow_1.0.0_win-x64.zip` for v1.0.0).
+2. Extract the archive into any preferred directory (e.g., `C:\Tools\NotiGlow`).
+3. Launch **`NotiGlow.exe`**.
+
+> [!NOTE]
+> **Windows SmartScreen Notice**: Because NotiGlow is an independent open-source project without a paid corporate EV Code Signing Certificate, Windows SmartScreen may present an informational message stating *"Windows protected your PC"* on initial launch. Click **More info** ➔ **Run anyway** to start the application. NotiGlow contains zero telemetry, zero trackers, and 100% locally open-source code. Procuring an official code-signing certificate is part of the project's long-term roadmap.
 
 ---
 
 ## 💻 System Requirements
 
-| Component | Minimum Requirement |
+| Component | Requirement |
 |---|---|
 | **Operating System** | Windows 11 or Windows 10 64-bit (Version 2004 / Build 19041.0+) |
 | **Architecture** | x64 |
-| **Runtime** | [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (x64) |
+| **Runtime** | **Self-Contained** (Runtime is built-in; no separate .NET install needed for self-contained packages) |
+| **Framework-Dependent Builds** | Requires [.NET 9.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (x64) |
 | **Permissions** | Windows Notification Access enabled in Windows Settings |
 
 ---

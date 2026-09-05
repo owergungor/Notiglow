@@ -30,8 +30,8 @@ jobs:
       - name: Run Unit Tests
         run: dotnet test NotiGlow.Tests/NotiGlow.Tests.csproj -c Release --no-restore
 
-      - name: Publish NotiGlow (win-x64)
-        run: dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained false -o ./publish
+      - name: Publish NotiGlow (win-x64 Self-Contained)
+        run: dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 
       - name: Validate Tag Format & Publish Output
         shell: pwsh
@@ -41,11 +41,26 @@ jobs:
             Write-Error "Invalid tag format '$tag'. Expected semantic version tag like v1.1.0."
             exit 1
           }
-          if (-not (Test-Path "./publish/NotiGlow.exe")) {
-            Write-Error "Published executable ./publish/NotiGlow.exe was not found."
+          $publishExe = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/NotiGlow.exe"
+          if (-not (Test-Path $publishExe)) {
+            Write-Error "Published executable $publishExe was not found."
             exit 1
           }
           Write-Host "Tag $tag validated and publish output confirmed."
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          $isccPath = & where.exe iscc 2>$null
+          if (-not $isccPath) {
+            $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          }
+          if (Test-Path $isccPath) {
+            Write-Host "Compiling Inno Setup installer using $isccPath..."
+            & $isccPath NotiGlow-Setup.iss
+          } else {
+            Write-Warning "Inno Setup compiler (ISCC.exe) not found; skipping installer compilation."
+          }
 
       - name: Create Release Archive & Checksum
         shell: pwsh
@@ -53,23 +68,27 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $cleanVersion = $tag.TrimStart('v')
           $zipName = "NotiGlow_${cleanVersion}_win-x64.zip"
+          $publishDir = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish"
 
-          Compress-Archive -Path ./publish/* -DestinationPath $zipName -Force
-          if (-not (Test-Path $zipName)) {
-            Write-Error "Failed to produce release archive $zipName."
+          if (-not (Test-Path "release")) { New-Item -ItemType Directory -Path "release" -Force }
+          $zipPath = "release/$zipName"
+          Compress-Archive -Path "$publishDir/*" -DestinationPath $zipPath -Force
+          if (-not (Test-Path $zipPath)) {
+            Write-Error "Failed to produce release archive $zipPath."
             exit 1
           }
-          $hash = (Get-FileHash -Path $zipName -Algorithm SHA256).Hash
-          "$hash  $zipName" | Out-File -FilePath "SHA256.txt" -Encoding utf8
+          $hash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash
+          "$hash  $zipName" | Out-File -FilePath "release/SHA256.txt" -Encoding utf8
 
-          Write-Host "Created $zipName with SHA256: $hash"
+          Write-Host "Created $zipPath with SHA256: $hash"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            NotiGlow_*_win-x64.zip
-            SHA256.txt
+            release/NotiGlow_*_win-x64.zip
+            release/NotiGlow-Setup-x64.exe
+            release/SHA256.txt
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

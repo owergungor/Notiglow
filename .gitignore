@@ -14,7 +14,8 @@
 [Oo]utput/
 
 # Release distribution archives & packages
-release/*.zip
+release/
+*.exe
 *.zip
 *.7z
 *.rar
