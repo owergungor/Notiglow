@@ -1,56 +1,49 @@
 # ==============================================================================
-# Curry - .gitignore
+# NotiGlow - .gitignore
 # ==============================================================================
 
-# Node / Frontend Build & Dependencies
-node_modules/
-.svelte-kit/
-build/
-dist/
-package/
-coverage/
-.nyc_output/
-*.tsbuildinfo
+# Build results & compiler outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Pp]ublish/
+[Ll]og/
+[Ll]ogs/
+[Tt]est[Rr]esults/
+[Oo]utput/
 
-# Tauri & Rust Build Artifacts
-**/target/
-**/gen/schemas/
-*.pdb
-
-# Installers & Release Binaries (distributed via GitHub Releases)
-*.exe
-*.msi
+# Release distribution archives & packages
+release/*.zip
 *.zip
 *.7z
 *.rar
-*.tar.gz
-*.dmg
-*.deb
-*.appimage
+*.msi
+*.nupkg
 
-# IDE / Editor Configuration
+# Visual Studio, Rider & VS Code metadata
+.vs/
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-*.suo
 *.user
 *.userosscache
-*.sln.docstates
+*.suo
 *.userprefs
+*.sln.docstates
+*.swp
+*~
 
-# OS-Specific Metadata
+# Operating System Files
 Thumbs.db
 Desktop.ini
-$RECYCLE.BIN/
 .DS_Store
+$RECYCLE.BIN/
 *.directory
 
-# Secrets, Credentials & Local Environment
+# Secrets, Environment & Credentials
 .env
 .env.*
-!.env.example
+!*.example
 *.pem
 *.key
 *.cert
@@ -58,43 +51,11 @@ $RECYCLE.BIN/
 *.p12
 *.secret
 
-# Logs & Diagnostics
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Runtime local data, diagnostics & temporary files
 *.tmp
 *.temp
+*.log
 
-# Runtime Local Storage & Data (Do not commit user data)
-settings.json
-notifications.json
-glow_settings.json
-profiles.json
-*.runtime.json
-
-# ==============================================================================
-# Legacy C# / WPF Reference Project (Preserved locally, excluded from repository)
-# ==============================================================================
-/App.xaml
-/App.xaml.cs
-/AssemblyInfo.cs
-/Assets/
-/Core/
-/Models/
-/NotiGlow-Setup.iss
-/NotiGlow.Tests/
-/NotiGlow.csproj
-/Overlay/
-/Program.cs
-/Services/
-/Tools/
-/UI/
-/[Bb]in/
-/[Oo]bj/
-/[Rr]elease/
-/[Dd]ebug/
-/[Pp]ublish/
-/[Tt]estResults/
-/Output/
+# Separate project boundaries
+tauri/
+Curry/

@@ -1,0 +1,100 @@
+<UserControl x:Class="NotiGlow.UI.Controls.EdgePreviewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="360">
+    <Border CornerRadius="8" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+        <Grid Name="PreviewGrid">
+            <!-- Simulated Screen Content -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="✨ LIVE PREVIEW ✨" Foreground="{DynamicResource TextSecondary}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="Simulated Screen Edge Glow" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Base Preview Layer -->
+            <Grid Name="PrevBaseGlowLayer" Opacity="1">
+                <!-- Preview Top Edge -->
+                <Rectangle Name="PrevTopEdge" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="15">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                            <GradientStop x:Name="PTop0" Offset="0" Color="#FF5865F2"/>
+                            <GradientStop x:Name="PTop1" Offset="1" Color="#005865F2"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- Preview Bottom Edge -->
+                <Rectangle Name="PrevBottomEdge" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="15">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                            <GradientStop x:Name="PBottom0" Offset="0" Color="#FF5865F2"/>
+                            <GradientStop x:Name="PBottom1" Offset="1" Color="#005865F2"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- Preview Left Edge -->
+                <Rectangle Name="PrevLeftEdge" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="15">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <GradientStop x:Name="PLeft0" Offset="0" Color="#FF5865F2"/>
+                            <GradientStop x:Name="PLeft1" Offset="1" Color="#005865F2"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- Preview Right Edge -->
+                <Rectangle Name="PrevRightEdge" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="15">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="1,0.5" EndPoint="0,0.5">
+                            <GradientStop x:Name="PRight0" Offset="0" Color="#FF5865F2"/>
+                            <GradientStop x:Name="PRight1" Offset="1" Color="#005865F2"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <!-- Inner Solid Line -->
+                <Border Name="PrevInnerBorder" BorderThickness="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8">
+                    <Border.BorderBrush>
+                        <SolidColorBrush x:Name="PInnerBrush" Color="#FF5865F2"/>
+                    </Border.BorderBrush>
+                </Border>
+            </Grid>
+
+            <!-- Preview Sweep Overlay -->
+            <Border Name="PrevSweepOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8" Visibility="Collapsed">
+                <Border.BorderBrush>
+                    <LinearGradientBrush x:Name="PrevSweepBrush" StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop x:Name="PSweep0" Offset="0.0" Color="#00FFFFFF"/>
+                        <GradientStop x:Name="PSweep1" Offset="0.5" Color="#FF5865F2"/>
+                        <GradientStop x:Name="PSweep2" Offset="1.0" Color="#00FFFFFF"/>
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+            </Border>
+
+            <!-- Preview Comet Overlay -->
+            <Border Name="PrevCometOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8" Visibility="Collapsed">
+                <Border.BorderBrush>
+                    <LinearGradientBrush x:Name="PrevCometBrush" StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop x:Name="PComet0" Offset="0.0" Color="#00FFFFFF"/>
+                        <GradientStop x:Name="PComet1" Offset="0.7" Color="#80FFFFFF"/>
+                        <GradientStop x:Name="PComet2" Offset="1.0" Color="#FFFFFFFF"/>
+                    </LinearGradientBrush>
+                </Border.BorderBrush>
+            </Border>
+
+            <!-- Preview Ripple Overlay -->
+            <Border Name="PrevRippleOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8" Visibility="Collapsed">
+                <Border.BorderBrush>
+                    <RadialGradientBrush x:Name="PrevRippleBrush" Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                        <GradientStop x:Name="PRipple0" Offset="0.0" Color="#FF5865F2"/>
+                        <GradientStop x:Name="PRipple1" Offset="0.5" Color="#805865F2"/>
+                        <GradientStop x:Name="PRipple2" Offset="1.0" Color="#005865F2"/>
+                    </RadialGradientBrush>
+                </Border.BorderBrush>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

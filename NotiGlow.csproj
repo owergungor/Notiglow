@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>NotiGlow</AssemblyName>
+    <AssemblyTitle>NotiGlow</AssemblyTitle>
+    <Product>NotiGlow Ambient Notification Utility</Product>
+    <Description>Transform your Windows notifications into sleek fullscreen edge glow animations</Description>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0-rc1</InformationalVersion>
+    <StartupObject>NotiGlow.Program</StartupObject>
+    <ApplicationIcon>Assets\NotiGlow.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\NotiGlowLogo.png" />
+    <Resource Include="Assets\NotiGlow.ico" />
+    <None Update="Assets\NotiGlow.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="NotiGlow.Tests\**" />
+    <EmbeddedResource Remove="NotiGlow.Tests\**" />
+    <None Remove="NotiGlow.Tests\**" />
+    <Page Remove="NotiGlow.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Tools\**" />
+    <EmbeddedResource Remove="Tools\**" />
+    <None Remove="Tools\**" />
+    <Page Remove="Tools\**" />
+  </ItemGroup>
+</Project>
