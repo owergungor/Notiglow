@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build and publish'
+        required: true
+        default: 'v1.2'
+        type: string
 
 permissions:
   contents: write
@@ -12,10 +19,14 @@ jobs:
   publish-release:
     name: Build & Publish Release
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -36,7 +47,7 @@ jobs:
       - name: Validate Tag Format & Publish Output
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = "$env:RELEASE_TAG"
           if ($tag -notmatch '^v[0-9]+\.[0-9]+$') {
             Write-Error "Invalid tag format '$tag'. Expected version tag like v1.2."
             exit 1
@@ -65,7 +76,7 @@ jobs:
       - name: Create Release Archive & Checksum
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
+          $tag = "$env:RELEASE_TAG"
           $cleanVersion = $tag.TrimStart('v')
           $zipName = "NotiGlow_${cleanVersion}_win-x64.zip"
           $publishDir = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish"
@@ -82,13 +93,38 @@ jobs:
 
           Write-Host "Created $zipPath with SHA256: $hash"
 
-      - name: Create GitHub Release
+      - name: Check Existing Release Metadata
+        shell: pwsh
+        run: |
+          $tag = "$env:RELEASE_TAG"
+          $repo = "${{ github.repository }}"
+          $token = "${{ secrets.GITHUB_TOKEN }}"
+          $headers = @{
+            "Authorization" = "token $token"
+            "Accept" = "application/vnd.github.v3+json"
+            "User-Agent" = "NotiGlow-Release-Automation"
+          }
+          try {
+            $existing = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers $headers -Method Get
+            Write-Host "Found existing release for $tag (ID: $($existing.id)). Preserving release body."
+            if ($existing.body) {
+              $existing.body | Out-File -FilePath "release_body.md" -Encoding utf8
+              "HAS_EXISTING_BODY=true" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            }
+          } catch {
+            Write-Host "No existing release found for $tag; release notes will be generated automatically."
+          }
+
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: NotiGlow ${{ env.RELEASE_TAG }}
+          body_path: ${{ env.HAS_EXISTING_BODY == 'true' && 'release_body.md' || '' }}
+          generate_release_notes: ${{ env.HAS_EXISTING_BODY != 'true' }}
           files: |
             release/NotiGlow_*_win-x64.zip
             release/NotiGlow-Setup-x64.exe
             release/SHA256.txt
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
