@@ -37,8 +37,8 @@ jobs:
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
-          if ($tag -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+') {
-            Write-Error "Invalid tag format '$tag'. Expected semantic version tag like v1.1.0."
+          if ($tag -notmatch '^v[0-9]+\.[0-9]+$') {
+            Write-Error "Invalid tag format '$tag'. Expected version tag like v1.2."
             exit 1
           }
           $publishExe = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/NotiGlow.exe"
