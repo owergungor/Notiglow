@@ -101,10 +101,10 @@ namespace NotiGlow.Tests
             thread.Join();
 
             Assert.IsNull(caughtEx, $"Failed with exception: {caughtEx}");
-            Assert.AreEqual(72.0, cmbHeight, 0.1, "CmbDefaultStyle Height should be 72px");
-            Assert.AreEqual(72.0, cmbMinHeight, 0.1, "CmbDefaultStyle MinHeight should be 72px");
+            Assert.AreEqual(48.0, cmbHeight, 0.1, "CmbDefaultStyle Height should be 48px");
+            Assert.AreEqual(48.0, cmbMinHeight, 0.1, "CmbDefaultStyle MinHeight should be 48px");
             Assert.AreEqual(System.Windows.VerticalAlignment.Center, verticalAlignment, "CmbDefaultStyle should have VerticalContentAlignment set to Center");
-            Assert.AreEqual(72.0, contentBorderHeight, 0.1, "ContentBorder template part must have explicit Height 72px");
+            Assert.AreEqual(48.0, contentBorderHeight, 0.1, "ContentBorder template part must have explicit Height 48px");
         }
     }
 }

@@ -47,8 +47,8 @@
                         </ui:CardControl.Header>
                         <ComboBox x:Name="CmbDefaultStyle"
                                   Width="165"
-                                  Height="72"
-                                  MinHeight="72"
+                                  Height="48"
+                                  MinHeight="48"
                                   VerticalAlignment="Center"
                                   SelectionChanged="Default_Changed">
                             <ComboBox.Resources>
@@ -61,17 +61,17 @@
                             </ComboBox.Resources>
                             <ComboBox.Style>
                                 <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-                                    <Setter Property="Height" Value="72"/>
-                                    <Setter Property="MinHeight" Value="72"/>
+                                    <Setter Property="Height" Value="48"/>
+                                    <Setter Property="MinHeight" Value="48"/>
                                     <Setter Property="Padding" Value="14,0,10,0"/>
                                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ComboBox">
-                                                <Grid Height="72" VerticalAlignment="Center">
+                                                <Grid Height="48" VerticalAlignment="Center">
                                                     <Border x:Name="ContentBorder"
-                                                            Height="72"
-                                                            MinHeight="72"
+                                                            Height="48"
+                                                            MinHeight="48"
                                                             Width="{TemplateBinding Width}"
                                                             Background="{TemplateBinding Background}"
                                                             BorderBrush="{TemplateBinding BorderBrush}"

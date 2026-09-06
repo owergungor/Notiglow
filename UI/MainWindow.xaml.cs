@@ -137,6 +137,11 @@ namespace NotiGlow.UI
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             InitializeActiveSelectionBoxTransform();
+            if (RootNavigationView != null)
+            {
+                RootNavigationView.PaneOpened += (s, e) => UpdateNavSelectionVisuals(_currentTag);
+                RootNavigationView.PaneClosed += (s, e) => UpdateNavSelectionVisuals(_currentTag);
+            }
             UpdateNavSelectionVisuals(_currentTag);
         }
 
@@ -247,7 +252,9 @@ namespace NotiGlow.UI
 
                     double targetTop = origin.Y;
                     double targetLeft = 6;
-                    double targetWidth = Math.Max(36, activeItem.ActualWidth - 12);
+                    double targetWidth = (RootNavigationView != null && !RootNavigationView.IsPaneOpen)
+                        ? 40
+                        : Math.Max(36, activeItem.ActualWidth - 12);
                     double targetHeight = Math.Max(32, activeItem.ActualHeight);
 
                     ActiveSelectionBox.Width = targetWidth;

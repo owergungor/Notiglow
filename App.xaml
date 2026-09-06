@@ -473,6 +473,7 @@
                 <Setter Property="Margin" Value="6,2,6,2"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="IsPaneOpen" Value="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ui:NavigationViewItem}">
@@ -503,7 +504,7 @@
                                                 Visibility="Collapsed"/>
 
                                         <!-- Content Layout (Icon + Content Text) -->
-                                        <Grid Grid.Column="1" Margin="3,0,8,0" VerticalAlignment="Center">
+                                        <Grid x:Name="ContentLayoutGrid" Grid.Column="1" Margin="3,0,8,0" VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="32"/>
                                                 <ColumnDefinition Width="*"/>
@@ -533,6 +534,30 @@
                             </Grid>
 
                             <ControlTemplate.Triggers>
+                                <!-- Collapsed Sidebar (Compact Mode): Perfectly Centered Icons & Tooltip -->
+                                <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}" Value="False">
+                                    <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.Column" Value="0"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.ColumnSpan" Value="2"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Margin" Value="0"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Setter TargetName="IconPresenter" Property="Grid.ColumnSpan" Value="2"/>
+                                    <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter TargetName="ActiveIndicator" Property="Margin" Value="2,0,0,0"/>
+                                    <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
+                                </DataTrigger>
+                                <Trigger Property="IsPaneOpen" Value="False">
+                                    <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.Column" Value="0"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.ColumnSpan" Value="2"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="Margin" Value="0"/>
+                                    <Setter TargetName="ContentLayoutGrid" Property="HorizontalAlignment" Value="Stretch"/>
+                                    <Setter TargetName="IconPresenter" Property="Grid.ColumnSpan" Value="2"/>
+                                    <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter TargetName="ActiveIndicator" Property="Margin" Value="2,0,0,0"/>
+                                    <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
+                                </Trigger>
+
                                 <!-- Inactive Items: Muted Text & Normal Weight -->
                                 <Trigger Property="IsActive" Value="False">
                                     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>

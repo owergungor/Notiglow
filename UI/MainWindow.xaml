@@ -6,7 +6,7 @@
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                   mc:Ignorable="d" 
-                  Title="NotiGlow 2.0" Height="760" Width="1140"
+                  Title="NotiGlow 1.2" Height="760" Width="1140"
                   MinHeight="600" MinWidth="900"
                   WindowStartupLocation="CenterScreen"
                   ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
@@ -21,7 +21,7 @@
         <!-- Custom TitleBar -->
         <ui:TitleBar x:Name="AppTitleBar"
                      Grid.Row="0"
-                     Title="NotiGlow 2.0 — Ambient Notification Utility"
+                     Title="NotiGlow 1.2 — Ambient Notification Utility"
                      Foreground="{DynamicResource TextPrimary}"
                      ButtonsForeground="{DynamicResource TextPrimary}">
             <ui:TitleBar.Icon>

@@ -124,6 +124,23 @@ namespace NotiGlow.Tests
         }
 
         [TestMethod]
+        public void MainWindow_TitleAndVersion_Check()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var window = new NotiGlow.UI.MainWindow();
+                Assert.AreEqual("NotiGlow 1.2", window.Title);
+                var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
+                Assert.IsNotNull(titleBar);
+                Assert.AreEqual("NotiGlow 1.2 — Ambient Notification Utility", titleBar.Title);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [TestMethod]
         public void MainWindow_SidebarSelectionOverlay_Check()
         {
             var thread = new System.Threading.Thread(() =>
@@ -132,6 +149,18 @@ namespace NotiGlow.Tests
                 var window = new NotiGlow.UI.MainWindow();
                 Assert.IsNotNull(window.SelectionOverlayCanvas, "SidebarOverlayCanvas should exist in visual tree");
                 Assert.IsNotNull(window.SelectionBox, "ActiveSelectionBox should exist in visual tree");
+
+                var navView = window.FindName("RootNavigationView") as Wpf.Ui.Controls.NavigationView;
+                var item = window.FindName("NavItemGeneral") as Wpf.Ui.Controls.NavigationViewItem;
+                Assert.IsNotNull(navView);
+                Assert.IsNotNull(item);
+
+                // Check open state
+                Assert.IsTrue(navView.IsPaneOpen);
+
+                // Toggle collapsed state
+                navView.IsPaneOpen = false;
+                Assert.IsFalse(navView.IsPaneOpen);
             });
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
             thread.Start();
