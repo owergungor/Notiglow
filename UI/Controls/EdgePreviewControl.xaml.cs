@@ -1,3 +1,4 @@
+
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,10 +14,44 @@ namespace NotiGlow.UI.Controls
     public partial class EdgePreviewControl : UserControl
     {
         private Storyboard? _previewStoryboard;
+        private bool _isAnimationPlaying = false;
 
         public EdgePreviewControl()
         {
             InitializeComponent();
+            Loaded += (s, e) => UpdateAnimationPlayback();
+            Unloaded += (s, e) => StopAnimationPlayback();
+            IsVisibleChanged += (s, e) => UpdateAnimationPlayback();
+        }
+
+        private void UpdateAnimationPlayback()
+        {
+            if (IsLoaded && IsVisible)
+            {
+                StartAnimationPlayback();
+            }
+            else
+            {
+                StopAnimationPlayback();
+            }
+        }
+
+        private void StartAnimationPlayback()
+        {
+            if (_previewStoryboard != null && !_isAnimationPlaying)
+            {
+                _previewStoryboard.Begin();
+                _isAnimationPlaying = true;
+            }
+        }
+
+        private void StopAnimationPlayback()
+        {
+            if (_previewStoryboard != null && _isAnimationPlaying)
+            {
+                _previewStoryboard.Stop();
+                _isAnimationPlaying = false;
+            }
         }
 
         public void UpdatePreview(AppProfile profile)
@@ -62,6 +97,7 @@ namespace NotiGlow.UI.Controls
             {
                 _previewStoryboard.Stop();
                 _previewStoryboard = null;
+                _isAnimationPlaying = false;
             }
 
             PrevSweepOverlay.Visibility = Visibility.Collapsed;
@@ -165,7 +201,7 @@ namespace NotiGlow.UI.Controls
                 _previewStoryboard.Children.Add(rippleAnim);
             }
 
-            _previewStoryboard.Begin();
+            UpdateAnimationPlayback();
         }
     }
 }

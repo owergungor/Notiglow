@@ -23,8 +23,12 @@ WizardStyle=modern
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "autostart"; Description: "Start NotiGlow automatically on Windows login"; GroupDescription: "System Startup:"
 
+#ifndef SourceDir
+  #define SourceDir "bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
+#endif
+
 [Files]
-Source: "bin\Release\net9.0-windows10.0.19041.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Excludes: "*.pdb"
 
 [Icons]
 Name: "{group}\NotiGlow"; Filename: "{app}\NotiGlow.exe"

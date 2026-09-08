@@ -13,9 +13,55 @@ namespace NotiGlow.UI.Views
         private GlowManager? _glowManager;
         private bool _isLoading = false;
 
+        private System.Windows.Threading.DispatcherTimer? _saveDebounceTimer;
+
         public AppearanceView()
         {
             InitializeComponent();
+            Unloaded += (s, e) => FlushPendingSave();
+            IsVisibleChanged += (s, e) =>
+            {
+                if (!IsVisible)
+                {
+                    FlushPendingSave();
+                }
+            };
+        }
+
+        private void FlushPendingSave()
+        {
+            if (_saveDebounceTimer != null && _saveDebounceTimer.IsEnabled)
+            {
+                _saveDebounceTimer.Stop();
+                if (_settingsService != null)
+                {
+                    _settingsService.Save(_settingsService.Current);
+                }
+            }
+        }
+
+        private void ScheduleSettingsSave()
+        {
+            if (_settingsService == null) return;
+
+            if (_saveDebounceTimer == null)
+            {
+                _saveDebounceTimer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(300)
+                };
+                _saveDebounceTimer.Tick += (s, e) =>
+                {
+                    _saveDebounceTimer.Stop();
+                    if (_settingsService != null)
+                    {
+                        _settingsService.Save(_settingsService.Current);
+                    }
+                };
+            }
+
+            _saveDebounceTimer.Stop();
+            _saveDebounceTimer.Start();
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null)
@@ -69,7 +115,7 @@ namespace NotiGlow.UI.Views
                 settings.DefaultStyle = style;
             }
 
-            _settingsService.Save(settings);
+            ScheduleSettingsSave();
 
             AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle);
         }

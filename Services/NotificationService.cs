@@ -203,13 +203,16 @@ namespace NotiGlow.Services
             }
         }
 
-        private async Task PollingLoopAsync(int intervalMs, CancellationToken ct)
+        private async Task PollingLoopAsync(int baseIntervalMs, CancellationToken ct)
         {
+            int consecutiveEmptyPolls = 0;
+
             while (!ct.IsCancellationRequested)
             {
+                int newCount = 0;
                 try
                 {
-                    await PollOnceAsync();
+                    newCount = await PollOnceAsync();
                 }
                 catch (OperationCanceledException)
                 {
@@ -220,9 +223,35 @@ namespace NotiGlow.Services
                     LoggerService.LogError("Error in notification polling loop", ex);
                 }
 
+                int currentIntervalMs = baseIntervalMs;
+                if (baseIntervalMs < 1000)
+                {
+                    if (newCount > 0)
+                    {
+                        consecutiveEmptyPolls = 0;
+                        currentIntervalMs = baseIntervalMs;
+                    }
+                    else
+                    {
+                        if (consecutiveEmptyPolls < 50)
+                        {
+                            consecutiveEmptyPolls++;
+                        }
+
+                        if (consecutiveEmptyPolls > 25)
+                        {
+                            currentIntervalMs = Math.Min(400, baseIntervalMs * 2);
+                        }
+                        else if (consecutiveEmptyPolls > 10)
+                        {
+                            currentIntervalMs = (int)(baseIntervalMs * 1.5);
+                        }
+                    }
+                }
+
                 try
                 {
-                    await Task.Delay(intervalMs, ct);
+                    await Task.Delay(currentIntervalMs, ct);
                 }
                 catch (OperationCanceledException)
                 {

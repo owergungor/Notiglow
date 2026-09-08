@@ -78,6 +78,114 @@ namespace NotiGlow.UI
             return IntPtr.Zero;
         }
 
+        private Views.ApplicationsView? _viewApplications;
+        public Views.ApplicationsView ViewApplications
+        {
+            get
+            {
+                if (_viewApplications == null)
+                {
+                    _viewApplications = new Views.ApplicationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_profileService != null && _glowManager != null)
+                    {
+                        _viewApplications.Initialize(_profileService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewApplications);
+                }
+                return _viewApplications;
+            }
+        }
+
+        private Views.AppearanceView? _viewAppearance;
+        public Views.AppearanceView ViewAppearance
+        {
+            get
+            {
+                if (_viewAppearance == null)
+                {
+                    _viewAppearance = new Views.AppearanceView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_settingsService != null)
+                    {
+                        _viewAppearance.Initialize(_settingsService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewAppearance);
+                }
+                return _viewAppearance;
+            }
+        }
+
+        private Views.DisplayView? _viewDisplay;
+        public Views.DisplayView ViewDisplay
+        {
+            get
+            {
+                if (_viewDisplay == null)
+                {
+                    _viewDisplay = new Views.DisplayView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_settingsService != null && _glowManager != null)
+                    {
+                        _viewDisplay.Initialize(_settingsService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewDisplay);
+                }
+                return _viewDisplay;
+            }
+        }
+
+        private Views.GamingView? _viewGaming;
+        public Views.GamingView ViewGaming
+        {
+            get
+            {
+                if (_viewGaming == null)
+                {
+                    _viewGaming = new Views.GamingView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_settingsService != null && _glowManager != null)
+                    {
+                        _viewGaming.Initialize(_settingsService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewGaming);
+                }
+                return _viewGaming;
+            }
+        }
+
+        private Views.NotificationsView? _viewNotifications;
+        public Views.NotificationsView ViewNotifications
+        {
+            get
+            {
+                if (_viewNotifications == null)
+                {
+                    _viewNotifications = new Views.NotificationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_settingsService != null && _glowManager != null)
+                    {
+                        _viewNotifications.Initialize(_settingsService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewNotifications);
+                }
+                return _viewNotifications;
+            }
+        }
+
+        private Views.AdvancedView? _viewAdvanced;
+        public Views.AdvancedView ViewAdvanced
+        {
+            get
+            {
+                if (_viewAdvanced == null)
+                {
+                    _viewAdvanced = new Views.AdvancedView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    if (_settingsService != null && _profileService != null && _glowManager != null)
+                    {
+                        _viewAdvanced.Initialize(_settingsService, _profileService, _glowManager);
+                    }
+                    RootContentGrid.Children.Add(_viewAdvanced);
+                }
+                return _viewAdvanced;
+            }
+        }
+
         public void Initialize(
             SettingsService settingsService,
             ProfileService profileService,
@@ -90,12 +198,6 @@ namespace NotiGlow.UI
             _glowManager = glowManager;
 
             ViewGeneral.Initialize(_settingsService, _glowManager, _notificationService);
-            ViewApplications.Initialize(_profileService, _glowManager);
-            ViewAppearance.Initialize(_settingsService, _glowManager);
-            ViewDisplay.Initialize(_settingsService, _glowManager);
-            ViewGaming.Initialize(_settingsService, _glowManager);
-            ViewNotifications.Initialize(_settingsService, _glowManager);
-            ViewAdvanced.Initialize(_settingsService, _profileService, _glowManager);
 
             NavigateToTag("General");
         }
@@ -175,15 +277,42 @@ namespace NotiGlow.UI
 
             UpdateNavSelectionVisuals(tag);
 
-            ViewGeneral.Visibility = string.Equals(tag, "General", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewApplications.Visibility = string.Equals(tag, "Applications", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewAppearance.Visibility = string.Equals(tag, "Appearance", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewDisplay.Visibility = string.Equals(tag, "Display", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewGaming.Visibility = string.Equals(tag, "Gaming", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewNotifications.Visibility = string.Equals(tag, "Notifications", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            ViewAdvanced.Visibility = string.Equals(tag, "Advanced", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+            bool isGeneral = string.Equals(tag, "General", StringComparison.OrdinalIgnoreCase);
+            bool isApps = string.Equals(tag, "Applications", StringComparison.OrdinalIgnoreCase);
+            bool isAppearance = string.Equals(tag, "Appearance", StringComparison.OrdinalIgnoreCase);
+            bool isDisplay = string.Equals(tag, "Display", StringComparison.OrdinalIgnoreCase);
+            bool isGaming = string.Equals(tag, "Gaming", StringComparison.OrdinalIgnoreCase);
+            bool isNotifications = string.Equals(tag, "Notifications", StringComparison.OrdinalIgnoreCase);
+            bool isAdvanced = string.Equals(tag, "Advanced", StringComparison.OrdinalIgnoreCase);
 
-            if (string.Equals(tag, "Applications", StringComparison.OrdinalIgnoreCase))
+            ViewGeneral.Visibility = isGeneral ? Visibility.Visible : Visibility.Collapsed;
+
+            if (isApps || _viewApplications != null)
+            {
+                ViewApplications.Visibility = isApps ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (isAppearance || _viewAppearance != null)
+            {
+                ViewAppearance.Visibility = isAppearance ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (isDisplay || _viewDisplay != null)
+            {
+                ViewDisplay.Visibility = isDisplay ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (isGaming || _viewGaming != null)
+            {
+                ViewGaming.Visibility = isGaming ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (isNotifications || _viewNotifications != null)
+            {
+                ViewNotifications.Visibility = isNotifications ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (isAdvanced || _viewAdvanced != null)
+            {
+                ViewAdvanced.Visibility = isAdvanced ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (isApps)
             {
                 ViewApplications.RefreshAppCards();
             }

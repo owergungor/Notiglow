@@ -84,12 +84,6 @@
             <!-- Single Authoritative Main Views Container (Expands dynamically to fill entire remaining space) -->
             <Grid Grid.Column="1" x:Name="RootContentGrid" Background="{DynamicResource WindowBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <views:GeneralView x:Name="ViewGeneral" Visibility="Visible" HorizontalAlignment="Stretch"/>
-                <views:ApplicationsView x:Name="ViewApplications" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
-                <views:AppearanceView x:Name="ViewAppearance" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
-                <views:DisplayView x:Name="ViewDisplay" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
-                <views:GamingView x:Name="ViewGaming" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
-                <views:NotificationsView x:Name="ViewNotifications" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
-                <views:AdvancedView x:Name="ViewAdvanced" Visibility="Collapsed" HorizontalAlignment="Stretch"/>
             </Grid>
         </Grid>
     </Grid>
