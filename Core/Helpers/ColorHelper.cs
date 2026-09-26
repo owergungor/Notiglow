@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Media;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
+using Point = System.Windows.Point;
 
 namespace NotiGlow.Core.Helpers
 {
@@ -56,6 +57,39 @@ namespace NotiGlow.Core.Helpers
             }
 
             return GetFallbackColor(fallbackHex);
+        }
+
+        public static bool IsRgbSpectrum(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return false;
+            var trimmed = input.Trim();
+            return string.Equals(trimmed, "RGB", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(trimmed, "#RGB", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(trimmed, "Rainbow", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static readonly Color[] RgbSpectrumColors = new[]
+        {
+            Color.FromRgb(255, 0, 77),    // Pink/Red
+            Color.FromRgb(255, 122, 0),   // Orange
+            Color.FromRgb(255, 214, 0),   // Yellow
+            Color.FromRgb(0, 230, 118),   // Green
+            Color.FromRgb(0, 229, 255),   // Cyan
+            Color.FromRgb(41, 121, 255),  // Blue
+            Color.FromRgb(124, 58, 237),  // Purple
+            Color.FromRgb(255, 0, 128),   // Magenta
+            Color.FromRgb(255, 0, 77)     // Loop back to Pink/Red
+        };
+
+        public static LinearGradientBrush CreateRainbowLinearBrush(Point startPoint, Point endPoint)
+        {
+            var brush = new LinearGradientBrush { StartPoint = startPoint, EndPoint = endPoint };
+            double step = 1.0 / (RgbSpectrumColors.Length - 1);
+            for (int i = 0; i < RgbSpectrumColors.Length; i++)
+            {
+                brush.GradientStops.Add(new GradientStop(RgbSpectrumColors[i], i * step));
+            }
+            return brush;
         }
 
         public static string ToCanonicalHex(Color color)

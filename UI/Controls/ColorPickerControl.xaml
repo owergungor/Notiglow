@@ -7,8 +7,41 @@
              mc:Ignorable="d" 
              d:DesignHeight="380" d:DesignWidth="360">
     <StackPanel>
-        <!-- Preset Color Palette Grid (6x2 Grid) -->
-        <TextBlock Text="Glow Color Palette" Foreground="{DynamicResource TextPrimary}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <!-- Preset Color Palette Grid with RGB Spectrum Button -->
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Glow Color Palette" Foreground="{DynamicResource TextPrimary}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <Border x:Name="BtnRgbOption" Grid.Column="1" Cursor="Hand" CornerRadius="6" Padding="10,4" BorderThickness="1.5" ToolTip="RGB Rainbow Spectrum Neon Effect">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#FFFF004D" Offset="0.0"/>
+                        <GradientStop Color="#FFFF7A00" Offset="0.2"/>
+                        <GradientStop Color="#FFFFD600" Offset="0.4"/>
+                        <GradientStop Color="#FF00E676" Offset="0.6"/>
+                        <GradientStop Color="#FF00E5FF" Offset="0.8"/>
+                        <GradientStop Color="#FF7C3AED" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border.BorderBrush>
+                    <SolidColorBrush Color="#FFFFFFFF"/>
+                </Border.BorderBrush>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🌈 RGB Spectrum" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <TextBlock x:Name="TxtRgbCheck" Text=" ✓" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" Visibility="Collapsed">
+                        <TextBlock.Effect>
+                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+        </Grid>
         <UniformGrid x:Name="PresetPalette" Columns="6" Margin="0,0,0,12" />
 
         <!-- Collapsible Custom Color Toggle -->
@@ -145,7 +178,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" CornerRadius="6" Height="34" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="Current Color Preview">
+                    <Border x:Name="ColorPreviewBorder" Grid.Column="0" CornerRadius="6" Height="34" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="Current Color Preview">
                         <Border.Background>
                             <SolidColorBrush x:Name="ColorPreviewBrush" Color="#FF5865F2"/>
                         </Border.Background>

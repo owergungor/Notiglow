@@ -314,8 +314,17 @@ namespace NotiGlow.UI.Animations
                     _scaleTransform = EnsureScaleTransform(element);
                 }
 
+                if (MotionPolicy.IsReduceMotion)
+                {
+                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+                    _scaleTransform.ScaleX = 1.0;
+                    _scaleTransform.ScaleY = 1.0;
+                    return;
+                }
+
                 double targetScale = pressed ? GetPressedScale(element) : 1.0;
-                int durationMs = pressed ? GetPressDurationMs(element) : GetReleaseDurationMs(element);
+                int durationMs = MotionPolicy.GetDurationMs(pressed ? GetPressDurationMs(element) : GetReleaseDurationMs(element));
 
                 var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
 

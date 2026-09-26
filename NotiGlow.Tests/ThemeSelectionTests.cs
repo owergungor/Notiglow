@@ -130,10 +130,10 @@ namespace NotiGlow.Tests
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
                 var window = new NotiGlow.UI.MainWindow();
-                Assert.AreEqual("NotiGlow 1.2", window.Title);
+                Assert.AreEqual("NotiGlow 1.4", window.Title);
                 var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
                 Assert.IsNotNull(titleBar);
-                Assert.AreEqual("NotiGlow 1.2 — Ambient Notification Utility", titleBar.Title);
+                Assert.AreEqual("NotiGlow 1.4 — Ambient Notification Utility", titleBar.Title);
             });
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
             thread.Start();

@@ -11,8 +11,8 @@ body:
     id: version
     attributes:
       label: NotiGlow Version
-      description: What version of NotiGlow are you running? (e.g., v1.0.0 or commit SHA)
-      placeholder: v1.0.0
+      description: What version of NotiGlow are you running? (e.g., v1.4 or commit SHA)
+      placeholder: v1.4
     validations:
       required: true
   - type: input

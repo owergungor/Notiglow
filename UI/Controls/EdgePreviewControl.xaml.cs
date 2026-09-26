@@ -61,7 +61,8 @@ namespace NotiGlow.UI.Controls
 
         public void UpdatePreview(string colorHex, double thickness, double glowSize, double intensity, GlowStyle style = GlowStyle.Pulse)
         {
-            Color mainColor = NotiGlow.Core.Helpers.ColorHelper.ParseColor(colorHex);
+            bool isRgb = NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(colorHex);
+            Color mainColor = isRgb ? Color.FromRgb(255, 0, 77) : NotiGlow.Core.Helpers.ColorHelper.ParseColor(colorHex);
 
             // Scale parameters for mini preview box
             double scaledGlow = Math.Clamp(glowSize / 4.0, 5, 30);
@@ -78,6 +79,15 @@ namespace NotiGlow.UI.Controls
 
             PrevInnerBorder.BorderThickness = new Thickness(scaledThickness);
 
+            if (isRgb)
+            {
+                PrevInnerBorder.BorderBrush = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 1));
+            }
+            else
+            {
+                PrevInnerBorder.BorderBrush = new SolidColorBrush(adjustedColor);
+            }
+
             PTop0.Color = adjustedColor;
             PTop1.Color = transparentColor;
 
@@ -89,8 +99,6 @@ namespace NotiGlow.UI.Controls
 
             PRight0.Color = adjustedColor;
             PRight1.Color = transparentColor;
-
-            PInnerBrush.Color = adjustedColor;
 
             // Stop previous preview animation
             if (_previewStoryboard != null)
@@ -104,6 +112,13 @@ namespace NotiGlow.UI.Controls
             PrevCometOverlay.Visibility = Visibility.Collapsed;
             PrevRippleOverlay.Visibility = Visibility.Collapsed;
             PrevBaseGlowLayer.Opacity = 1.0;
+
+            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
+            {
+                // Static preview under Reduce Motion
+                PrevBaseGlowLayer.Opacity = opacityVal;
+                return;
+            }
 
             _previewStoryboard = new Storyboard { RepeatBehavior = RepeatBehavior.Forever };
 
@@ -134,12 +149,25 @@ namespace NotiGlow.UI.Controls
             }
             else if (style == GlowStyle.Sweep)
             {
-                PrevBaseGlowLayer.Opacity = 0.25;
+                PrevBaseGlowLayer.Opacity = 0.0;
                 PrevSweepOverlay.Visibility = Visibility.Visible;
                 PrevSweepOverlay.BorderThickness = new Thickness(Math.Max(3, scaledThickness * 2));
-                PSweep0.Color = transparentColor;
-                PSweep1.Color = Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B);
-                PSweep2.Color = transparentColor;
+
+                PrevSweepBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 0.0));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.2));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.5));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(124, 58, 237), 0.8));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 1.0));
+                }
+                else
+                {
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(adjustedColor, 0.5));
+                    PrevSweepBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
 
                 var startAnim = new PointAnimation
                 {
@@ -163,12 +191,28 @@ namespace NotiGlow.UI.Controls
             }
             else if (style == GlowStyle.Comet)
             {
-                PrevBaseGlowLayer.Opacity = 0.15;
+                PrevBaseGlowLayer.Opacity = 0.0;
                 PrevCometOverlay.Visibility = Visibility.Visible;
                 PrevCometOverlay.BorderThickness = new Thickness(Math.Max(3, scaledThickness * 2));
-                PComet0.Color = transparentColor;
-                PComet1.Color = Color.FromArgb(180, mainColor.R, mainColor.G, mainColor.B);
-                PComet2.Color = Color.FromArgb(255, 255, 255, 255);
+
+                PrevCometBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.25));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.60));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.85));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Colors.White, 0.94));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 1.0));
+                }
+                else
+                {
+                    PrevCometBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(transparentColor, 0.3));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(160, mainColor.R, mainColor.G, mainColor.B), 0.7));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(Colors.White, 0.92));
+                    PrevCometBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
 
                 var cometAnim = new PointAnimation
                 {
@@ -183,22 +227,48 @@ namespace NotiGlow.UI.Controls
             }
             else if (style == GlowStyle.Ripple)
             {
-                PrevBaseGlowLayer.Opacity = 0.20;
+                PrevBaseGlowLayer.Opacity = 0.0;
                 PrevRippleOverlay.Visibility = Visibility.Visible;
-                PRipple0.Color = Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B);
-                PRipple1.Color = Color.FromArgb(120, mainColor.R, mainColor.G, mainColor.B);
-                PRipple2.Color = transparentColor;
 
-                var rippleAnim = new DoubleAnimation
+                PrevRippleBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.35));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.55));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.80));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 1.0));
+                }
+                else
+                {
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(adjustedColor, 0.5));
+                    PrevRippleBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
+
+                double aspect = ActualWidth > 0 && ActualHeight > 0 ? ActualWidth / ActualHeight : 1.77;
+
+                var rippleAnimX = new DoubleAnimation
                 {
                     From = 0.05,
                     To = 1.3,
                     Duration = TimeSpan.FromSeconds(1.5),
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
                 };
-                Storyboard.SetTarget(rippleAnim, PrevRippleBrush);
-                Storyboard.SetTargetProperty(rippleAnim, new PropertyPath(RadialGradientBrush.RadiusXProperty));
-                _previewStoryboard.Children.Add(rippleAnim);
+                Storyboard.SetTarget(rippleAnimX, PrevRippleBrush);
+                Storyboard.SetTargetProperty(rippleAnimX, new PropertyPath(RadialGradientBrush.RadiusXProperty));
+                _previewStoryboard.Children.Add(rippleAnimX);
+
+                var rippleAnimY = new DoubleAnimation
+                {
+                    From = 0.05 * aspect,
+                    To = 1.3 * aspect,
+                    Duration = TimeSpan.FromSeconds(1.5),
+                    EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                };
+                Storyboard.SetTarget(rippleAnimY, PrevRippleBrush);
+                Storyboard.SetTargetProperty(rippleAnimY, new PropertyPath(RadialGradientBrush.RadiusYProperty));
+                _previewStoryboard.Children.Add(rippleAnimY);
             }
 
             UpdateAnimationPlayback();

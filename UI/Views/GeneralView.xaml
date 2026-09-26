@@ -79,25 +79,127 @@
 
 
 
-            <!-- Card 5: Application Theme -->
+            <!-- Card 5: Application Theme Mode (Reference: 21st.dev/@ncdai/components/theme-switcher-1) -->
+            <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Theme Mode" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Choose between Windows system preference, Light, or Dark mode." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <Border Background="{DynamicResource InputBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="BtnModeSystem" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Follow Windows system theme">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Desktop24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Sistem" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="BtnModeLight" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Force Light mode">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="WeatherSunny24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Aydınlık" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="BtnModeDark" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Force Dark mode">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="WeatherMoon24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Karanlık" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
+                    </StackPanel>
+                </Border>
+            </ui:CardControl>
+
+            <!-- Card 6: Color Themes (13 Distinct Palettes) -->
             <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Theme" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Choose the application appearance theme." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="Color Theme" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Curated color systems with tailored Light and Dark variants." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <ToggleButton x:Name="BtnThemeDark" Content="Dark" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
-                    <ToggleButton x:Name="BtnThemeLight" Content="Light" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
-                    <ToggleButton x:Name="BtnThemeSystem" Content="System" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click" Margin="0,0,8,0"/>
-                    <ToggleButton x:Name="BtnThemeNightBlue" Content="Night Blue" Style="{DynamicResource ThemeToggleButtonStyle}" Click="ThemeButton_Click"/>
-                </StackPanel>
+                <WrapPanel x:Name="ColorThemesPanel" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="520">
+                    <RadioButton x:Name="ThemeStandard" GroupName="ColorThemeGroup" Tag="Standard" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Standard (Vercel)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#0070F3" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Standard" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeZen" GroupName="ColorThemeGroup" Tag="Zen" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Zen (Zen Linen)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#D97706" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Zen" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeIndigo" GroupName="ColorThemeGroup" Tag="Indigo" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Indigo (Indigo Frost)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#6366F1" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Indigo" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeSapphire" GroupName="ColorThemeGroup" Tag="Sapphire" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sapphire (Promotor Wow)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#0284C7" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sapphire" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeBurgundy" GroupName="ColorThemeGroup" Tag="Burgundy" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Burgundy (Burgundy Wine)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#9F1239" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Burgundy" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeNature" GroupName="ColorThemeGroup" Tag="Nature" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Nature (Emerald Nature)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#16A34A" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Nature" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeAmethyst" GroupName="ColorThemeGroup" Tag="Amethyst" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amethyst (Amethyst Haze)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#9333EA" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amethyst" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeMocha" GroupName="ColorThemeGroup" Tag="Mocha" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Mocha (Mocha Mousse)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#854D0E" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Mocha" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeSakura" GroupName="ColorThemeGroup" Tag="Sakura" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sakura (Sakura Dawn)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#EC4899" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sakura" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeAmber" GroupName="ColorThemeGroup" Tag="Amber" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amber (Amber Hearth)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#EA580C" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amber" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeNubank" GroupName="ColorThemeGroup" Tag="Nubank" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Nubank (Nubank Purple)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#820AD1" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Nubank" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeViolet" GroupName="ColorThemeGroup" Tag="Violet" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Violet (Violet Dusk)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#7C3AED" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Violet" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeBubblegum" GroupName="ColorThemeGroup" Tag="Bubblegum" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Bubblegum (Bubblegum Remix)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#F43F5E" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bubblegum" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </WrapPanel>
             </ui:CardControl>
-
-            <!-- Live Screen Preview -->
-            <TextBlock Text="Live Preview" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
-            <controls:EdgePreviewControl x:Name="EdgePreview" Height="190" HorizontalAlignment="Stretch"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

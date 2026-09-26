@@ -10,7 +10,41 @@ namespace NotiGlow.Models
         public bool ReduceMotion { get; set; } = false;
         public bool ReduceGlow { get; set; } = false;
         public bool OledMode { get; set; } = false;
-        public AppTheme Theme { get; set; } = AppTheme.Dark;
+        public ThemeMode ThemeMode { get; set; } = ThemeMode.Dark;
+        public ColorTheme ColorTheme { get; set; } = ColorTheme.Standard;
+        public AppTheme Theme
+        {
+            get => ThemeMode switch
+            {
+                ThemeMode.Light => AppTheme.Light,
+                ThemeMode.System => AppTheme.System,
+                _ => (ColorTheme == ColorTheme.Indigo ? AppTheme.LiquidGlass : AppTheme.Dark)
+            };
+            set
+            {
+                if (value == AppTheme.Light)
+                {
+                    ThemeMode = ThemeMode.Light;
+                }
+                else if (value == AppTheme.System)
+                {
+                    ThemeMode = ThemeMode.System;
+                }
+                else if (value == AppTheme.LiquidGlass)
+                {
+                    ThemeMode = ThemeMode.Dark;
+                    ColorTheme = ColorTheme.Indigo;
+                }
+                else
+                {
+                    ThemeMode = ThemeMode.Dark;
+                    if (ColorTheme == ColorTheme.Indigo)
+                    {
+                        ColorTheme = ColorTheme.Standard;
+                    }
+                }
+            }
+        }
         public MonitorMode MonitorMode { get; set; } = MonitorMode.ActiveMonitor;
         public BurstMode BurstMode { get; set; } = BurstMode.Restart;
         public bool DebugLogging { get; set; } = true;

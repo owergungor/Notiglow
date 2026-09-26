@@ -27,7 +27,8 @@ namespace NotiGlow.Overlay
             _onCompletedCallback = onCompleted;
             StopAnimation();
 
-            Color mainColor = NotiGlow.Core.Helpers.ColorHelper.ParseColor(profile.ColorHex);
+            bool isRgb = NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(profile.ColorHex);
+            Color mainColor = isRgb ? Color.FromRgb(255, 0, 77) : NotiGlow.Core.Helpers.ColorHelper.ParseColor(profile.ColorHex);
             Color transparentColor = Color.FromArgb(0, mainColor.R, mainColor.G, mainColor.B);
 
             // Update edge sizes & bloom layers
@@ -36,7 +37,17 @@ namespace NotiGlow.Overlay
             LeftEdge.Width = profile.GlowSize;
             RightEdge.Width = profile.GlowSize;
             InnerBorder.BorderThickness = new Thickness(profile.Thickness);
-            SpillBrush.Color = mainColor;
+
+            if (isRgb)
+            {
+                InnerBorder.BorderBrush = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 1));
+                SpillBrush.Color = Color.FromRgb(124, 58, 237);
+            }
+            else
+            {
+                InnerBorder.BorderBrush = new SolidColorBrush(mainColor);
+                SpillBrush.Color = mainColor;
+            }
 
             // Update Gradient Colors
             TopStop0.Color = mainColor;
@@ -51,15 +62,13 @@ namespace NotiGlow.Overlay
             RightStop0.Color = mainColor;
             RightStop1.Color = transparentColor;
 
-            InnerBorderBrush.Color = mainColor;
-
             double targetOpacity = Math.Clamp(profile.Intensity, 0.05, 1.0);
             int duration = Math.Max(500, (int)(profile.DurationMs / Math.Max(0.5, profile.Speed)));
 
-            StartStyleAnimation(profile.Style, targetOpacity, duration, mainColor, transparentColor);
+            StartStyleAnimation(profile.Style, targetOpacity, duration, mainColor, transparentColor, isRgb);
         }
 
-        private void StartStyleAnimation(GlowStyle style, double maxOpacity, int durationMs, Color mainColor, Color transparentColor)
+        private void StartStyleAnimation(GlowStyle style, double maxOpacity, int durationMs, Color mainColor, Color transparentColor, bool isRgb)
         {
             _currentStoryboard = new Storyboard();
             Duration duration = new Duration(TimeSpan.FromMilliseconds(durationMs));
@@ -67,6 +76,25 @@ namespace NotiGlow.Overlay
             SweepOverlay.Visibility = Visibility.Collapsed;
             CometOverlay.Visibility = Visibility.Collapsed;
             RippleOverlay.Visibility = Visibility.Collapsed;
+
+            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
+            {
+                // Reduce Motion: Static clean glow without motion/traveling animations
+                BaseGlowLayer.Opacity = 1.0;
+                DoubleAnimationUsingKeyFrames fadeFrames = new DoubleAnimationUsingKeyFrames { Duration = duration };
+                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(0.0)));
+                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(maxOpacity, KeyTime.FromPercent(0.10)));
+                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(maxOpacity, KeyTime.FromPercent(0.90)));
+                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(1.0)));
+
+                Storyboard.SetTarget(fadeFrames, this);
+                Storyboard.SetTargetProperty(fadeFrames, new PropertyPath(UserControl.OpacityProperty));
+                _currentStoryboard.Children.Add(fadeFrames);
+
+                _currentStoryboard.Completed += OnStoryboardCompleted;
+                _currentStoryboard.Begin();
+                return;
+            }
 
             if (style == GlowStyle.Pulse)
             {
@@ -101,12 +129,27 @@ namespace NotiGlow.Overlay
             }
             else if (style == GlowStyle.Sweep)
             {
-                BaseGlowLayer.Opacity = 0.20;
+                BaseGlowLayer.Opacity = 0.0; // Hide static base layer to remove artificial edge stripes
                 SweepOverlay.Visibility = Visibility.Visible;
                 SweepOverlay.BorderThickness = new Thickness(Math.Max(8, InnerBorder.BorderThickness.Left * 3));
-                SweepStop0.Color = transparentColor;
-                SweepStop1.Color = Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B);
-                SweepStop2.Color = transparentColor;
+
+                SweepGradientBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 0.0));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.15));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.35));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.50));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.65));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(124, 58, 237), 0.85));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 1.0));
+                }
+                else
+                {
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B), 0.5));
+                    SweepGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
 
                 DoubleAnimationUsingKeyFrames fadeFrames = new DoubleAnimationUsingKeyFrames { Duration = duration };
                 fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(0.0)));
@@ -143,12 +186,30 @@ namespace NotiGlow.Overlay
             }
             else if (style == GlowStyle.Comet)
             {
-                BaseGlowLayer.Opacity = 0.10;
+                BaseGlowLayer.Opacity = 0.0; // Hide static base layer to remove artificial edge stripes
                 CometOverlay.Visibility = Visibility.Visible;
                 CometOverlay.BorderThickness = new Thickness(Math.Max(10, InnerBorder.BorderThickness.Left * 3.5));
-                CometStop0.Color = transparentColor;
-                CometStop1.Color = Color.FromArgb(180, mainColor.R, mainColor.G, mainColor.B);
-                CometStop2.Color = Color.FromArgb(255, 255, 255, 255); // Brilliant white head
+
+                CometGradientBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.25));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(41, 121, 255), 0.50));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.65));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.80));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.90));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Colors.White, 0.96));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 1.0));
+                }
+                else
+                {
+                    CometGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 0.3));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(160, mainColor.R, mainColor.G, mainColor.B), 0.7));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(Colors.White, 0.92));
+                    CometGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
 
                 DoubleAnimationUsingKeyFrames fadeFrames = new DoubleAnimationUsingKeyFrames { Duration = duration };
                 fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(0.0)));
@@ -187,27 +248,46 @@ namespace NotiGlow.Overlay
             }
             else if (style == GlowStyle.Ripple)
             {
-                BaseGlowLayer.Opacity = 0.15;
+                BaseGlowLayer.Opacity = 0.0; // Hide static base layer for clean ripple wave
                 RippleOverlay.Visibility = Visibility.Visible;
                 RippleOverlay.BorderThickness = new Thickness(Math.Max(12, TopEdge.Height * 1.5));
-                RippleStop0.Color = Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B);
-                RippleStop1.Color = Color.FromArgb(140, mainColor.R, mainColor.G, mainColor.B);
-                RippleStop2.Color = transparentColor;
+
+                RippleGradientBrush.GradientStops.Clear();
+                if (isRgb)
+                {
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(124, 58, 237), 0.25));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.45));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.60));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.75));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.90));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 1.0));
+                }
+                else
+                {
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 0.0));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(255, mainColor.R, mainColor.G, mainColor.B), 0.5));
+                    RippleGradientBrush.GradientStops.Add(new GradientStop(transparentColor, 1.0));
+                }
 
                 DoubleAnimationUsingKeyFrames fadeFrames = new DoubleAnimationUsingKeyFrames { Duration = duration };
                 fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(0.0)));
                 fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(maxOpacity, KeyTime.FromPercent(0.12)));
-                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(maxOpacity * 0.7, KeyTime.FromPercent(0.65)));
+                fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(maxOpacity * 0.8, KeyTime.FromPercent(0.70)));
                 fadeFrames.KeyFrames.Add(new LinearDoubleKeyFrame(0.0, KeyTime.FromPercent(1.0)));
 
                 Storyboard.SetTarget(fadeFrames, this);
                 Storyboard.SetTargetProperty(fadeFrames, new PropertyPath(UserControl.OpacityProperty));
                 _currentStoryboard.Children.Add(fadeFrames);
 
-                // Ripple Expansion Animation (Shockwave)
+                // Aspect ratio compensation for perfectly round shockwave reaching all 4 corners simultaneously
+                double screenW = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+                double screenH = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+                double aspect = screenW / Math.Max(1.0, screenH);
+
                 DoubleAnimation rippleRadiusXAnim = new DoubleAnimation
                 {
-                    From = 0.05,
+                    From = 0.02,
                     To = 1.3,
                     Duration = new Duration(TimeSpan.FromMilliseconds(Math.Min(1400, durationMs * 0.5))),
                     RepeatBehavior = RepeatBehavior.Forever,
@@ -219,8 +299,8 @@ namespace NotiGlow.Overlay
 
                 DoubleAnimation rippleRadiusYAnim = new DoubleAnimation
                 {
-                    From = 0.05,
-                    To = 1.3,
+                    From = 0.02 * aspect,
+                    To = 1.3 * aspect,
                     Duration = new Duration(TimeSpan.FromMilliseconds(Math.Min(1400, durationMs * 0.5))),
                     RepeatBehavior = RepeatBehavior.Forever,
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }

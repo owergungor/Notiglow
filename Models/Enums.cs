@@ -45,4 +45,30 @@ namespace NotiGlow.Models
         System,
         LiquidGlass
     }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ThemeMode
+    {
+        System,
+        Light,
+        Dark
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ColorTheme
+    {
+        Standard,
+        Zen,
+        Indigo,
+        Sapphire,
+        Burgundy,
+        Nature,
+        Amethyst,
+        Mocha,
+        Sakura,
+        Amber,
+        Nubank,
+        Violet,
+        Bubblegum
+    }
 }

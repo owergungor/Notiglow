@@ -1,7 +1,7 @@
 [Setup]
 AppId={{8B84C3F0-7613-4B94-A3D9-9C9D7881B30E}
 AppName=NotiGlow
-AppVersion=1.1.0
+AppVersion=1.4
 AppPublisher=NotiGlow Project
 AppPublisherURL=https://github.com/owergungor/NotiGlow
 AppSupportURL=https://github.com/owergungor/NotiGlow/issues

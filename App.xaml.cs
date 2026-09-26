@@ -277,141 +277,27 @@ namespace NotiGlow
 
         private void ApplyTheme(AppTheme theme)
         {
-            try
+            var settings = _settingsService?.Current;
+            ColorTheme colorTheme = settings?.ColorTheme ?? ColorTheme.Standard;
+            NotiGlow.Models.ThemeMode mode = theme switch
             {
-                bool isDark = theme switch
-                {
-                    AppTheme.Light => false,
-                    AppTheme.Dark or AppTheme.LiquidGlass => true,
-                    AppTheme.System or _ => GetWindowsSystemThemeIsDark()
-                };
-
-                try
-                {
-                    ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light);
-                }
-                catch { }
-
-                var res = System.Windows.Application.Current.Resources;
-                if (theme == AppTheme.LiquidGlass)
-                {
-                    SetBrush(res, "WindowBackground", "#0C0E17");
-                    SetBrush(res, "SidebarBackground", "#141726");
-                    SetBrush(res, "CardBackground", "#1D2136");
-                    SetBrush(res, "CardBackgroundSecondary", "#171A2B");
-                    SetBrush(res, "TextPrimary", "#FFFFFF");
-                    SetBrush(res, "TextSecondary", "#C5CBE3");
-                    SetBrush(res, "TextMuted", "#868CAE");
-                    SetBrush(res, "TextDisabled", "#5A607C");
-                    SetBrush(res, "BorderColor", "#2C3352");
-                    SetBrush(res, "DividerColor", "#20253D");
-                    SetBrush(res, "InputBackground", "#151828");
-                    SetBrush(res, "InputBorder", "#2C3352");
-                    SetBrush(res, "AccentColor", "#5865F2");
-                    SetBrush(res, "ControlBackground", "#1E2238");
-                    SetBrush(res, "ControlHoverBackground", "#2A2F4C");
-                    SetBrush(res, "ControlPressedBackground", "#343A5D");
-                    SetBrush(res, "ControlDisabledBackground", "#131624");
-                    SetBrush(res, "GlassOverlay", "#1CFFFFFF");
-                    SetBrush(res, "GlassBorder", "#455865F2");
-
-                    SetBrush(res, "CardControlBorderBrush", "#2C3352");
-                    SetBrush(res, "CardControlHeaderBorderBrush", "#20253D");
-                    SetBrush(res, "CardControlSeparatorBrush", "#20253D");
-                    SetBrush(res, "ComboBoxBorderBrush", "#2C3352");
-                    SetBrush(res, "ComboBoxDropDownBackground", "#1D2136");
-                    SetBrush(res, "ComboBoxDropDownBorderBrush", "#2C3352");
-                    SetBrush(res, "NavActiveBackground", "#242A45");
-                    SetBrush(res, "NavActiveHoverBackground", "#2C3354");
-                    SetBrush(res, "NavIndicatorColor", "#5865F2");
-                    SetBrush(res, "SliderTrackBackground", "#363E5E");
-                    SetBrush(res, "SliderTrackHoverBackground", "#46507A");
-                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
-                    SetBrush(res, "SliderThumbBorder", "#5865F2");
-                }
-                else if (isDark)
-                {
-                    SetBrush(res, "WindowBackground", "#141414");
-                    SetBrush(res, "SidebarBackground", "#181818");
-                    SetBrush(res, "CardBackground", "#202020");
-                    SetBrush(res, "CardBackgroundSecondary", "#1B1B1B");
-                    SetBrush(res, "TextPrimary", "#FFFFFF");
-                    SetBrush(res, "TextSecondary", "#B8B8B8");
-                    SetBrush(res, "TextMuted", "#808080");
-                    SetBrush(res, "TextDisabled", "#555555");
-                    SetBrush(res, "BorderColor", "#383838");
-                    SetBrush(res, "DividerColor", "#282828");
-                    SetBrush(res, "InputBackground", "#1C1C1C");
-                    SetBrush(res, "InputBorder", "#383838");
-                    SetBrush(res, "AccentColor", "#5865F2");
-                    SetBrush(res, "ControlBackground", "#262626");
-                    SetBrush(res, "ControlHoverBackground", "#303030");
-                    SetBrush(res, "ControlPressedBackground", "#383838");
-                    SetBrush(res, "ControlDisabledBackground", "#181818");
-                    SetBrush(res, "GlassOverlay", "#00000000");
-                    SetBrush(res, "GlassBorder", "#383838");
-
-                    SetBrush(res, "CardControlBorderBrush", "#383838");
-                    SetBrush(res, "CardControlHeaderBorderBrush", "#282828");
-                    SetBrush(res, "CardControlSeparatorBrush", "#282828");
-                    SetBrush(res, "ComboBoxBorderBrush", "#383838");
-                    SetBrush(res, "ComboBoxDropDownBackground", "#202020");
-                    SetBrush(res, "ComboBoxDropDownBorderBrush", "#383838");
-                    SetBrush(res, "NavActiveBackground", "#2E2E2E");
-                    SetBrush(res, "NavActiveHoverBackground", "#363636");
-                    SetBrush(res, "NavIndicatorColor", "#5865F2");
-                    SetBrush(res, "SliderTrackBackground", "#404552");
-                    SetBrush(res, "SliderTrackHoverBackground", "#505668");
-                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
-                    SetBrush(res, "SliderThumbBorder", "#5865F2");
-                }
-                else
-                {
-                    SetBrush(res, "WindowBackground", "#F5F5F7");
-                    SetBrush(res, "SidebarBackground", "#F0F0F2");
-                    SetBrush(res, "CardBackground", "#FFFFFF");
-                    SetBrush(res, "CardBackgroundSecondary", "#F7F7F8");
-                    SetBrush(res, "TextPrimary", "#1A1A1A");
-                    SetBrush(res, "TextSecondary", "#5F6368");
-                    SetBrush(res, "TextMuted", "#777777");
-                    SetBrush(res, "TextDisabled", "#A0A0A0");
-                    SetBrush(res, "BorderColor", "#D9D9DE");
-                    SetBrush(res, "DividerColor", "#E2E2E7");
-                    SetBrush(res, "InputBackground", "#FFFFFF");
-                    SetBrush(res, "InputBorder", "#D9D9DE");
-                    SetBrush(res, "AccentColor", "#5865F2");
-                    SetBrush(res, "ControlBackground", "#FFFFFF");
-                    SetBrush(res, "ControlHoverBackground", "#EBEBEF");
-                    SetBrush(res, "ControlPressedBackground", "#E0E0E5");
-                    SetBrush(res, "ControlDisabledBackground", "#F0F0F2");
-                    SetBrush(res, "GlassOverlay", "#00000000");
-                    SetBrush(res, "GlassBorder", "#D9D9DE");
-
-                    SetBrush(res, "CardControlBorderBrush", "#D9D9DE");
-                    SetBrush(res, "CardControlHeaderBorderBrush", "#E2E2E7");
-                    SetBrush(res, "CardControlSeparatorBrush", "#E2E2E7");
-                    SetBrush(res, "ComboBoxBorderBrush", "#D9D9DE");
-                    SetBrush(res, "ComboBoxDropDownBackground", "#FFFFFF");
-                    SetBrush(res, "ComboBoxDropDownBorderBrush", "#D9D9DE");
-                    SetBrush(res, "NavActiveBackground", "#E6E6E6");
-                    SetBrush(res, "NavActiveHoverBackground", "#DADAE0");
-                    SetBrush(res, "NavIndicatorColor", "#5865F2");
-                    SetBrush(res, "SliderTrackBackground", "#D0D3DB");
-                    SetBrush(res, "SliderTrackHoverBackground", "#B8BAC6");
-                    SetBrush(res, "SliderThumbBackground", "#FFFFFF");
-                    SetBrush(res, "SliderThumbBorder", "#5865F2");
-                }
-            }
-            catch (Exception ex)
+                AppTheme.Light => NotiGlow.Models.ThemeMode.Light,
+                AppTheme.System => NotiGlow.Models.ThemeMode.System,
+                AppTheme.LiquidGlass => NotiGlow.Models.ThemeMode.Dark,
+                _ => NotiGlow.Models.ThemeMode.Dark
+            };
+            if (theme == AppTheme.LiquidGlass)
             {
-                LoggerService.LogError("Failed applying theme", ex);
+                colorTheme = ColorTheme.Indigo;
             }
+            ThemeService.ApplyTheme(colorTheme, mode);
         }
 
-        private static void SetBrush(ResourceDictionary res, string key, string hexColor)
+        public void ApplyCurrentSettingsTheme()
         {
-            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hexColor);
-            res[key] = new System.Windows.Media.SolidColorBrush(color);
+            if (_settingsService?.Current == null) return;
+            var settings = _settingsService.Current;
+            ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
         }
 
         private static bool GetWindowsSystemThemeIsDark()

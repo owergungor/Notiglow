@@ -5,7 +5,10 @@ using System.Windows.Controls.Primitives;
 using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
+using NotiGlow.UI.Animations;
 using UserControl = System.Windows.Controls.UserControl;
+using ThemeMode = NotiGlow.Models.ThemeMode;
+using RadioButton = System.Windows.Controls.RadioButton;
 
 namespace NotiGlow.UI.Views
 {
@@ -76,43 +79,62 @@ namespace NotiGlow.UI.Views
             MasterToggle.IsChecked = current.MasterEnabled;
             ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
             ToggleReduceAnimations.IsChecked = current.ReduceAnimations;
+            MotionPolicy.Update(current.ReduceAnimations);
 
-            UpdateThemeButtons(current.Theme);
+            // Load Theme Mode
+            BtnModeSystem.IsChecked = (current.ThemeMode == ThemeMode.System);
+            BtnModeLight.IsChecked = (current.ThemeMode == ThemeMode.Light);
+            BtnModeDark.IsChecked = (current.ThemeMode == ThemeMode.Dark);
 
-            EdgePreview.UpdatePreview(current.DefaultColorHex, current.DefaultThickness, current.DefaultGlowSize, current.DefaultIntensity, current.DefaultStyle);
+            // Load Color Theme
+            UpdateColorThemeSelection(current.ColorTheme);
         }
 
-        private void UpdateThemeButtons(AppTheme theme)
+        private void UpdateColorThemeSelection(ColorTheme colorTheme)
         {
-            BtnThemeDark.IsChecked = (theme == AppTheme.Dark);
-            BtnThemeLight.IsChecked = (theme == AppTheme.Light);
-            BtnThemeSystem.IsChecked = (theme == AppTheme.System);
-            BtnThemeNightBlue.IsChecked = (theme == AppTheme.LiquidGlass);
+            foreach (var child in ColorThemesPanel.Children)
+            {
+                if (child is RadioButton rb && rb.Tag is string tag && Enum.TryParse<ColorTheme>(tag, out var t))
+                {
+                    rb.IsChecked = (t == colorTheme);
+                }
+            }
         }
 
-        private void ThemeButton_Click(object sender, RoutedEventArgs e)
+        private void ThemeMode_Click(object sender, RoutedEventArgs e)
         {
-            if (_settingsService == null || sender is not ToggleButton clickedButton) return;
+            if (_settingsService == null) return;
 
-            AppTheme selectedTheme;
-            if (clickedButton == BtnThemeDark)
-                selectedTheme = AppTheme.Dark;
-            else if (clickedButton == BtnThemeLight)
-                selectedTheme = AppTheme.Light;
-            else if (clickedButton == BtnThemeSystem)
-                selectedTheme = AppTheme.System;
-            else if (clickedButton == BtnThemeNightBlue)
-                selectedTheme = AppTheme.LiquidGlass;
-            else
-                return;
-
-            UpdateThemeButtons(selectedTheme);
+            ThemeMode selectedMode = ThemeMode.System;
+            if (BtnModeLight.IsChecked == true)
+                selectedMode = ThemeMode.Light;
+            else if (BtnModeDark.IsChecked == true)
+                selectedMode = ThemeMode.Dark;
+            else if (BtnModeSystem.IsChecked == true)
+                selectedMode = ThemeMode.System;
 
             var settings = _settingsService.Current;
-            if (settings.Theme != selectedTheme)
+            if (settings.ThemeMode != selectedMode)
             {
-                settings.Theme = selectedTheme;
+                settings.ThemeMode = selectedMode;
                 _settingsService.Save(settings);
+                ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+            }
+        }
+
+        private void ColorTheme_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null || sender is not RadioButton clickedRb || clickedRb.Tag is not string tag) return;
+
+            if (Enum.TryParse<ColorTheme>(tag, out var selectedTheme))
+            {
+                var settings = _settingsService.Current;
+                if (settings.ColorTheme != selectedTheme)
+                {
+                    settings.ColorTheme = selectedTheme;
+                    _settingsService.Save(settings);
+                    ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+                }
             }
         }
 
@@ -162,6 +184,7 @@ namespace NotiGlow.UI.Views
             var settings = _settingsService.Current;
             settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
             _settingsService.Save(settings);
+            MotionPolicy.Update(settings.ReduceAnimations);
         }
     }
 }

@@ -130,6 +130,20 @@ namespace NotiGlow.UI.Controls
 
                 PresetPalette.Children.Add(border);
             }
+
+            BtnRgbOption.PreviewMouseLeftButtonDown += (s, e) =>
+            {
+                SelectedColorHex = "RGB";
+                UpdateVisuals("RGB");
+                e.Handled = true;
+            };
+
+            BtnRgbOption.MouseLeftButtonDown += (s, e) =>
+            {
+                SelectedColorHex = "RGB";
+                UpdateVisuals("RGB");
+                e.Handled = true;
+            };
         }
 
         private static void OnSelectedColorHexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -146,6 +160,13 @@ namespace NotiGlow.UI.Controls
             if (_isUpdating) return;
 
             string input = HexInput.Text.Trim();
+            if (NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(input))
+            {
+                SelectedColorHex = "RGB";
+                UpdateVisuals("RGB");
+                return;
+            }
+
             if (!input.StartsWith("#")) input = "#" + input;
 
             if (input.Length == 7 || input.Length == 9)
@@ -155,6 +176,7 @@ namespace NotiGlow.UI.Controls
                     Color color = (Color)ColorConverter.ConvertFromString(input);
                     _isUpdating = true;
                     SelectedColorHex = input;
+                    ColorPreviewBorder.Background = ColorPreviewBrush;
                     ColorPreviewBrush.Color = color;
                     
                     var (h, s, v) = ColorToHsv(color);
@@ -180,12 +202,31 @@ namespace NotiGlow.UI.Controls
 
         private void UpdateVisuals(string hex)
         {
+            if (NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(hex))
+            {
+                _isUpdating = true;
+                try
+                {
+                    HexInput.Text = "RGB";
+                    ColorPreviewBorder.Background = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 0));
+                    SelectedColorHex = "RGB";
+                    ColorChanged?.Invoke(this, "RGB");
+                    UpdateSelectionVisuals("RGB");
+                }
+                finally
+                {
+                    _isUpdating = false;
+                }
+                return;
+            }
+
             _isUpdating = true;
             try
             {
                 if (!hex.StartsWith("#")) hex = "#" + hex;
                 HexInput.Text = hex;
                 Color color = (Color)ColorConverter.ConvertFromString(hex);
+                ColorPreviewBorder.Background = ColorPreviewBrush;
                 ColorPreviewBrush.Color = color;
 
                 var (h, s, v) = ColorToHsv(color);
@@ -212,11 +253,16 @@ namespace NotiGlow.UI.Controls
 
         private void UpdateSelectionVisuals(string selectedHex)
         {
+            bool isRgb = NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(selectedHex);
+            TxtRgbCheck.Visibility = isRgb ? Visibility.Visible : Visibility.Collapsed;
+            BtnRgbOption.BorderThickness = isRgb ? new Thickness(2.5) : new Thickness(1.0);
+            BtnRgbOption.BorderBrush = isRgb ? Brushes.White : new SolidColorBrush(Color.FromArgb(140, 255, 255, 255));
+
             foreach (var child in PresetPalette.Children)
             {
                 if (child is Border b && b.Tag is string hex)
                 {
-                    bool isSelected = hex.Equals(selectedHex, StringComparison.OrdinalIgnoreCase);
+                    bool isSelected = !isRgb && hex.Equals(selectedHex, StringComparison.OrdinalIgnoreCase);
                     b.BorderThickness = isSelected ? new Thickness(3) : new Thickness(1.5);
                     if (isSelected)
                     {

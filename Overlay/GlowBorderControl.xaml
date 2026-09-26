@@ -66,7 +66,7 @@
         </Grid>
 
         <!-- Dynamic Overlay: Sweep Light Beam -->
-        <Border Name="SweepOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
+        <Border Name="SweepOverlay" CornerRadius="8" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
             <Border.BorderBrush>
                 <LinearGradientBrush x:Name="SweepGradientBrush" StartPoint="0,0" EndPoint="1,1">
                     <GradientStop x:Name="SweepStop0" Offset="0.0" Color="#00FFFFFF"/>
@@ -77,22 +77,24 @@
         </Border>
 
         <!-- Dynamic Overlay: Comet Travelling Head & Trail -->
-        <Border Name="CometOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
+        <Border Name="CometOverlay" CornerRadius="8" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
             <Border.BorderBrush>
                 <LinearGradientBrush x:Name="CometGradientBrush" StartPoint="0,0" EndPoint="1,0">
                     <GradientStop x:Name="CometStop0" Offset="0.0" Color="#00FFFFFF"/>
-                    <GradientStop x:Name="CometStop1" Offset="0.7" Color="#80FFFFFF"/>
-                    <GradientStop x:Name="CometStop2" Offset="1.0" Color="#FFFFFFFF"/>
+                    <GradientStop x:Name="CometStop1" Offset="0.3" Color="#00FFFFFF"/>
+                    <GradientStop x:Name="CometStop2" Offset="0.7" Color="#80FFFFFF"/>
+                    <GradientStop x:Name="CometStop3" Offset="0.92" Color="#FFFFFFFF"/>
+                    <GradientStop x:Name="CometStop4" Offset="1.0" Color="#00FFFFFF"/>
                 </LinearGradientBrush>
             </Border.BorderBrush>
         </Border>
 
         <!-- Dynamic Overlay: Ripple Expanding Radial Wave -->
-        <Border Name="RippleOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
+        <Border Name="RippleOverlay" CornerRadius="8" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Visibility="Collapsed">
             <Border.BorderBrush>
                 <RadialGradientBrush x:Name="RippleGradientBrush" Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
-                    <GradientStop x:Name="RippleStop0" Offset="0.0" Color="#FF5865F2"/>
-                    <GradientStop x:Name="RippleStop1" Offset="0.5" Color="#805865F2"/>
+                    <GradientStop x:Name="RippleStop0" Offset="0.0" Color="#005865F2"/>
+                    <GradientStop x:Name="RippleStop1" Offset="0.5" Color="#FF5865F2"/>
                     <GradientStop x:Name="RippleStop2" Offset="1.0" Color="#005865F2"/>
                 </RadialGradientBrush>
             </Border.BorderBrush>
