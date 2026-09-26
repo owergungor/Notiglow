@@ -79,8 +79,10 @@
                 <Border.BorderBrush>
                     <LinearGradientBrush x:Name="PrevCometBrush" StartPoint="0,0" EndPoint="1,0">
                         <GradientStop x:Name="PComet0" Offset="0.0" Color="#00FFFFFF"/>
-                        <GradientStop x:Name="PComet1" Offset="0.7" Color="#80FFFFFF"/>
-                        <GradientStop x:Name="PComet2" Offset="1.0" Color="#FFFFFFFF"/>
+                        <GradientStop x:Name="PComet1" Offset="0.3" Color="#00FFFFFF"/>
+                        <GradientStop x:Name="PComet2" Offset="0.7" Color="#80FFFFFF"/>
+                        <GradientStop x:Name="PComet3" Offset="0.92" Color="#FFFFFFFF"/>
+                        <GradientStop x:Name="PComet4" Offset="1.0" Color="#00FFFFFF"/>
                     </LinearGradientBrush>
                 </Border.BorderBrush>
             </Border>
@@ -89,8 +91,8 @@
             <Border Name="PrevRippleOverlay" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" CornerRadius="8" Visibility="Collapsed">
                 <Border.BorderBrush>
                     <RadialGradientBrush x:Name="PrevRippleBrush" Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
-                        <GradientStop x:Name="PRipple0" Offset="0.0" Color="#FF5865F2"/>
-                        <GradientStop x:Name="PRipple1" Offset="0.5" Color="#805865F2"/>
+                        <GradientStop x:Name="PRipple0" Offset="0.0" Color="#005865F2"/>
+                        <GradientStop x:Name="PRipple1" Offset="0.5" Color="#FF5865F2"/>
                         <GradientStop x:Name="PRipple2" Offset="1.0" Color="#005865F2"/>
                     </RadialGradientBrush>
                 </Border.BorderBrush>

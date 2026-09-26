@@ -223,8 +223,16 @@ namespace NotiGlow.UI
         private void AnimateActiveSelectionBoxPress(bool pressed)
         {
             if (_activeSelectionBoxScale == null) return;
+            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
+            {
+                _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+                _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+                _activeSelectionBoxScale.ScaleX = 1.0;
+                _activeSelectionBoxScale.ScaleY = 1.0;
+                return;
+            }
             double targetScale = pressed ? 0.97 : 1.0;
-            int duration = pressed ? 80 : 115;
+            int duration = NotiGlow.UI.Animations.MotionPolicy.GetDurationMs(pressed ? 80 : 115);
             var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
             var anim = new System.Windows.Media.Animation.DoubleAnimation
             {

@@ -255,6 +255,88 @@
                 </Setter>
             </Style>
 
+            <!-- Modern Segmented Theme Switcher RadioButton Style (Reference: 21st.dev/@ncdai/components/theme-switcher-1) -->
+            <Style x:Key="SegmentedThemeRadioButtonStyle" TargetType="{x:Type RadioButton}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Padding" Value="14,6"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RadioButton}">
+                            <Border x:Name="Bd"
+                                    CornerRadius="6"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="1"
+                                    BorderBrush="Transparent"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardBackground}"/>
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter TargetName="Bd" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.15" Color="#000000"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Color Theme Chip RadioButton Style (13 Color Themes) -->
+            <Style x:Key="ColorThemeChipRadioButtonStyle" TargetType="{x:Type RadioButton}">
+                <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="Padding" Value="10,5"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RadioButton}">
+                            <Border x:Name="Bd"
+                                    CornerRadius="8"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlBackground}"/>
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="Bd" Property="BorderThickness" Value="1.5"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Modern Windows 11 Fluent Theme ToggleButton Style -->
             <Style x:Key="ThemeToggleButtonStyle" TargetType="{x:Type ToggleButton}">
                 <Setter Property="animations:ButtonPressAnimationBehavior.IsEnabled" Value="True"/>

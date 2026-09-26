@@ -10,8 +10,8 @@ Only the latest stable release line receives security patches and updates:
 
 | Version | Supported |
 |---|---|
-| 1.0.x | :white_check_mark: |
-| < 1.0.0 | :x: |
+| >= 1.0 | :white_check_mark: |
+| < 1.0 | :x: |
 
 ---
 

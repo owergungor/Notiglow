@@ -12,6 +12,7 @@
 [Ll]ogs/
 [Tt]est[Rr]esults/
 [Oo]utput/
+scratch/
 
 # Release distribution archives & packages
 release/

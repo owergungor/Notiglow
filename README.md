@@ -7,11 +7,11 @@
 Transform standard Windows desktop toast notifications into smooth, elegant, and non-intrusive screen perimeter lighting animations.
 
 [![CI](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml/badge.svg)](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml)
-[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.0.0)
+[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.4)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D4?style=flat&logo=windows&logoColor=white)](https://microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-13-239120?style=flat&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
-[![Tests](https://img.shields.io/badge/Tests-86%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
+[![Tests](https://img.shields.io/badge/Tests-87%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 
 </div>
@@ -61,7 +61,7 @@ When a notification arrives from any application (e.g., Slack, Discord, Outlook,
 ## 📸 Screenshots / Visuals
 
 > [!NOTE]
-> *High-resolution screenshots and animated demonstration GIFs of the settings dashboard and ambient edge lighting effects will be published here in the upcoming v1.1.0 media showcase.*
+> *High-resolution screenshots and animated demonstration GIFs of the settings dashboard and ambient edge lighting effects are featured in our releases showcase.*
 
 ---
 
@@ -77,7 +77,7 @@ The easiest way to install and use NotiGlow on any 64-bit Windows PC:
 ### 2. Portable Archive (`NotiGlow-win-x64.zip`)
 
 For users who prefer running NotiGlow without an installer:
-1. Download **`NotiGlow-win-x64.zip`** (or versioned `NotiGlow_1.0.0_win-x64.zip` for v1.0.0).
+1. Download **`NotiGlow-win-x64.zip`** (or versioned `NotiGlow_1.4_win-x64.zip`).
 2. Extract the archive into any preferred directory (e.g., `C:\Tools\NotiGlow`).
 3. Launch **`NotiGlow.exe`**.
 
@@ -311,5 +311,9 @@ Copyright &copy; 2026 [owergungor](https://github.com/owergungor).
 
 ## 🚀 Releases
 
-The latest production release is available on the [Releases](https://github.com/owergungor/NotiGlow/releases/tag/v1.0.0) page:
-- **v1.0.0**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.0.0)
+The latest production release is available on the [Releases](https://github.com/owergungor/NotiGlow/releases) page:
+- **v1.4**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.4)
+- **v1.3**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.3)
+- **v1.2**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.2)
+- **v1.1**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.1)
+- **v1.0**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.0)

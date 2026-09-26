@@ -1,0 +1,67 @@
+<UserControl x:Class="NotiGlow.UI.Controls.SkeletonLoadingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600"
+             IsHitTestVisible="False">
+    <Grid Margin="24">
+        <StackPanel>
+            <!-- Title Bar Skeleton -->
+            <Border Height="28" Width="220" CornerRadius="6" HorizontalAlignment="Left" Margin="0,0,0,10" Background="{DynamicResource SkeletonShimmerBase}">
+                <Border.OpacityMask>
+                    <LinearGradientBrush x:Name="ShimmerMask0" StartPoint="-1,0" EndPoint="0,0">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="0.5"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.OpacityMask>
+            </Border>
+
+            <!-- Subtitle Skeleton -->
+            <Border Height="16" Width="380" CornerRadius="4" HorizontalAlignment="Left" Margin="0,0,0,28" Background="{DynamicResource SkeletonShimmerBase}">
+                <Border.OpacityMask>
+                    <LinearGradientBrush x:Name="ShimmerMask1" StartPoint="-1,0" EndPoint="0,0">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="0.5"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.OpacityMask>
+            </Border>
+
+            <!-- Card 1 Skeleton -->
+            <Border Height="72" CornerRadius="10" Margin="0,0,0,14" Background="{DynamicResource SkeletonShimmerBase}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Border.OpacityMask>
+                    <LinearGradientBrush x:Name="ShimmerMask2" StartPoint="-1,0" EndPoint="0,0">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="0.5"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.OpacityMask>
+            </Border>
+
+            <!-- Card 2 Skeleton -->
+            <Border Height="72" CornerRadius="10" Margin="0,0,0,14" Background="{DynamicResource SkeletonShimmerBase}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Border.OpacityMask>
+                    <LinearGradientBrush x:Name="ShimmerMask3" StartPoint="-1,0" EndPoint="0,0">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="0.5"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.OpacityMask>
+            </Border>
+
+            <!-- Card 3 Skeleton -->
+            <Border Height="72" CornerRadius="10" Margin="0,0,0,14" Background="{DynamicResource SkeletonShimmerBase}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                <Border.OpacityMask>
+                    <LinearGradientBrush x:Name="ShimmerMask4" StartPoint="-1,0" EndPoint="0,0">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#FF000000" Offset="0.5"/>
+                        <GradientStop Color="#80000000" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.OpacityMask>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>
