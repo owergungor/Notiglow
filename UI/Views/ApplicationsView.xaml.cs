@@ -73,7 +73,8 @@ namespace NotiGlow.UI.Views
                 Thickness = profile.Thickness,
                 GlowSize = profile.GlowSize,
                 Style = profile.Style,
-                Priority = profile.Priority
+                Priority = profile.Priority,
+                Category = profile.Category
             };
             _isNewProfile = isNew;
 

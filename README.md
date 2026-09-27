@@ -7,11 +7,11 @@
 Transform standard Windows desktop toast notifications into smooth, elegant, and non-intrusive screen perimeter lighting animations.
 
 [![CI](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml/badge.svg)](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml)
-[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.4)
+[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.5)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D4?style=flat&logo=windows&logoColor=white)](https://microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-13-239120?style=flat&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
-[![Tests](https://img.shields.io/badge/Tests-87%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
+[![Tests](https://img.shields.io/badge/Tests-93%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 
 </div>
@@ -275,8 +275,8 @@ The published binary files will be generated in:
 ## 🧪 Testing
 
 NotiGlow includes an automated unit test suite built with **MSTest**:
-- **86 tests currently passing** (0 failed, 0 skipped).
-- Tests validate notification deduplication windows, color conversion models, profile matching logic, game detection rules, and settings migration.
+- **93 tests currently passing** (0 failed, 0 skipped).
+- Tests validate notification deduplication windows, color conversion models, profile matching logic, game detection rules, settings migration, RGB spectrum rendering, and ripple geometry.
 
 ---
 
@@ -312,6 +312,7 @@ Copyright &copy; 2026 [owergungor](https://github.com/owergungor).
 ## 🚀 Releases
 
 The latest production release is available on the [Releases](https://github.com/owergungor/NotiGlow/releases) page:
+- **v1.5**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.5)
 - **v1.4**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.4)
 - **v1.3**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.3)
 - **v1.2**: [Release Notes & Downloads](https://github.com/owergungor/NotiGlow/releases/tag/v1.2)

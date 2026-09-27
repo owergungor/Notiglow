@@ -110,13 +110,13 @@ namespace NotiGlow.UI.Animations
             try
             {
                 EventManager.RegisterClassHandler(
-                    typeof(ButtonBase),
+                    typeof(System.Windows.Controls.Button),
                     UIElement.PreviewMouseLeftButtonDownEvent,
                     new System.Windows.Input.MouseButtonEventHandler(OnGlobalPreviewMouseDown),
                     true);
 
                 EventManager.RegisterClassHandler(
-                    typeof(Wpf.Ui.Controls.NavigationViewItem),
+                    typeof(Wpf.Ui.Controls.Button),
                     UIElement.PreviewMouseLeftButtonDownEvent,
                     new System.Windows.Input.MouseButtonEventHandler(OnGlobalPreviewMouseDown),
                     true);
@@ -130,6 +130,11 @@ namespace NotiGlow.UI.Animations
         private static bool IsExcluded(UIElement element)
         {
             if (element is Wpf.Ui.Controls.TitleBarButton) return true;
+            if (element is Wpf.Ui.Controls.NavigationViewItem) return true;
+            if (element is System.Windows.Controls.RadioButton) return true;
+            if (element is System.Windows.Controls.CheckBox) return true;
+            if (element is System.Windows.Controls.Panel) return true;
+            if (element is System.Windows.Controls.ItemsControl) return true;
 
             try
             {
@@ -278,22 +283,46 @@ namespace NotiGlow.UI.Animations
 
             private void OnPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
-                Animate(true);
+                if (!_elementRef.TryGetTarget(out var element)) return;
+
+                // ButtonBase instances are driven authoritatively by ButtonBase.IsPressed property changes
+                if (element is ButtonBase) return;
+
+                // For non-ButtonBase elements explicitly attached: ensure click originated on element
+                if (e.OriginalSource is DependencyObject orig)
+                {
+                    DependencyObject? cur = orig;
+                    while (cur != null && cur != element)
+                    {
+                        if (cur is ButtonBase) return; // Do not animate parent if a child button was clicked
+                        cur = VisualTreeHelper.GetParent(cur);
+                    }
+                    Animate(true);
+                }
             }
 
             private void OnPreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
-                Animate(false);
+                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
+                {
+                    Animate(false);
+                }
             }
 
             private void OnMouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
             {
-                Animate(false);
+                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
+                {
+                    Animate(false);
+                }
             }
 
             private void OnLostMouseCapture(object sender, System.Windows.Input.MouseEventArgs e)
             {
-                Animate(false);
+                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
+                {
+                    Animate(false);
+                }
             }
 
             private void Animate(bool pressed)

@@ -195,7 +195,10 @@ namespace NotiGlow.Services
 
         public void AddOrUpdateProfile(AppProfile profile)
         {
-            var existing = _profiles.FirstOrDefault(p => p.AppId.Equals(profile.AppId, StringComparison.OrdinalIgnoreCase));
+            var existing = _profiles.FirstOrDefault(p =>
+                p.AppId.Equals(profile.AppId, StringComparison.OrdinalIgnoreCase) ||
+                CleanIdentityString(p.AppId).Equals(CleanIdentityString(profile.AppId), StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrEmpty(profile.Name) && p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase)));
             if (existing != null)
             {
                 _profiles.Remove(existing);
@@ -220,12 +223,21 @@ namespace NotiGlow.Services
         {
             return new List<AppProfile>
             {
-                new AppProfile { AppId = "Discord", Name = "Discord", Enabled = true, ColorHex = "#5865F2", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "WhatsApp", Name = "WhatsApp", Enabled = true, ColorHex = "#25D366", DurationMs = 3000, Intensity = 0.75, Thickness = 4, GlowSize = 25, Style = GlowStyle.Ambient },
-                new AppProfile { AppId = "Steam", Name = "Steam", Enabled = true, ColorHex = "#66C0F4", DurationMs = 5000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "Spotify", Name = "Spotify", Enabled = true, ColorHex = "#1DB954", DurationMs = 3000, Intensity = 0.70, Thickness = 4, GlowSize = 25, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "Telegram", Name = "Telegram", Enabled = true, ColorHex = "#24A1DE", DurationMs = 4000, Intensity = 0.75, Thickness = 4, GlowSize = 30, Style = GlowStyle.Sweep },
-                new AppProfile { AppId = "MSTeams", Name = "Microsoft Teams", Enabled = true, ColorHex = "#6264A7", DurationMs = 4000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse }
+                // Ready AI Desktop Applications
+                new AppProfile { AppId = "Claude", Name = "Claude", Category = "AI Assistants", Enabled = true, ColorHex = "#D97757", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
+                new AppProfile { AppId = "OpenAI.ChatGPT", Name = "ChatGPT", Category = "AI Assistants", Enabled = true, ColorHex = "#10A37F", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Sweep },
+                new AppProfile { AppId = "Microsoft.Copilot", Name = "Microsoft Copilot", Category = "AI Assistants", Enabled = true, ColorHex = "#0F6CBD", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Comet },
+                new AppProfile { AppId = "Google.Gemini", Name = "Google Gemini", Category = "AI Assistants", Enabled = true, ColorHex = "#4E88F5", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Ambient },
+
+                // Messaging & Collaboration
+                new AppProfile { AppId = "Discord", Name = "Discord", Category = "Messaging", Enabled = true, ColorHex = "#5865F2", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
+                new AppProfile { AppId = "WhatsApp", Name = "WhatsApp", Category = "Messaging", Enabled = true, ColorHex = "#25D366", DurationMs = 3000, Intensity = 0.75, Thickness = 4, GlowSize = 25, Style = GlowStyle.Ambient },
+                new AppProfile { AppId = "Telegram", Name = "Telegram", Category = "Messaging", Enabled = true, ColorHex = "#24A1DE", DurationMs = 4000, Intensity = 0.75, Thickness = 4, GlowSize = 30, Style = GlowStyle.Sweep },
+                new AppProfile { AppId = "MSTeams", Name = "Microsoft Teams", Category = "Messaging", Enabled = true, ColorHex = "#6264A7", DurationMs = 4000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
+
+                // Gaming & Media
+                new AppProfile { AppId = "Steam", Name = "Steam", Category = "Gaming", Enabled = true, ColorHex = "#66C0F4", DurationMs = 5000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
+                new AppProfile { AppId = "Spotify", Name = "Spotify", Category = "Media", Enabled = true, ColorHex = "#1DB954", DurationMs = 3000, Intensity = 0.70, Thickness = 4, GlowSize = 25, Style = GlowStyle.Pulse }
             };
         }
     }

@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5] - 2026-09-27
+
+### Added
+- **AI Desktop Applications Integration**:
+  - Expanded ready application profiles with built-in configurations for Claude, ChatGPT, Microsoft Copilot, and Google Gemini.
+  - Native Windows identity resolver integration mapping official AUMIDs, MSIX package identities, and process identifiers without fragile title substrings.
+  - Added application `Category` classification ("AI Assistants", "Messaging", "Gaming", "Media").
+  - RGB spectrum visualization for color badges in application profile cards.
+
+### Fixed
+- **Button Click / Press Animation Target Isolation**:
+  - Confined press/click animations strictly to genuine clickable `Button` targets.
+  - Eliminated unwanted scaling and click feedback on parent containers, cards, grids, stack panels, and sidebar navigation blocks (`NavigationViewItem`).
+- **RGB Spectrum Full Glow Rendering**:
+  - Fixed issue where only a thin outer border showed RGB while the glow area fell back to static red.
+  - Applied the continuous animated RGB spectrum brush across all glow bloom layers (top, bottom, left, right edge blooms, ambient spill, and inner border).
+- **Ripple Radial Shockwave Animation**:
+  - Re-architected Ripple animation into an expanding annular shockwave expanding from screen center to the edges.
+  - Dynamic aspect-ratio compensation ensuring perfectly circular waves across ultrawide, square, and vertical monitors without clipping or edge distortions.
+- **Enhanced Comet Animation**:
+  - Boosted Comet visibility with a brilliant nucleus head, glowing bloom layer, and rich trailing tail.
+  - Full RGB spectrum and theme color compatibility with smooth perimeter motion.
+- **Enhanced Sweep Beam Animation**:
+  - Replaced thin 1px stripe with a wide, luminous light beam featuring feathered glow transitions (dark → soft glow → vibrant core → bright sweep peak → dark) and ambient bloom.
+- **Collapsed Sidebar Icon Centering**:
+  - Resolved sidebar icon misalignment when collapsed; icons now align perfectly along horizontal and vertical centers in compact mode.
+
 ## [1.4] - 2026-09-26
 
 ### Added

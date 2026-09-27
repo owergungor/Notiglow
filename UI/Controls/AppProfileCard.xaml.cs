@@ -28,11 +28,20 @@ namespace NotiGlow.UI.Controls
         {
             Profile = profile;
             TxtAppName.Text = profile.Name;
-            TxtDetails.Text = $"{profile.FormattedDuration} • {profile.FormattedIntensity} • {profile.Style} • Priority: {profile.Priority}";
+            string categoryPrefix = !string.IsNullOrEmpty(profile.Category) ? $"{profile.Category} • " : string.Empty;
+            TxtDetails.Text = $"{categoryPrefix}{profile.FormattedDuration} • {profile.FormattedIntensity} • {profile.Style} • Priority: {profile.Priority}";
             ToggleEnabled.IsChecked = profile.Enabled;
 
-            Color c = ColorHelper.ParseColor(profile.ColorHex);
-            ColorBadgeBrush.Color = c;
+            if (ColorHelper.IsRgbSpectrum(profile.ColorHex))
+            {
+                ColorBadge.Background = ColorHelper.CreateRainbowLinearBrush(new System.Windows.Point(0, 0), new System.Windows.Point(1, 1));
+            }
+            else
+            {
+                Color c = ColorHelper.ParseColor(profile.ColorHex);
+                ColorBadgeBrush.Color = c;
+                ColorBadge.Background = ColorBadgeBrush;
+            }
         }
 
         private void BtnPreview_Click(object sender, RoutedEventArgs e)
