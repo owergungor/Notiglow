@@ -88,7 +88,7 @@ namespace NotiGlow.UI
                     _viewApplications = new Views.ApplicationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
                     if (_profileService != null && _glowManager != null)
                     {
-                        _viewApplications.Initialize(_profileService, _glowManager);
+                        _viewApplications.Initialize(_profileService, _glowManager, _settingsService);
                     }
                     RootContentGrid.Children.Add(_viewApplications);
                 }

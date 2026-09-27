@@ -200,6 +200,12 @@ namespace NotiGlow
                 // Start notification listener asynchronously (non-blocking for app startup)
                 _ = InitializeNotificationServiceAsync();
 
+                // Check for updates asynchronously in background if enabled
+                if (_settingsService.Current.AutoCheckUpdates)
+                {
+                    _ = CheckForUpdatesInBackgroundAsync();
+                }
+
                 LoggerService.LogStartupPhase("READY");
             }
             catch (Exception ex)
@@ -219,6 +225,21 @@ namespace NotiGlow
             {
                 LoggerService.LogError("Notification service initialization failed", ex);
                 LoggerService.LogStartupPhase("Notification service initialized (failed)");
+            }
+        }
+
+        private async System.Threading.Tasks.Task CheckForUpdatesInBackgroundAsync()
+        {
+            try
+            {
+                // Delay 5 seconds after startup to ensure zero impact on boot/initial render
+                await System.Threading.Tasks.Task.Delay(5000);
+                var updater = new UpdateService(_settingsService);
+                await updater.CheckForUpdatesAsync();
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"Background update check failed: {ex.Message}");
             }
         }
 

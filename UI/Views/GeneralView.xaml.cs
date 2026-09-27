@@ -88,6 +88,13 @@ namespace NotiGlow.UI.Views
 
             // Load Color Theme
             UpdateColorThemeSelection(current.ColorTheme);
+
+            // Load Auto Update Settings
+            ToggleAutoUpdates.IsChecked = current.AutoCheckUpdates;
+            if (current.LastUpdateCheck.HasValue)
+            {
+                TxtUpdateStatus.Text = $"Current: v{UpdateService.CurrentVersionString} • Last check: {current.LastUpdateCheck.Value.ToLocalTime():yyyy-MM-dd HH:mm}";
+            }
         }
 
         private void UpdateColorThemeSelection(ColorTheme colorTheme)
@@ -185,6 +192,109 @@ namespace NotiGlow.UI.Views
             settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
             _settingsService.Save(settings);
             MotionPolicy.Update(settings.ReduceAnimations);
+        }
+
+        private void ToggleAutoUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+            settings.AutoCheckUpdates = ToggleAutoUpdates.IsChecked == true;
+            _settingsService.Save(settings);
+        }
+
+        private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+
+            BtnCheckUpdates.IsEnabled = false;
+            TxtUpdateStatus.Text = "Checking for updates...";
+            PbUpdateProgress.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                var updater = new UpdateService(_settingsService);
+                updater.StatusChanged += (s, ev) =>
+                {
+                    Dispatcher?.Invoke(() =>
+                    {
+                        TxtUpdateStatus.Text = ev.Message;
+                        if (ev.Status == UpdateStatus.Downloading)
+                        {
+                            PbUpdateProgress.Visibility = Visibility.Visible;
+                            PbUpdateProgress.Value = ev.Progress;
+                        }
+                    });
+                };
+
+                var info = await updater.CheckForUpdatesAsync();
+
+                if (info.IsUpdateAvailable)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"A new version (v{info.LatestVersion}) of NotiGlow is available!\n\n" +
+                        $"Would you like to download, verify, and automatically install the update now?",
+                        "Update Available",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Question);
+
+                    if (result == System.Windows.MessageBoxResult.Yes)
+                    {
+                        PbUpdateProgress.Visibility = Visibility.Visible;
+                        PbUpdateProgress.Value = 0;
+
+                        var progress = new Progress<double>(p =>
+                        {
+                            PbUpdateProgress.Value = p;
+                        });
+
+                        string? packagePath = await updater.DownloadAndVerifyPackageAsync(info, progress);
+
+                        if (!string.IsNullOrEmpty(packagePath) && System.IO.File.Exists(packagePath))
+                        {
+                            TxtUpdateStatus.Text = $"Update ready. Installing...";
+                            var installPrompt = System.Windows.MessageBox.Show(
+                                $"NotiGlow v{info.LatestVersion} downloaded and verified successfully!\n\n" +
+                                "The application will now close, apply the update, and automatically restart. Proceed?",
+                                "Ready to Install",
+                                System.Windows.MessageBoxButton.OKCancel,
+                                System.Windows.MessageBoxImage.Information);
+
+                            if (installPrompt == System.Windows.MessageBoxResult.OK)
+                            {
+                                UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
+                                {
+                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        if (System.Windows.Application.Current is App myApp)
+                                        {
+                                            myApp.ExitApplication();
+                                        }
+                                        else
+                                        {
+                                            System.Windows.Application.Current.Shutdown();
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    TxtUpdateStatus.Text = $"NotiGlow v{UpdateService.CurrentVersionString} is up to date.";
+                    PbUpdateProgress.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                TxtUpdateStatus.Text = "Update check failed.";
+                PbUpdateProgress.Visibility = Visibility.Collapsed;
+                LoggerService.LogWarning($"Update check error: {ex.Message}");
+            }
+            finally
+            {
+                BtnCheckUpdates.IsEnabled = true;
+            }
         }
     }
 }

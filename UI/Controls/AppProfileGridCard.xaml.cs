@@ -9,7 +9,7 @@ using Color = System.Windows.Media.Color;
 
 namespace NotiGlow.UI.Controls
 {
-    public partial class AppProfileCard : UserControl
+    public partial class AppProfileGridCard : UserControl
     {
         public AppProfile? Profile { get; private set; }
 
@@ -19,7 +19,7 @@ namespace NotiGlow.UI.Controls
         public event EventHandler<AppProfile>? PreviewRequested;
         public event EventHandler<AppProfile>? ToggleChanged;
 
-        public AppProfileCard()
+        public AppProfileGridCard()
         {
             InitializeComponent();
         }
@@ -28,8 +28,10 @@ namespace NotiGlow.UI.Controls
         {
             Profile = profile;
             TxtAppName.Text = profile.Name;
-            string categoryPrefix = !string.IsNullOrEmpty(profile.Category) ? $"{profile.Category} • " : string.Empty;
-            TxtDetails.Text = $"{categoryPrefix}{profile.FormattedDuration} • {profile.FormattedIntensity} • {profile.Style} • Priority: {profile.Priority}";
+            TxtCategory.Text = !string.IsNullOrEmpty(profile.Category) ? profile.Category : "Application";
+            TxtDurationAndIntensity.Text = $"{profile.FormattedDuration} • {profile.FormattedIntensity}";
+            TxtStyle.Text = profile.Style.ToString();
+            TxtPriority.Text = profile.Priority.ToString();
             ToggleEnabled.IsChecked = profile.Enabled;
 
             if (ColorHelper.IsRgbSpectrum(profile.ColorHex))

@@ -27,6 +27,33 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Hero UI Segmented View Switcher: List vs Grid -->
+                <Border Background="{DynamicResource InputBackground}"
+                        BorderBrush="{DynamicResource BorderColor}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="2"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="RbListView"
+                                     Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
+                                     Content="List"
+                                     IsChecked="True"
+                                     Click="RbViewMode_Click"
+                                     ToolTip="List View"
+                                     Height="28"
+                                     Padding="10,4"/>
+                        <RadioButton x:Name="RbGridView"
+                                     Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
+                                     Content="Grid"
+                                     Click="RbViewMode_Click"
+                                     ToolTip="Grid View"
+                                     Height="28"
+                                     Padding="10,4"/>
+                    </StackPanel>
+                </Border>
+
                 <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Add a new custom application profile" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
@@ -43,11 +70,16 @@
             </StackPanel>
         </Grid>
 
-        <!-- Main Content Area: App List vs Edit Drawer Overlay -->
+        <!-- Main Content Area: App List / Grid vs Edit Drawer Overlay -->
         <Grid Grid.Row="2">
             <!-- App Profile List ScrollViewer -->
             <ScrollViewer x:Name="ListScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel x:Name="PnlAppCards" HorizontalAlignment="Stretch"/>
+            </ScrollViewer>
+
+            <!-- App Profile Grid ScrollViewer -->
+            <ScrollViewer x:Name="GridScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
+                <WrapPanel x:Name="PnlAppGridCards" HorizontalAlignment="Stretch"/>
             </ScrollViewer>
 
             <!-- Edit / Add Profile Dialog Drawer Overlay -->

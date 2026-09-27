@@ -45,6 +45,22 @@ namespace NotiGlow.Services
 
     public static class ThemeService
     {
+        public static readonly IReadOnlyList<ColorTheme> CanonicalThemes = new[]
+        {
+            ColorTheme.Standard,
+            ColorTheme.Zen,
+            ColorTheme.Amber,
+            ColorTheme.Mocha,
+            ColorTheme.Burgundy,
+            ColorTheme.Sakura,
+            ColorTheme.Bubblegum,
+            ColorTheme.Amethyst,
+            ColorTheme.Violet,
+            ColorTheme.Indigo,
+            ColorTheme.Sapphire,
+            ColorTheme.Nature
+        };
+
         private static readonly Dictionary<(ColorTheme, bool), ThemePalette> Palettes = new();
         private static readonly Dictionary<string, SolidColorBrush> BrushCache = new();
 
@@ -451,70 +467,70 @@ namespace NotiGlow.Services
                 SkeletonShimmerHighlight = "#E7F4EB"
             };
 
-            // 7. Amethyst (Amethyst Haze)
+            // Amethyst (formerly Nubank palette: Royal Purple)
             Palettes[(ColorTheme.Amethyst, true)] = new ThemePalette
             {
-                WindowBackground = "#120A1E",
-                SidebarBackground = "#180F27",
-                CardBackground = "#221636",
-                CardBackgroundSecondary = "#1D122F",
-                TextPrimary = "#F4EEFD",
-                TextSecondary = "#BCA6DC",
-                TextMuted = "#8369A8",
-                TextDisabled = "#543E73",
-                BorderColor = "#3B255D",
-                AccentColor = "#9333EA",
-                ControlBackground = "#2B1C44",
-                ControlHoverBackground = "#382559",
-                ControlPressedBackground = "#462E6E",
-                ControlDisabledBackground = "#180F27",
-                InputBackground = "#160D25",
-                InputBorder = "#3B255D",
-                DividerColor = "#301D4C",
-                NavActiveBackground = "#332052",
-                NavActiveHoverBackground = "#3E2764",
-                NavIndicatorColor = "#9333EA",
-                SliderTrackBackground = "#51357D",
-                SliderTrackHoverBackground = "#6B46A5",
-                SliderThumbBackground = "#F4EEFD",
-                SliderThumbBorder = "#9333EA",
-                SliderActiveTrackBackground = "#9333EA",
-                DropdownHoverBackground = "#382559",
-                DropdownSelectedBackground = "#9333EA",
-                SkeletonShimmerBase = "#2E1D49",
-                SkeletonShimmerHighlight = "#452C6E"
+                WindowBackground = "#11091A",
+                SidebarBackground = "#1A0E28",
+                CardBackground = "#241437",
+                CardBackgroundSecondary = "#1F1130",
+                TextPrimary = "#FAF5FF",
+                TextSecondary = "#C4A6E8",
+                TextMuted = "#8865B3",
+                TextDisabled = "#563A7A",
+                BorderColor = "#3E2360",
+                AccentColor = "#820AD1",
+                ControlBackground = "#2D1945",
+                ControlHoverBackground = "#3C225B",
+                ControlPressedBackground = "#4C2B74",
+                ControlDisabledBackground = "#1A0E28",
+                InputBackground = "#170D23",
+                InputBorder = "#3E2360",
+                DividerColor = "#341C52",
+                NavActiveBackground = "#361D53",
+                NavActiveHoverBackground = "#45256A",
+                NavIndicatorColor = "#820AD1",
+                SliderTrackBackground = "#572F85",
+                SliderTrackHoverBackground = "#703DAC",
+                SliderThumbBackground = "#FAF5FF",
+                SliderThumbBorder = "#820AD1",
+                SliderActiveTrackBackground = "#820AD1",
+                DropdownHoverBackground = "#3C225B",
+                DropdownSelectedBackground = "#820AD1",
+                SkeletonShimmerBase = "#301B4B",
+                SkeletonShimmerHighlight = "#4A2A73"
             };
             Palettes[(ColorTheme.Amethyst, false)] = new ThemePalette
             {
                 WindowBackground = "#F8F3FD",
-                SidebarBackground = "#F1E6FB",
+                SidebarBackground = "#F1E3FC",
                 CardBackground = "#FFFFFF",
-                CardBackgroundSecondary = "#F5ECFC",
-                TextPrimary = "#240B3B",
-                TextSecondary = "#68418E",
-                TextMuted = "#9F7DBF",
-                TextDisabled = "#CBB4E3",
-                BorderColor = "#E4CEF8",
-                AccentColor = "#7E22CE",
+                CardBackgroundSecondary = "#F5EBFC",
+                TextPrimary = "#2B0847",
+                TextSecondary = "#6D2E9C",
+                TextMuted = "#9E67C9",
+                TextDisabled = "#C8A3E7",
+                BorderColor = "#E2C4FA",
+                AccentColor = "#7B0ABA",
                 ControlBackground = "#FFFFFF",
-                ControlHoverBackground = "#ECD9F9",
-                ControlPressedBackground = "#DEC7F4",
-                ControlDisabledBackground = "#F1E6FB",
+                ControlHoverBackground = "#ECCFFB",
+                ControlPressedBackground = "#E0B7F8",
+                ControlDisabledBackground = "#F1E3FC",
                 InputBackground = "#FFFFFF",
-                InputBorder = "#E4CEF8",
-                DividerColor = "#E5C9F7",
-                NavActiveBackground = "#E7D1F8",
-                NavActiveHoverBackground = "#D9BFF0",
-                NavIndicatorColor = "#7E22CE",
-                SliderTrackBackground = "#CDA5F0",
-                SliderTrackHoverBackground = "#B17FE0",
+                InputBorder = "#E2C4FA",
+                DividerColor = "#E5C2F9",
+                NavActiveBackground = "#E8CEFA",
+                NavActiveHoverBackground = "#D7B5F3",
+                NavIndicatorColor = "#7B0ABA",
+                SliderTrackBackground = "#CEA2F4",
+                SliderTrackHoverBackground = "#B27FE0",
                 SliderThumbBackground = "#FFFFFF",
-                SliderThumbBorder = "#7E22CE",
-                SliderActiveTrackBackground = "#7E22CE",
-                DropdownHoverBackground = "#ECD9F9",
-                DropdownSelectedBackground = "#7E22CE",
-                SkeletonShimmerBase = "#E3CEF5",
-                SkeletonShimmerHighlight = "#F5E9FC"
+                SliderThumbBorder = "#7B0ABA",
+                SliderActiveTrackBackground = "#7B0ABA",
+                DropdownHoverBackground = "#ECCFFB",
+                DropdownSelectedBackground = "#7B0ABA",
+                SkeletonShimmerBase = "#E0C4F7",
+                SkeletonShimmerHighlight = "#F5E8FD"
             };
 
             // 8. Mocha (Mocha Mousse)
@@ -715,71 +731,6 @@ namespace NotiGlow.Services
                 SkeletonShimmerHighlight = "#FFF4CE"
             };
 
-            // 11. Nubank
-            Palettes[(ColorTheme.Nubank, true)] = new ThemePalette
-            {
-                WindowBackground = "#11091A",
-                SidebarBackground = "#1A0E28",
-                CardBackground = "#241437",
-                CardBackgroundSecondary = "#1F1130",
-                TextPrimary = "#FAF5FF",
-                TextSecondary = "#C4A6E8",
-                TextMuted = "#8865B3",
-                TextDisabled = "#563A7A",
-                BorderColor = "#3E2360",
-                AccentColor = "#820AD1",
-                ControlBackground = "#2D1945",
-                ControlHoverBackground = "#3C225B",
-                ControlPressedBackground = "#4C2B74",
-                ControlDisabledBackground = "#1A0E28",
-                InputBackground = "#170D23",
-                InputBorder = "#3E2360",
-                DividerColor = "#341C52",
-                NavActiveBackground = "#361D53",
-                NavActiveHoverBackground = "#45256A",
-                NavIndicatorColor = "#820AD1",
-                SliderTrackBackground = "#572F85",
-                SliderTrackHoverBackground = "#703DAC",
-                SliderThumbBackground = "#FAF5FF",
-                SliderThumbBorder = "#820AD1",
-                SliderActiveTrackBackground = "#820AD1",
-                DropdownHoverBackground = "#3C225B",
-                DropdownSelectedBackground = "#820AD1",
-                SkeletonShimmerBase = "#301B4B",
-                SkeletonShimmerHighlight = "#4A2A73"
-            };
-            Palettes[(ColorTheme.Nubank, false)] = new ThemePalette
-            {
-                WindowBackground = "#F8F3FD",
-                SidebarBackground = "#F1E3FC",
-                CardBackground = "#FFFFFF",
-                CardBackgroundSecondary = "#F5EBFC",
-                TextPrimary = "#2B0847",
-                TextSecondary = "#6D2E9C",
-                TextMuted = "#9E67C9",
-                TextDisabled = "#C8A3E7",
-                BorderColor = "#E2C4FA",
-                AccentColor = "#7B0ABA",
-                ControlBackground = "#FFFFFF",
-                ControlHoverBackground = "#ECCFFB",
-                ControlPressedBackground = "#E0B7F8",
-                ControlDisabledBackground = "#F1E3FC",
-                InputBackground = "#FFFFFF",
-                InputBorder = "#E2C4FA",
-                DividerColor = "#E5C2F9",
-                NavActiveBackground = "#E8CEFA",
-                NavActiveHoverBackground = "#D7B5F3",
-                NavIndicatorColor = "#7B0ABA",
-                SliderTrackBackground = "#CEA2F4",
-                SliderTrackHoverBackground = "#B27FE0",
-                SliderThumbBackground = "#FFFFFF",
-                SliderThumbBorder = "#7B0ABA",
-                SliderActiveTrackBackground = "#7B0ABA",
-                DropdownHoverBackground = "#ECCFFB",
-                DropdownSelectedBackground = "#7B0ABA",
-                SkeletonShimmerBase = "#E0C4F7",
-                SkeletonShimmerHighlight = "#F5E8FD"
-            };
 
             // 12. Violet (Violet Dusk)
             Palettes[(ColorTheme.Violet, true)] = new ThemePalette

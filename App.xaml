@@ -50,6 +50,63 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
             </Style>
 
+            <!-- Hero UI / Modern Rounded ToolTip Style -->
+            <Style TargetType="{x:Type ToolTip}">
+                <Setter Property="Background" Value="{DynamicResource CardBackground}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="HasDropShadow" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="10" ShadowDepth="3" Opacity="0.25" Color="#000000"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Hero UI Close Button Style -->
+            <Style x:Key="HeroCloseButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                <Setter Property="Width" Value="32"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Bd" CornerRadius="8" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                <ui:SymbolIcon Symbol="Dismiss24" FontSize="14" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlPressedBackground}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Fluent Rounded ComboBoxItem Style -->
             <Style TargetType="{x:Type ComboBoxItem}">
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
@@ -548,7 +605,6 @@
 
             <!-- Fluent Windows 11 Task Manager Style NavigationViewItem Style -->
             <Style TargetType="{x:Type ui:NavigationViewItem}">
-                <Setter Property="animations:ButtonPressAnimationBehavior.IsEnabled" Value="True"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="MinHeight" Value="40"/>
@@ -567,50 +623,37 @@
                                         IsHitTestVisible="False"
                                         SnapsToDevicePixels="True">
                                     <Grid IsHitTestVisible="False">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
                                         <!-- Windows 11 Task Manager Left Slim Vertical Indicator Bar (3x24px) -->
                                         <Border x:Name="ActiveIndicator"
-                                                Grid.Column="0"
                                                 Width="3"
                                                 Height="24"
                                                 CornerRadius="1.5"
-                                                Margin="3,0,0,0"
+                                                Margin="2,0,0,0"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Center"
                                                 Background="{DynamicResource NavIndicatorColor}"
                                                 Opacity="0"
                                                 Visibility="Collapsed"/>
 
-                                        <!-- Content Layout (Icon + Content Text) -->
-                                        <Grid x:Name="ContentLayoutGrid" Grid.Column="1" Margin="3,0,8,0" VerticalAlignment="Center">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="32"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
+                                        <!-- Icon Presenter (Centered in collapsed mode, aligned left in expanded mode) -->
+                                        <ContentPresenter x:Name="IconPresenter"
+                                                          Content="{TemplateBinding Icon}"
+                                                          Width="24"
+                                                          Height="24"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          Margin="10,0,0,0"
+                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
 
-                                            <!-- Icon Presenter -->
-                                            <ContentPresenter x:Name="IconPresenter"
-                                                              Grid.Column="0"
-                                                              Content="{TemplateBinding Icon}"
-                                                              HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"
-                                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
-
-                                            <!-- Content Presenter -->
-                                            <ContentPresenter x:Name="ContentPresenter"
-                                                              Grid.Column="1"
-                                                              Content="{TemplateBinding Content}"
-                                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                              HorizontalAlignment="Left"
-                                                              VerticalAlignment="Center"
-                                                              Margin="6,0,0,0"
-                                                              TextElement.Foreground="{TemplateBinding Foreground}"
-                                                              TextElement.FontSize="13"/>
-                                        </Grid>
+                                        <!-- Content Presenter (Label) -->
+                                        <ContentPresenter x:Name="ContentPresenter"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          Margin="46,0,8,0"
+                                                          TextElement.Foreground="{TemplateBinding Foreground}"
+                                                          TextElement.FontSize="13"/>
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -619,24 +662,14 @@
                                 <!-- Collapsed Sidebar (Compact Mode): Perfectly Centered Icons & Tooltip -->
                                 <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}" Value="False">
                                     <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.Column" Value="0"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.ColumnSpan" Value="2"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Margin" Value="0"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="HorizontalAlignment" Value="Stretch"/>
-                                    <Setter TargetName="IconPresenter" Property="Grid.ColumnSpan" Value="2"/>
                                     <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="ActiveIndicator" Property="Margin" Value="2,0,0,0"/>
+                                    <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
                                     <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
                                 </DataTrigger>
                                 <Trigger Property="IsPaneOpen" Value="False">
                                     <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.Column" Value="0"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Grid.ColumnSpan" Value="2"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="Margin" Value="0"/>
-                                    <Setter TargetName="ContentLayoutGrid" Property="HorizontalAlignment" Value="Stretch"/>
-                                    <Setter TargetName="IconPresenter" Property="Grid.ColumnSpan" Value="2"/>
                                     <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="ActiveIndicator" Property="Margin" Value="2,0,0,0"/>
+                                    <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
                                     <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
                                 </Trigger>
 

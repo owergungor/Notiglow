@@ -89,9 +89,16 @@ jobs:
             exit 1
           }
           $hash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash
-          "$hash  $zipName" | Out-File -FilePath "release/SHA256.txt" -Encoding utf8
+          $shaLines = @("$hash  $zipName")
 
-          Write-Host "Created $zipPath with SHA256: $hash"
+          $installerPath = "release/NotiGlow-Setup-x64.exe"
+          if (Test-Path $installerPath) {
+            $installerHash = (Get-FileHash -Path $installerPath -Algorithm SHA256).Hash
+            $shaLines += "$installerHash  NotiGlow-Setup-x64.exe"
+          }
+
+          $shaLines | Out-File -FilePath "release/SHA256.txt" -Encoding utf8
+          Write-Host "Created release checksums in release/SHA256.txt"
 
       - name: Check Existing Release Metadata
         shell: pwsh

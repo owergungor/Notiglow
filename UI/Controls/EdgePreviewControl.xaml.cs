@@ -81,24 +81,44 @@ namespace NotiGlow.UI.Controls
 
             if (isRgb)
             {
-                PrevInnerBorder.BorderBrush = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 1));
+                double prevW = ActualWidth > 0 ? ActualWidth : 360;
+                double prevH = ActualHeight > 0 ? ActualHeight : 200;
+                var rgbBrush = NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.CreateScreenSpaceRgbBrush(prevW, prevH);
+
+                PrevInnerBorder.BorderBrush = rgbBrush;
+                PrevTopEdge.Fill = rgbBrush;
+                PrevBottomEdge.Fill = rgbBrush;
+                PrevLeftEdge.Fill = rgbBrush;
+                PrevRightEdge.Fill = rgbBrush;
+
+                NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.ConfigureEdgeOpacityMasks(PrevTopEdge, PrevBottomEdge, PrevLeftEdge, PrevRightEdge);
             }
             else
             {
                 PrevInnerBorder.BorderBrush = new SolidColorBrush(adjustedColor);
+
+                PrevTopEdge.OpacityMask = null;
+                PrevBottomEdge.OpacityMask = null;
+                PrevLeftEdge.OpacityMask = null;
+                PrevRightEdge.OpacityMask = null;
+
+                PrevTopEdge.Fill = PrevTopGradientBrush;
+                PrevBottomEdge.Fill = PrevBottomGradientBrush;
+                PrevLeftEdge.Fill = PrevLeftGradientBrush;
+                PrevRightEdge.Fill = PrevRightGradientBrush;
+
+                PTop0.Color = adjustedColor;
+                PTop1.Color = transparentColor;
+
+                PBottom0.Color = adjustedColor;
+                PBottom1.Color = transparentColor;
+
+                PLeft0.Color = adjustedColor;
+                PLeft1.Color = transparentColor;
+
+                PRight0.Color = adjustedColor;
+                PRight1.Color = transparentColor;
             }
-
-            PTop0.Color = adjustedColor;
-            PTop1.Color = transparentColor;
-
-            PBottom0.Color = adjustedColor;
-            PBottom1.Color = transparentColor;
-
-            PLeft0.Color = adjustedColor;
-            PLeft1.Color = transparentColor;
-
-            PRight0.Color = adjustedColor;
-            PRight1.Color = transparentColor;
 
             // Stop previous preview animation
             if (_previewStoryboard != null)
@@ -156,11 +176,7 @@ namespace NotiGlow.UI.Controls
                 PrevSweepBrush.GradientStops.Clear();
                 if (isRgb)
                 {
-                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 0.0));
-                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.2));
-                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.5));
-                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromRgb(124, 58, 237), 0.8));
-                    PrevSweepBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateSweepRgbStops(PrevSweepBrush.GradientStops, false);
                 }
                 else
                 {
@@ -198,12 +214,7 @@ namespace NotiGlow.UI.Controls
                 PrevCometBrush.GradientStops.Clear();
                 if (isRgb)
                 {
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.25));
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.60));
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.85));
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Colors.White, 0.94));
-                    PrevCometBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateCometRgbStops(PrevCometBrush.GradientStops, false);
                 }
                 else
                 {
@@ -233,11 +244,7 @@ namespace NotiGlow.UI.Controls
                 PrevRippleBrush.GradientStops.Clear();
                 if (isRgb)
                 {
-                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
-                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.35));
-                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.55));
-                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.80));
-                    PrevRippleBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateRippleRgbStops(PrevRippleBrush.GradientStops);
                 }
                 else
                 {
