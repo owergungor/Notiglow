@@ -18,7 +18,7 @@
                 <!-- Preview Top Edge -->
                 <Rectangle Name="PrevTopEdge" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="15">
                     <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                        <LinearGradientBrush x:Name="PrevTopGradientBrush" StartPoint="0.5,0" EndPoint="0.5,1">
                             <GradientStop x:Name="PTop0" Offset="0" Color="#FF5865F2"/>
                             <GradientStop x:Name="PTop1" Offset="1" Color="#005865F2"/>
                         </LinearGradientBrush>
@@ -28,7 +28,7 @@
                 <!-- Preview Bottom Edge -->
                 <Rectangle Name="PrevBottomEdge" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="15">
                     <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                        <LinearGradientBrush x:Name="PrevBottomGradientBrush" StartPoint="0.5,1" EndPoint="0.5,0">
                             <GradientStop x:Name="PBottom0" Offset="0" Color="#FF5865F2"/>
                             <GradientStop x:Name="PBottom1" Offset="1" Color="#005865F2"/>
                         </LinearGradientBrush>
@@ -38,7 +38,7 @@
                 <!-- Preview Left Edge -->
                 <Rectangle Name="PrevLeftEdge" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="15">
                     <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                        <LinearGradientBrush x:Name="PrevLeftGradientBrush" StartPoint="0,0.5" EndPoint="1,0.5">
                             <GradientStop x:Name="PLeft0" Offset="0" Color="#FF5865F2"/>
                             <GradientStop x:Name="PLeft1" Offset="1" Color="#005865F2"/>
                         </LinearGradientBrush>
@@ -48,7 +48,7 @@
                 <!-- Preview Right Edge -->
                 <Rectangle Name="PrevRightEdge" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="15">
                     <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="1,0.5" EndPoint="0,0.5">
+                        <LinearGradientBrush x:Name="PrevRightGradientBrush" StartPoint="1,0.5" EndPoint="0,0.5">
                             <GradientStop x:Name="PRight0" Offset="0" Color="#FF5865F2"/>
                             <GradientStop x:Name="PRight1" Offset="1" Color="#005865F2"/>
                         </LinearGradientBrush>

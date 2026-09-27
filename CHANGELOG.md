@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6] - 2026-09-27
+
+### Added
+- **True Circular Shockwave Ripple**:
+  - Anchored Ripple animation to exact screen center `(ActualWidth / 2, ActualHeight / 2)`.
+  - Geometric true circular shockwave with `BrushMappingMode.Absolute` (`RadiusX == RadiusY`), preventing elliptical distortion on 16:9, 21:9 ultrawide, and custom aspect ratios.
+  - Annular hollow shockwave expanding cleanly beyond screen corners (`maxRadius = diagonal * 1.10`) with zero clipping.
+  - Full Reduce Motion accessibility compliance.
+- **Unified RGB Spectrum Architecture**:
+  - Built `GlowSpectrumBrushFactory` providing screen-space absolute coordinate mapping for RGB across all four edges, core border, and ambient spill.
+  - Eliminated the right-edge color jump/seam bug in Pulse, Sweep, Ambient, and Comet engines.
+  - Synchronized rainbow stops and uniform bloom directional masks.
+- **Applications Grid View & Modern Cards**:
+  - Hero UI-inspired segmented view switcher `[List] [Grid]` in Tracked Applications header.
+  - Modern responsive Grid Cards with profile color badge, category, active status toggle, and action buttons.
+  - AppSettings persistence for selected `ApplicationsViewMode`.
+- **Automatic Updates via GitHub Releases**:
+  - Added non-blocking `UpdateService` checking latest releases via GitHub API.
+  - SHA256 integrity verification against `SHA256.txt`.
+  - Downgrade protection and offline fail-safe behavior.
+  - Settings UI card with update toggle, last-check timestamp, and manual check button.
+- **Hero UI Design Language Enhancements**:
+  - Modernized ToolTips, Close Buttons, and Segmented controls following 21st.dev/Hero UI guidelines with native WPF styles and dynamic theme tokens.
+
+### Changed
+- **Color Theme System Refinement**:
+  - Removed legacy Amethyst palette.
+  - Migrated "Nubank" royal purple palette to become the user-facing "Amethyst" theme.
+  - Backward compatibility migration converting legacy "Nubank" and "Amethyst" configs seamlessly.
+  - Canonical chromatic ordering based on HSL color proximity (Standard, Zen, Amber, Mocha, Burgundy, Sakura, Bubblegum, Amethyst, Violet, Indigo, Sapphire, Nature).
+
 ## [1.5] - 2026-09-27
 
 ### Added

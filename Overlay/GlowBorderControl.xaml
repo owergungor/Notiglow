@@ -108,7 +108,7 @@
         <!-- Dynamic Overlay: Ripple Expanding Radial Wave (Center origin, full-screen annular shockwave) -->
         <Rectangle Name="RippleOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Visibility="Collapsed">
             <Rectangle.Fill>
-                <RadialGradientBrush x:Name="RippleGradientBrush" Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.5" RadiusY="0.5">
+                <RadialGradientBrush x:Name="RippleGradientBrush" MappingMode="Absolute" Center="960,540" GradientOrigin="960,540" RadiusX="0" RadiusY="0">
                     <GradientStop x:Name="RippleStop0" Offset="0.0" Color="#005865F2"/>
                     <GradientStop x:Name="RippleStop1" Offset="0.65" Color="#005865F2"/>
                     <GradientStop x:Name="RippleStop2" Offset="0.82" Color="#805865F2"/>

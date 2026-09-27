@@ -7,11 +7,11 @@
 Transform standard Windows desktop toast notifications into smooth, elegant, and non-intrusive screen perimeter lighting animations.
 
 [![CI](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml/badge.svg)](https://github.com/owergungor/NotiGlow/actions/workflows/notiglow.yml)
-[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.5)
+[![Release](https://img.shields.io/github/v/release/owergungor/NotiGlow?style=flat&label=Release)](https://github.com/owergungor/NotiGlow/releases/tag/v1.6)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011%20(x64)-0078D4?style=flat&logo=windows&logoColor=white)](https://microsoft.com/windows)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-13-239120?style=flat&logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
-[![Tests](https://img.shields.io/badge/Tests-93%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
+[![Tests](https://img.shields.io/badge/Tests-113%20Passed-brightgreen?style=flat)](NotiGlow.Tests/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat)](LICENSE)
 
 </div>

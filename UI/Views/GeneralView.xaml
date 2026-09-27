@@ -122,14 +122,56 @@
                 <WrapPanel x:Name="ColorThemesPanel" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="520">
                     <RadioButton x:Name="ThemeStandard" GroupName="ColorThemeGroup" Tag="Standard" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Standard (Vercel)">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#0070F3" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Ellipse Width="10" Height="10" Fill="#3B82F6" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Standard" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="ThemeZen" GroupName="ColorThemeGroup" Tag="Zen" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Zen (Zen Linen)">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#D97706" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Ellipse Width="10" Height="10" Fill="#C7A97B" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Zen" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeAmber" GroupName="ColorThemeGroup" Tag="Amber" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amber (Amber Hearth)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#F59E0B" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amber" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeMocha" GroupName="ColorThemeGroup" Tag="Mocha" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Mocha (Mocha Mousse)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#B45309" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Mocha" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeBurgundy" GroupName="ColorThemeGroup" Tag="Burgundy" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Burgundy (Burgundy Wine)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#E11D48" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Burgundy" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeSakura" GroupName="ColorThemeGroup" Tag="Sakura" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sakura (Sakura Dawn)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#F43F5E" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sakura" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeBubblegum" GroupName="ColorThemeGroup" Tag="Bubblegum" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Bubblegum (Bubblegum Remix)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#EC4899" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bubblegum" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeAmethyst" GroupName="ColorThemeGroup" Tag="Amethyst" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amethyst (Royal Purple)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#820AD1" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amethyst" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="ThemeViolet" GroupName="ColorThemeGroup" Tag="Violet" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Violet (Violet Dusk)">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="10" Height="10" Fill="#7C3AED" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Violet" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="ThemeIndigo" GroupName="ColorThemeGroup" Tag="Indigo" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Indigo (Indigo Frost)">
@@ -140,65 +182,36 @@
                     </RadioButton>
                     <RadioButton x:Name="ThemeSapphire" GroupName="ColorThemeGroup" Tag="Sapphire" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sapphire (Promotor Wow)">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#0284C7" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Ellipse Width="10" Height="10" Fill="#0EA5E9" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Sapphire" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeBurgundy" GroupName="ColorThemeGroup" Tag="Burgundy" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Burgundy (Burgundy Wine)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#9F1239" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Burgundy" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="ThemeNature" GroupName="ColorThemeGroup" Tag="Nature" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Nature (Emerald Nature)">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#16A34A" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <Ellipse Width="10" Height="10" Fill="#10B981" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Nature" VerticalAlignment="Center"/>
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton x:Name="ThemeAmethyst" GroupName="ColorThemeGroup" Tag="Amethyst" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amethyst (Amethyst Haze)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#9333EA" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Amethyst" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeMocha" GroupName="ColorThemeGroup" Tag="Mocha" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Mocha (Mocha Mousse)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#854D0E" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Mocha" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeSakura" GroupName="ColorThemeGroup" Tag="Sakura" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sakura (Sakura Dawn)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#EC4899" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Sakura" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeAmber" GroupName="ColorThemeGroup" Tag="Amber" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amber (Amber Hearth)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#EA580C" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Amber" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeNubank" GroupName="ColorThemeGroup" Tag="Nubank" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Nubank (Nubank Purple)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#820AD1" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Nubank" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeViolet" GroupName="ColorThemeGroup" Tag="Violet" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Violet (Violet Dusk)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#7C3AED" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Violet" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeBubblegum" GroupName="ColorThemeGroup" Tag="Bubblegum" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Bubblegum (Bubblegum Remix)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#F43F5E" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Bubblegum" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </RadioButton>
                 </WrapPanel>
+            </ui:CardControl>
+
+            <!-- Card 7: Automatic Updates (v1.6) -->
+            <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Automatic Updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.6 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="BtnCheckUpdates" Content="Check for Updates" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="Automatically check for updates on startup"/>
+                </StackPanel>
             </ui:CardControl>
         </StackPanel>
     </ScrollViewer>

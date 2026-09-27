@@ -68,5 +68,13 @@ namespace NotiGlow.Models
         public double DefaultThickness { get; set; } = 4.0;
         public double DefaultGlowSize { get; set; } = 30.0;
         public GlowStyle DefaultStyle { get; set; } = GlowStyle.Pulse;
+
+        // View preferences
+        public ApplicationViewMode ApplicationsViewMode { get; set; } = ApplicationViewMode.List;
+
+        // Auto Update Settings
+        public bool AutoCheckUpdates { get; set; } = true;
+        public DateTime? LastUpdateCheck { get; set; }
+        public string? LastUpdateVersion { get; set; }
     }
 }

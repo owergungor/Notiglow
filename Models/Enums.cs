@@ -55,20 +55,26 @@ namespace NotiGlow.Models
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ApplicationViewMode
+    {
+        List,
+        Grid
+    }
+
+    [JsonConverter(typeof(ColorThemeJsonConverter))]
     public enum ColorTheme
     {
         Standard,
         Zen,
+        Amber,
+        Mocha,
+        Burgundy,
+        Sakura,
+        Bubblegum,
+        Amethyst,
+        Violet,
         Indigo,
         Sapphire,
-        Burgundy,
-        Nature,
-        Amethyst,
-        Mocha,
-        Sakura,
-        Amber,
-        Nubank,
-        Violet,
-        Bubblegum
+        Nature
     }
 }

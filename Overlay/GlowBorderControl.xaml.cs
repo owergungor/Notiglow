@@ -37,28 +37,26 @@ namespace NotiGlow.Overlay
             RightEdge.Width = profile.GlowSize;
             InnerBorder.BorderThickness = new Thickness(profile.Thickness);
 
+            double screenW = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
+            double screenH = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
+            if (screenW <= 0) screenW = 1920;
+            if (screenH <= 0) screenH = 1080;
+
             LinearGradientBrush? sharedRgbBrush = null;
             if (isRgb)
             {
-                // Full continuous RGB spectrum applied to inner border, ambient spill, and all edge blooms
-                sharedRgbBrush = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 1));
-                sharedRgbBrush.SpreadMethod = GradientSpreadMethod.Repeat;
+                // Unified screen-space absolute RGB spectrum across inner border, ambient spill, and all 4 edge blooms
+                sharedRgbBrush = NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.CreateScreenSpaceRgbBrush(screenW, screenH);
 
                 InnerBorder.BorderBrush = sharedRgbBrush;
                 AmbientSpillBorder.BorderBrush = sharedRgbBrush;
 
-                // For edges, fill with the full RGB spectrum brush and use OpacityMask for edge blooming
                 TopEdge.Fill = sharedRgbBrush;
-                TopEdge.OpacityMask = new LinearGradientBrush(Color.FromArgb(255, 0, 0, 0), Color.FromArgb(0, 0, 0, 0), new Point(0.5, 0), new Point(0.5, 1));
-
                 BottomEdge.Fill = sharedRgbBrush;
-                BottomEdge.OpacityMask = new LinearGradientBrush(Color.FromArgb(255, 0, 0, 0), Color.FromArgb(0, 0, 0, 0), new Point(0.5, 1), new Point(0.5, 0));
-
                 LeftEdge.Fill = sharedRgbBrush;
-                LeftEdge.OpacityMask = new LinearGradientBrush(Color.FromArgb(255, 0, 0, 0), Color.FromArgb(0, 0, 0, 0), new Point(0, 0.5), new Point(1, 0.5));
-
                 RightEdge.Fill = sharedRgbBrush;
-                RightEdge.OpacityMask = new LinearGradientBrush(Color.FromArgb(255, 0, 0, 0), Color.FromArgb(0, 0, 0, 0), new Point(1, 0.5), new Point(0, 0.5));
+
+                NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.ConfigureEdgeOpacityMasks(TopEdge, BottomEdge, LeftEdge, RightEdge);
             }
             else
             {
@@ -92,10 +90,10 @@ namespace NotiGlow.Overlay
             double targetOpacity = Math.Clamp(profile.Intensity, 0.05, 1.0);
             int duration = Math.Max(500, (int)(profile.DurationMs / Math.Max(0.5, profile.Speed)));
 
-            StartStyleAnimation(profile.Style, targetOpacity, duration, mainColor, transparentColor, isRgb, sharedRgbBrush, profile);
+            StartStyleAnimation(profile.Style, targetOpacity, duration, mainColor, transparentColor, isRgb, sharedRgbBrush, profile, screenW, screenH);
         }
 
-        private void StartStyleAnimation(GlowStyle style, double maxOpacity, int durationMs, Color mainColor, Color transparentColor, bool isRgb, LinearGradientBrush? rgbBrush, AppProfile profile)
+        private void StartStyleAnimation(GlowStyle style, double maxOpacity, int durationMs, Color mainColor, Color transparentColor, bool isRgb, LinearGradientBrush? rgbBrush, AppProfile profile, double screenW, double screenH)
         {
             _currentStoryboard = new Storyboard();
             Duration duration = new Duration(TimeSpan.FromMilliseconds(durationMs));
@@ -123,30 +121,10 @@ namespace NotiGlow.Overlay
                 return;
             }
 
-            // Animate RGB continuous spectrum transition if active
+            // Animate RGB continuous spectrum transition if active (synchronized screen-space)
             if (isRgb && rgbBrush != null)
             {
-                PointAnimation rgbStartAnim = new PointAnimation
-                {
-                    From = new Point(0, 0),
-                    To = new Point(1, 1),
-                    Duration = new Duration(TimeSpan.FromMilliseconds(Math.Max(1200, durationMs * 0.75))),
-                    RepeatBehavior = RepeatBehavior.Forever
-                };
-                Storyboard.SetTarget(rgbStartAnim, rgbBrush);
-                Storyboard.SetTargetProperty(rgbStartAnim, new PropertyPath(LinearGradientBrush.StartPointProperty));
-                _currentStoryboard.Children.Add(rgbStartAnim);
-
-                PointAnimation rgbEndAnim = new PointAnimation
-                {
-                    From = new Point(1, 1),
-                    To = new Point(2, 2),
-                    Duration = new Duration(TimeSpan.FromMilliseconds(Math.Max(1200, durationMs * 0.75))),
-                    RepeatBehavior = RepeatBehavior.Forever
-                };
-                Storyboard.SetTarget(rgbEndAnim, rgbBrush);
-                Storyboard.SetTargetProperty(rgbEndAnim, new PropertyPath(LinearGradientBrush.EndPointProperty));
-                _currentStoryboard.Children.Add(rgbEndAnim);
+                NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.AnimateScreenSpaceRgbBrush(_currentStoryboard, rgbBrush, screenW, screenH, durationMs);
             }
 
             if (style == GlowStyle.Pulse)
@@ -192,21 +170,8 @@ namespace NotiGlow.Overlay
 
                 if (isRgb)
                 {
-                    // Broad rich rainbow sweep beam (no static red fallback)
-                    Color[] rainbow = NotiGlow.Core.Helpers.ColorHelper.RgbSpectrumColors;
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 0.0));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(120, 255, 0, 77), 0.15));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.35));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Colors.White, 0.50));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.65));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(140, 124, 58, 237), 0.85));
-                    SweepGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 1.0));
-
-                    SweepBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 0.0));
-                    SweepBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 255, 0, 77), 0.20));
-                    SweepBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(180, 0, 230, 118), 0.50));
-                    SweepBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 124, 58, 237), 0.80));
-                    SweepBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateSweepRgbStops(SweepGradientBrush.GradientStops, false);
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateSweepRgbStops(SweepBloomBrush.GradientStops, true);
                 }
                 else
                 {
@@ -296,21 +261,8 @@ namespace NotiGlow.Overlay
 
                 if (isRgb)
                 {
-                    // Luminous RGB comet: visible bright head + trailing shifting rainbow tail
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 0.0));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(60, 124, 58, 237), 0.25));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(160, 41, 121, 255), 0.50));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.72));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.86));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.94));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Colors.White, 0.98));
-                    CometGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 255, 255), 1.0));
-
-                    CometBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 124, 58, 237), 0.0));
-                    CometBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 41, 121, 255), 0.50));
-                    CometBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(180, 255, 214, 0), 0.85));
-                    CometBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(240, 255, 0, 77), 0.96));
-                    CometBloomBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateCometRgbStops(CometGradientBrush.GradientStops, false);
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateCometRgbStops(CometBloomBrush.GradientStops, true);
                 }
                 else
                 {
@@ -404,16 +356,7 @@ namespace NotiGlow.Overlay
                 RippleGradientBrush.GradientStops.Clear();
                 if (isRgb)
                 {
-                    // Expanding concentric rainbow shockwave rings with bright crest
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.0));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 41, 121, 255), 0.65));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(160, 124, 58, 237), 0.75));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 255), 0.83));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 230, 118), 0.89));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Colors.White, 0.94));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 214, 0), 0.96));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 0, 77), 0.98));
-                    RippleGradientBrush.GradientStops.Add(new GradientStop(Color.FromArgb(0, 255, 0, 77), 1.0));
+                    NotiGlow.Core.Helpers.GlowSpectrumBrushFactory.PopulateRippleRgbStops(RippleGradientBrush.GradientStops);
                 }
                 else
                 {
@@ -437,20 +380,23 @@ namespace NotiGlow.Overlay
                 Storyboard.SetTargetProperty(fadeFrames, new PropertyPath(UserControl.OpacityProperty));
                 _currentStoryboard.Children.Add(fadeFrames);
 
-                // Aspect ratio compensation for perfectly round wave reaching all corners
-                double screenW = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
-                double screenH = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
-                if (screenW <= 0) screenW = 1920;
-                if (screenH <= 0) screenH = 1080;
-                double aspect = screenW / Math.Max(1.0, screenH);
+                // True geometric circle shockwave expanding from the exact center (W/2, H/2) to all 4 corners
+                double centerX = screenW / 2.0;
+                double centerY = screenH / 2.0;
+                RippleGradientBrush.MappingMode = BrushMappingMode.Absolute;
+                RippleGradientBrush.Center = new Point(centerX, centerY);
+                RippleGradientBrush.GradientOrigin = new Point(centerX, centerY);
+
+                double diagonalRadius = Math.Sqrt((centerX * centerX) + (centerY * centerY));
+                double maxRadius = diagonalRadius * 1.10;
 
                 int rippleCycleMs = Math.Max(1100, (int)(1500 / Math.Max(0.5, profile.Speed)));
                 Duration rippleCycleDuration = new Duration(TimeSpan.FromMilliseconds(rippleCycleMs));
 
                 DoubleAnimation rippleRadiusXAnim = new DoubleAnimation
                 {
-                    From = 0.02,
-                    To = 1.45,
+                    From = 10.0,
+                    To = maxRadius,
                     Duration = rippleCycleDuration,
                     RepeatBehavior = RepeatBehavior.Forever,
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
@@ -461,8 +407,8 @@ namespace NotiGlow.Overlay
 
                 DoubleAnimation rippleRadiusYAnim = new DoubleAnimation
                 {
-                    From = 0.02 * aspect,
-                    To = 1.45 * aspect,
+                    From = 10.0,
+                    To = maxRadius,
                     Duration = rippleCycleDuration,
                     RepeatBehavior = RepeatBehavior.Forever,
                     EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }

@@ -14,6 +14,7 @@ namespace NotiGlow.UI.Views
     {
         private ProfileService? _profileService;
         private GlowManager? _glowManager;
+        private SettingsService? _settingsService;
         private AppProfile? _editingProfile;
         private bool _isNewProfile = false;
 
@@ -22,13 +23,49 @@ namespace NotiGlow.UI.Views
             InitializeComponent();
         }
 
-        public void Initialize(ProfileService profileService, GlowManager glowManager)
+        public void Initialize(ProfileService profileService, GlowManager glowManager, SettingsService? settingsService = null)
         {
             _profileService = profileService;
             _glowManager = glowManager;
+            _settingsService = settingsService;
+
+            if (_settingsService != null)
+            {
+                ApplyViewMode(_settingsService.Current.ApplicationsViewMode);
+            }
 
             _profileService.ProfilesChanged += (s, e) => RefreshAppCards();
             RefreshAppCards();
+        }
+
+        private void RbViewMode_Click(object sender, RoutedEventArgs e)
+        {
+            var mode = (RbGridView.IsChecked == true) ? ApplicationViewMode.Grid : ApplicationViewMode.List;
+            ApplyViewMode(mode);
+
+            if (_settingsService != null)
+            {
+                _settingsService.Current.ApplicationsViewMode = mode;
+                _settingsService.Save(_settingsService.Current);
+            }
+        }
+
+        private void ApplyViewMode(ApplicationViewMode mode)
+        {
+            if (mode == ApplicationViewMode.Grid)
+            {
+                RbGridView.IsChecked = true;
+                RbListView.IsChecked = false;
+                ListScrollViewer.Visibility = Visibility.Collapsed;
+                GridScrollViewer.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                RbListView.IsChecked = true;
+                RbGridView.IsChecked = false;
+                ListScrollViewer.Visibility = Visibility.Visible;
+                GridScrollViewer.Visibility = Visibility.Collapsed;
+            }
         }
 
         public void RefreshAppCards()
@@ -36,18 +73,33 @@ namespace NotiGlow.UI.Views
             if (_profileService == null) return;
 
             PnlAppCards.Children.Clear();
+            PnlAppGridCards.Children.Clear();
+
             foreach (var profile in _profileService.Profiles)
             {
-                var card = new AppProfileCard();
-                card.SetProfile(profile);
+                // List Mode Card
+                var listCard = new AppProfileCard();
+                listCard.SetProfile(profile);
 
-                card.EditRequested += (s, p) => OpenEditor(p, false);
-                card.DuplicateRequested += (s, p) => DuplicateProfile(p);
-                card.DeleteRequested += (s, p) => DeleteProfile(p);
-                card.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
-                card.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
+                listCard.EditRequested += (s, p) => OpenEditor(p, false);
+                listCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
+                listCard.DeleteRequested += (s, p) => DeleteProfile(p);
+                listCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
+                listCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
 
-                PnlAppCards.Children.Add(card);
+                PnlAppCards.Children.Add(listCard);
+
+                // Grid Mode Card
+                var gridCard = new AppProfileGridCard();
+                gridCard.SetProfile(profile);
+
+                gridCard.EditRequested += (s, p) => OpenEditor(p, false);
+                gridCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
+                gridCard.DeleteRequested += (s, p) => DeleteProfile(p);
+                gridCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
+                gridCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
+
+                PnlAppGridCards.Children.Add(gridCard);
             }
         }
 
