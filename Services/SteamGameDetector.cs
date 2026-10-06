@@ -28,7 +28,7 @@ namespace NotiGlow.Services
 
         private static readonly HashSet<string> IgnoredExePrefixes = new(StringComparer.OrdinalIgnoreCase)
         {
-            "unins", "setup", "install", "crashpad", "unitycrashhandler", "dxsetup", "vcredist", "easyanticheat", "epicgameslauncher", "battleye"
+            "unins", "setup", "install", "crashpad", "crashreport", "crashhandler", "unitycrashhandler", "dxsetup", "vcredist", "easyanticheat", "epicgameslauncher", "battleye", "bugreport"
         };
 
         public SteamGameDetector(
@@ -167,7 +167,7 @@ namespace NotiGlow.Services
                 return null;
 
             string? mainExe = FindBestGameExecutable(gameCommonDir, installDir, name);
-            if (string.IsNullOrEmpty(mainExe))
+            if (string.IsNullOrEmpty(mainExe) || !_fileExists(mainExe))
                 return null;
 
             return new DetectedGameInfo
@@ -222,8 +222,8 @@ namespace NotiGlow.Services
                 string fn = Path.GetFileNameWithoutExtension(cand);
                 string cleanFn = Regex.Replace(fn, @"[^a-zA-Z0-9]", "").ToLowerInvariant();
 
-                if (cleanFn.Equals(cleanInstall, StringComparison.OrdinalIgnoreCase) ||
-                    cleanFn.Equals(cleanGameName, StringComparison.OrdinalIgnoreCase))
+                if ((!string.IsNullOrEmpty(cleanInstall) && cleanFn.Equals(cleanInstall, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(cleanGameName) && cleanFn.Equals(cleanGameName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return cand;
                 }
@@ -233,17 +233,31 @@ namespace NotiGlow.Services
             foreach (var cand in validCandidates)
             {
                 string fn = Path.GetFileNameWithoutExtension(cand).ToLowerInvariant();
-                if (fn.Contains(cleanInstall) || (!string.IsNullOrEmpty(cleanGameName) && fn.Contains(cleanGameName)))
+                if ((!string.IsNullOrEmpty(cleanInstall) && fn.Contains(cleanInstall)) ||
+                    (!string.IsNullOrEmpty(cleanGameName) && fn.Contains(cleanGameName)))
                 {
                     return cand;
                 }
             }
 
-            // Priority 3: Largest file or first root candidate
-            var rootCandidate = validCandidates.FirstOrDefault(c => Path.GetDirectoryName(c)?.Equals(gameDir, StringComparison.OrdinalIgnoreCase) == true);
-            if (rootCandidate != null) return rootCandidate;
+            // Priority 3: Root candidates (prefer largest file size)
+            var rootCandidates = validCandidates
+                .Where(c => Path.GetDirectoryName(c)?.Equals(gameDir, StringComparison.OrdinalIgnoreCase) == true)
+                .ToList();
+            if (rootCandidates.Count > 0)
+            {
+                return rootCandidates.OrderByDescending(c =>
+                {
+                    try { return new FileInfo(c).Length; }
+                    catch { return 0; }
+                }).First();
+            }
 
-            return validCandidates.First();
+            return validCandidates.OrderByDescending(c =>
+            {
+                try { return new FileInfo(c).Length; }
+                catch { return 0; }
+            }).First();
         }
 
         private static string? ExtractVdfValue(string content, string key)

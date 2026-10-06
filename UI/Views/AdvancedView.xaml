@@ -63,10 +63,10 @@
                           Width="180"
                           VerticalAlignment="Center"
                           SelectionChanged="CmbUpdateFrequency_SelectionChanged">
-                    <ComboBoxItem Content="Açılışta" Tag="OnStartup"/>
-                    <ComboBoxItem Content="Günlük" Tag="Daily"/>
-                    <ComboBoxItem Content="Haftalık" Tag="Weekly"/>
-                    <ComboBoxItem Content="Aylık" Tag="Monthly"/>
+                    <ComboBoxItem Content="On Startup" Tag="OnStartup"/>
+                    <ComboBoxItem Content="Daily" Tag="Daily"/>
+                    <ComboBoxItem Content="Weekly" Tag="Weekly"/>
+                    <ComboBoxItem Content="Monthly" Tag="Monthly"/>
                 </ComboBox>
             </ui:CardControl>
 

@@ -58,16 +58,19 @@ namespace NotiGlow.Services
 
                 var uniqueGames = new List<DetectedGameInfo>();
                 var seenExes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var game in combined)
                 {
+                    if (string.IsNullOrWhiteSpace(game.ExecutablePath)) continue;
+
                     string exeName = Path.GetFileName(game.ExecutablePath).ToLowerInvariant();
                     string fullPath = Path.GetFullPath(game.ExecutablePath).ToLowerInvariant();
 
-                    if (!seenExes.Contains(exeName) && !seenExes.Contains(fullPath))
+                    if (!seenExes.Contains(exeName) && !seenPaths.Contains(fullPath))
                     {
                         seenExes.Add(exeName);
-                        seenExes.Add(fullPath);
+                        seenPaths.Add(fullPath);
                         uniqueGames.Add(game);
                     }
                 }

@@ -17,7 +17,18 @@ namespace NotiGlow.UI
         public MainWindow()
         {
             InitializeComponent();
+            UpdateAppTitle();
             InitializeTitleBarIcon();
+        }
+
+        private void UpdateAppTitle()
+        {
+            string version = UpdateService.CurrentVersionString;
+            Title = $"NotiGlow {version}";
+            if (AppTitleBar != null)
+            {
+                AppTitleBar.Title = $"NotiGlow {version} — Ambient Notification Utility";
+            }
         }
 
         private void InitializeTitleBarIcon()

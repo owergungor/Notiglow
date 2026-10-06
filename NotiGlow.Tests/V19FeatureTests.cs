@@ -270,6 +270,133 @@ namespace NotiGlow.Tests
             Assert.AreEqual(0, games.Count);
         }
 
+        [TestMethod]
+        public void SteamGameDetector_FindBestGameExecutable_IgnoresCrashReportersAndRedistributables()
+        {
+            string gameDir = @"C:\Steam\steamapps\common\SampleGame";
+            var mockFiles = new[]
+            {
+                @"C:\Steam\steamapps\common\SampleGame\CrashReportClient.exe",
+                @"C:\Steam\steamapps\common\SampleGame\UnityCrashHandler64.exe",
+                @"C:\Steam\steamapps\common\SampleGame\dxsetup.exe",
+                @"C:\Steam\steamapps\common\SampleGame\unins000.exe",
+                @"C:\Steam\steamapps\common\SampleGame\SampleGame.exe"
+            };
+
+            var detector = new SteamGameDetector(
+                getSteamRoot: () => @"C:\Steam",
+                directoryExists: dir => true,
+                fileExists: path => true,
+                getFiles: (dir, pattern) => mockFiles,
+                getDirectories: dir => Array.Empty<string>()
+            );
+
+            string? bestExe = detector.FindBestGameExecutable(gameDir, "SampleGame", "Sample Game");
+
+            Assert.IsNotNull(bestExe);
+            Assert.AreEqual(@"C:\Steam\steamapps\common\SampleGame\SampleGame.exe", bestExe);
+        }
+
+        [TestMethod]
+        public void SteamGameDetector_NestedSubdirectory_ResolvesWin64Exe()
+        {
+            string gameDir = @"C:\Steam\steamapps\common\Euro Truck Simulator 2";
+            string nestedExe = @"C:\Steam\steamapps\common\Euro Truck Simulator 2\bin\win_x64\eurotrucks2.exe";
+
+            var detector = new SteamGameDetector(
+                getSteamRoot: () => @"C:\Steam",
+                directoryExists: dir => true,
+                fileExists: path => true,
+                getFiles: (dir, pattern) => dir.EndsWith("win_x64", StringComparison.OrdinalIgnoreCase)
+                    ? new[] { nestedExe }
+                    : Array.Empty<string>(),
+                getDirectories: dir =>
+                {
+                    if (dir.Equals(gameDir, StringComparison.OrdinalIgnoreCase))
+                        return new[] { Path.Combine(gameDir, "bin") };
+                    if (dir.EndsWith("bin", StringComparison.OrdinalIgnoreCase))
+                        return new[] { Path.Combine(gameDir, "bin", "win_x64") };
+                    return Array.Empty<string>();
+                }
+            );
+
+            string? bestExe = detector.FindBestGameExecutable(gameDir, "Euro Truck Simulator 2", "Euro Truck Simulator 2");
+
+            Assert.IsNotNull(bestExe);
+            Assert.AreEqual(nestedExe, bestExe);
+        }
+
+        [TestMethod]
+        public void SteamGameDetector_SanitizedNameMatching_MatchesSpecialCharactersAndInstallDir()
+        {
+            string gameDir = @"C:\Steam\steamapps\common\Excalibur";
+            string gameExe = @"C:\Steam\steamapps\common\Excalibur\NeedForSpeedUnbound.exe";
+
+            var detector = new SteamGameDetector(
+                getSteamRoot: () => @"C:\Steam",
+                directoryExists: dir => true,
+                fileExists: path => true,
+                getFiles: (dir, pattern) => new[] { gameExe },
+                getDirectories: dir => Array.Empty<string>()
+            );
+
+            // InstallDir is "Excalibur", but GameName is "Need for Speed™ Unbound"
+            string? bestExe = detector.FindBestGameExecutable(gameDir, "Excalibur", "Need for Speed™ Unbound");
+
+            Assert.IsNotNull(bestExe);
+            Assert.AreEqual(gameExe, bestExe);
+        }
+
+        [TestMethod]
+        public async Task RealEnvironment_SteamAndEpic_DiscoveryQA()
+        {
+            var steam = new SteamGameDetector();
+            var steamGames = steam.DetectGames();
+            Assert.IsNotNull(steamGames);
+            foreach (var g in steamGames)
+            {
+                Assert.IsFalse(string.IsNullOrWhiteSpace(g.Name), "Detected game must have a non-empty name.");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(g.ExecutablePath), "Detected game must have an executable path.");
+                Assert.IsTrue(File.Exists(g.ExecutablePath), $"Detected game executable must exist on disk: {g.ExecutablePath}");
+            }
+
+            var epic = new EpicGameDetector();
+            var epicGames = epic.DetectGames();
+            Assert.IsNotNull(epicGames);
+            foreach (var g in epicGames)
+            {
+                Assert.IsFalse(string.IsNullOrWhiteSpace(g.Name), "Detected game must have a non-empty name.");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(g.ExecutablePath), "Detected game must have an executable path.");
+                Assert.IsTrue(File.Exists(g.ExecutablePath), $"Detected game executable must exist on disk: {g.ExecutablePath}");
+            }
+
+            var service = new GameDetectionService(new SettingsService());
+            var allGames = await service.DetectInstalledGamesAsync();
+            Assert.IsNotNull(allGames);
+            Assert.IsTrue(allGames.Count <= steamGames.Count + epicGames.Count, "Deduplication must never inflate total game count.");
+        }
+
+        [TestMethod]
+        public void V19_VersionMetadata_MatchesVersion19()
+        {
+            Assert.AreEqual("1.9", UpdateService.CurrentVersionString, "CurrentVersionString must dynamically resolve to 1.9 in v1.9.");
+
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var window = new NotiGlow.UI.MainWindow();
+                Assert.AreEqual("NotiGlow 1.9", window.Title);
+                var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
+                Assert.IsNotNull(titleBar);
+                Assert.AreEqual("NotiGlow 1.9 — Ambient Notification Utility", titleBar.Title);
+                Assert.IsFalse(window.Title?.Contains("1.6") == true, "Title must not contain 1.6.");
+                Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain 1.6.");
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
         #endregion
     }
 }
