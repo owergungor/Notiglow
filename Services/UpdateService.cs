@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
@@ -46,7 +47,45 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
-        public const string CurrentVersionString = "1.6";
+        public static string CurrentVersionString => ResolveCurrentVersion();
+        private static string? _cachedVersion;
+
+        private static string ResolveCurrentVersion()
+        {
+            if (_cachedVersion != null)
+                return _cachedVersion;
+
+            try
+            {
+                var assembly = typeof(UpdateService).Assembly;
+                var infoAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                if (!string.IsNullOrWhiteSpace(infoAttr?.InformationalVersion))
+                {
+                    string infoVer = infoAttr.InformationalVersion.Split('+')[0].Trim();
+                    if (!string.IsNullOrWhiteSpace(infoVer))
+                    {
+                        _cachedVersion = infoVer;
+                        return _cachedVersion;
+                    }
+                }
+
+                var asmVer = assembly.GetName().Version;
+                if (asmVer != null)
+                {
+                    _cachedVersion = asmVer.Build > 0
+                        ? $"{asmVer.Major}.{asmVer.Minor}.{asmVer.Build}"
+                        : $"{asmVer.Major}.{asmVer.Minor}";
+                    return _cachedVersion;
+                }
+            }
+            catch
+            {
+                // Fallback
+            }
+
+            _cachedVersion = "1.9";
+            return _cachedVersion;
+        }
         private const string GitHubOwner = "owergungor";
         private const string GitHubRepo = "NotiGlow";
 
@@ -87,6 +126,33 @@ namespace NotiGlow.Services
             }
 
             return false;
+        }
+
+        public static bool ShouldCheckForUpdates(AppSettings settings, DateTime utcNow)
+        {
+            if (!settings.AutoCheckUpdates)
+                return false;
+
+            if (settings.UpdateFrequency == UpdateCheckFrequency.OnStartup)
+                return true;
+
+            if (!settings.LastUpdateCheck.HasValue)
+                return true;
+
+            var elapsed = utcNow - settings.LastUpdateCheck.Value;
+            if (elapsed < TimeSpan.Zero)
+            {
+                // Skewed clock / system time moved backwards -> allow check
+                return true;
+            }
+
+            return settings.UpdateFrequency switch
+            {
+                UpdateCheckFrequency.Daily => elapsed >= TimeSpan.FromDays(1),
+                UpdateCheckFrequency.Weekly => elapsed >= TimeSpan.FromDays(7),
+                UpdateCheckFrequency.Monthly => elapsed >= TimeSpan.FromDays(30),
+                _ => true
+            };
         }
 
         public async Task<UpdateInfo> CheckForUpdatesAsync(CancellationToken cancellationToken = default)

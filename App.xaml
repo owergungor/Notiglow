@@ -349,6 +349,10 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
@@ -822,35 +826,41 @@
                 </Setter>
             </Style>
 
-            <!-- 2:1 Aspect Ratio Fluent ToggleSwitch Style (48x24 Track) -->
+            <!-- Apple-inspired ToggleSwitch Style (Reference: ui.unlumen.com/components/apple-switch & Apple HIG) -->
             <Style TargetType="{x:Type ui:ToggleSwitch}">
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                 <Setter Property="MinWidth" Value="48"/>
-                <Setter Property="MinHeight" Value="24"/>
+                <Setter Property="MinHeight" Value="26"/>
                 <Setter Property="Width" Value="48"/>
-                <Setter Property="Height" Value="24"/>
+                <Setter Property="Height" Value="26"/>
+                <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ui:ToggleSwitch}">
-                            <Grid x:Name="TemplateRoot" Width="48" Height="24" Background="Transparent">
-                                <!-- Visible Track: Exactly 48x24 (2:1 Ratio) -->
+                            <Grid x:Name="TemplateRoot" Width="48" Height="26" Background="Transparent" SnapsToDevicePixels="True">
+                                <!-- Apple Switch Pill Track (48x26, CornerRadius 13) -->
                                 <Border x:Name="SwitchTrack"
                                         Width="48"
-                                        Height="24"
-                                        CornerRadius="12"
+                                        Height="26"
+                                        CornerRadius="13"
                                         Background="{DynamicResource InputBackground}"
                                         BorderBrush="{DynamicResource BorderColor}"
                                         BorderThickness="1">
-                                    <Grid x:Name="TrackGrid" Margin="2">
-                                        <!-- Thumb Circle: Perfectly 18x18 Circle Vertically Centered -->
+                                    <Grid x:Name="TrackInnerGrid">
+                                        <!-- Apple Pure White Disc Thumb (22x22, CornerRadius 11) with Soft Drop Shadow -->
                                         <Border x:Name="SwitchThumb"
-                                                Width="18"
-                                                Height="18"
-                                                CornerRadius="9"
+                                                Width="22"
+                                                Height="22"
+                                                CornerRadius="11"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Center"
-                                                Background="{DynamicResource TextSecondary}"/>
+                                                Margin="2,0,0,0"
+                                                Background="#FFFFFF">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.25" Color="#000000"/>
+                                            </Border.Effect>
+                                        </Border>
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -859,16 +869,166 @@
                                     <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource AccentColor}"/>
                                     <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
                                     <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
+                                    <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0"/>
                                     <Setter TargetName="SwitchThumb" Property="Background" Value="#FFFFFF"/>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.9"/>
+                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.92"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.45"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
+                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.38"/>
+                                    <Setter TargetName="SwitchThumb" Property="Opacity" Value="0.6"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Apple-inspired Modern Select / ComboBox Style -->
+            <Style x:Key="AppleSelectComboBoxStyle" TargetType="{x:Type ComboBox}">
+                <Setter Property="Height" Value="38"/>
+                <Setter Property="MinHeight" Value="38"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="12,0,10,0"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ComboBox}">
+                            <Grid Height="{TemplateBinding Height}" VerticalAlignment="Center">
+                                <Border x:Name="ContentBorder"
+                                        Height="{TemplateBinding Height}"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="8"
+                                        SnapsToDevicePixels="True">
+                                    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                                          Grid.Column="0"
+                                                          Margin="{TemplateBinding Padding}"
+                                                          Content="{TemplateBinding SelectionBoxItem}"
+                                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          IsHitTestVisible="False"
+                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                                        <ui:SymbolIcon x:Name="ChevronIcon"
+                                                       Grid.Column="1"
+                                                       Margin="6,0,12,0"
+                                                       Symbol="ChevronDown24"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       VerticalAlignment="Center"/>
+
+                                        <ToggleButton x:Name="ToggleButton"
+                                                      Grid.Column="0"
+                                                      Grid.ColumnSpan="2"
+                                                      Focusable="False"
+                                                      ClickMode="Press"
+                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      HorizontalAlignment="Stretch"
+                                                      VerticalAlignment="Stretch"
+                                                      Background="Transparent"
+                                                      BorderThickness="0">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="Transparent" BorderThickness="0"/>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                    </Grid>
+                                </Border>
+
+                                <Popup x:Name="Popup"
+                                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       Placement="Bottom"
+                                       PlacementTarget="{Binding ElementName=ContentBorder}"
+                                       AllowsTransparency="True"
+                                       Focusable="False"
+                                       PopupAnimation="Fade"
+                                       VerticalOffset="4">
+                                    <Border x:Name="DropDownBorder"
+                                            MinWidth="{Binding ActualWidth, ElementName=ContentBorder}"
+                                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                            Background="{DynamicResource CardBackground}"
+                                            BorderBrush="{DynamicResource BorderColor}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="4"
+                                            SnapsToDevicePixels="True">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.30" Color="#000000"/>
+                                        </Border.Effect>
+                                        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsDropDownOpen" Value="True">
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="ChevronIcon" Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="MinHeight" Value="32"/>
+                            <Setter Property="Height" Value="32"/>
+                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                                        <Border x:Name="ItemBorder"
+                                                Background="Transparent"
+                                                CornerRadius="6"
+                                                Margin="1"
+                                                Padding="{TemplateBinding Padding}"
+                                                SnapsToDevicePixels="True">
+                                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource CardBackgroundSecondary}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="1"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
                     </Setter.Value>
                 </Setter>
             </Style>

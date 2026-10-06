@@ -21,6 +21,7 @@ namespace NotiGlow.Services
         private readonly Queue<AppProfile> _notificationQueue = new();
 
         public bool IsAnimating => _isAnimating;
+        public GameDetectionService GameDetectionService => _gameDetectionService;
 
         public GlowManager(SettingsService settingsService, ProfileService profileService)
         {

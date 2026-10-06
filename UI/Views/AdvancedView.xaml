@@ -28,8 +28,50 @@
                 </ui:Button>
             </Grid>
 
-            <!-- Section 1: Accessibility -->
-            <TextBlock Text="Accessibility" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+            <!-- Section 1: Auto Update -->
+            <TextBlock Text="Auto Update" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+
+            <!-- Automatic Updates -->
+            <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Automatic Updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.9 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="BtnCheckUpdates" Content="Check for Updates" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="Automatically check for updates"/>
+                </StackPanel>
+            </ui:CardControl>
+
+            <!-- Check Frequency Dropdown -->
+            <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Check Frequency" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Choose how often NotiGlow checks for newer releases." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <ComboBox x:Name="CmbUpdateFrequency"
+                          Style="{DynamicResource AppleSelectComboBoxStyle}"
+                          Width="180"
+                          VerticalAlignment="Center"
+                          SelectionChanged="CmbUpdateFrequency_SelectionChanged">
+                    <ComboBoxItem Content="On Startup" Tag="OnStartup"/>
+                    <ComboBoxItem Content="Daily" Tag="Daily"/>
+                    <ComboBoxItem Content="Weekly" Tag="Weekly"/>
+                    <ComboBoxItem Content="Monthly" Tag="Monthly"/>
+                </ComboBox>
+            </ui:CardControl>
+
+            <!-- Section 2: Accessibility -->
+            <TextBlock Text="Accessibility" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
 
             <!-- OLED Mode -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">

@@ -41,6 +41,41 @@ namespace NotiGlow.Services
             Load();
         }
 
+        public static bool IsTestEnvironment { get; set; } = DetectTestHostEnvironment();
+
+        private static bool DetectTestHostEnvironment()
+        {
+            try
+            {
+                var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                if (processName.IndexOf("testhost", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    processName.IndexOf("vstest", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+
+                var domainName = AppDomain.CurrentDomain.FriendlyName;
+                if (domainName.IndexOf("testhost", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    domainName.IndexOf("vstest", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    var name = asm.GetName().Name ?? string.Empty;
+                    if (name.IndexOf("VisualStudio.TestPlatform", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        name.IndexOf("MSTest", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        name.IndexOf("NotiGlow.Tests", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
         public void Load()
         {
             _profiles.Clear();
@@ -53,6 +88,7 @@ namespace NotiGlow.Services
                     if (loaded != null && loaded.Count > 0)
                     {
                         _profiles.AddRange(loaded);
+                        PruneOrResolveBuiltInProfiles();
                         return;
                     }
                 }
@@ -62,9 +98,59 @@ namespace NotiGlow.Services
                 LoggerService.LogError("Failed to load profiles.json, generating defaults", ex);
             }
 
-            // Create default starter profiles
-            _profiles.AddRange(GetDefaultProfiles());
+            // Create default starter profiles with authentic installed paths
+            _profiles.AddRange(GetInitialStarterProfiles());
             Save();
+        }
+
+        private List<AppProfile> GetInitialStarterProfiles()
+        {
+            if (IsTestEnvironment)
+            {
+                return GetDefaultProfiles();
+            }
+
+            return Core.Helpers.BuiltInAppDetector.Default.GetInstalledProfiles().ToList();
+        }
+
+        private void PruneOrResolveBuiltInProfiles()
+        {
+            if (IsTestEnvironment) return;
+
+            var builtInAppIds = new HashSet<string>(
+                Core.Helpers.BuiltInAppDetector.Definitions.Select(d => d.AppId),
+                StringComparer.OrdinalIgnoreCase);
+
+            for (int i = _profiles.Count - 1; i >= 0; i--)
+            {
+                var profile = _profiles[i];
+                if (!builtInAppIds.Contains(profile.AppId))
+                {
+                    // User's custom profile - always keep!
+                    continue;
+                }
+
+                var def = Core.Helpers.BuiltInAppDetector.Definitions.FirstOrDefault(d =>
+                    d.AppId.Equals(profile.AppId, StringComparison.OrdinalIgnoreCase));
+                if (def == null) continue;
+
+                // Check if existing ExecutablePath is valid
+                if (!string.IsNullOrEmpty(profile.ExecutablePath) && File.Exists(profile.ExecutablePath))
+                {
+                    continue;
+                }
+
+                // Attempt to detect authentic installation path
+                if (Core.Helpers.BuiltInAppDetector.Default.TryDetectApp(def, out string realPath))
+                {
+                    profile.ExecutablePath = realPath;
+                }
+                else
+                {
+                    // App is not installed on this machine: remove from built-in tracked list!
+                    _profiles.RemoveAt(i);
+                }
+            }
         }
 
         public void Save()
@@ -221,24 +307,19 @@ namespace NotiGlow.Services
 
         public static List<AppProfile> GetDefaultProfiles()
         {
-            return new List<AppProfile>
+            return Core.Helpers.BuiltInAppDetector.Definitions.Select(def => new AppProfile
             {
-                // Ready AI Desktop Applications
-                new AppProfile { AppId = "Claude", Name = "Claude", Category = "AI Assistants", Enabled = true, ColorHex = "#D97757", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "OpenAI.ChatGPT", Name = "ChatGPT", Category = "AI Assistants", Enabled = true, ColorHex = "#10A37F", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Sweep },
-                new AppProfile { AppId = "Microsoft.Copilot", Name = "Microsoft Copilot", Category = "AI Assistants", Enabled = true, ColorHex = "#0F6CBD", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Comet },
-                new AppProfile { AppId = "Google.Gemini", Name = "Google Gemini", Category = "AI Assistants", Enabled = true, ColorHex = "#4E88F5", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Ambient },
-
-                // Messaging & Collaboration
-                new AppProfile { AppId = "Discord", Name = "Discord", Category = "Messaging", Enabled = true, ColorHex = "#5865F2", DurationMs = 4000, Intensity = 0.80, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "WhatsApp", Name = "WhatsApp", Category = "Messaging", Enabled = true, ColorHex = "#25D366", DurationMs = 3000, Intensity = 0.75, Thickness = 4, GlowSize = 25, Style = GlowStyle.Ambient },
-                new AppProfile { AppId = "Telegram", Name = "Telegram", Category = "Messaging", Enabled = true, ColorHex = "#24A1DE", DurationMs = 4000, Intensity = 0.75, Thickness = 4, GlowSize = 30, Style = GlowStyle.Sweep },
-                new AppProfile { AppId = "MSTeams", Name = "Microsoft Teams", Category = "Messaging", Enabled = true, ColorHex = "#6264A7", DurationMs = 4000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-
-                // Gaming & Media
-                new AppProfile { AppId = "Steam", Name = "Steam", Category = "Gaming", Enabled = true, ColorHex = "#66C0F4", DurationMs = 5000, Intensity = 0.70, Thickness = 4, GlowSize = 30, Style = GlowStyle.Pulse },
-                new AppProfile { AppId = "Spotify", Name = "Spotify", Category = "Media", Enabled = true, ColorHex = "#1DB954", DurationMs = 3000, Intensity = 0.70, Thickness = 4, GlowSize = 25, Style = GlowStyle.Pulse }
-            };
+                AppId = def.AppId,
+                Name = def.Name,
+                Category = def.Category,
+                Enabled = true,
+                ColorHex = def.ColorHex,
+                DurationMs = def.DurationMs,
+                Intensity = def.Intensity,
+                Thickness = 4.0,
+                GlowSize = 30.0,
+                Style = def.Style
+            }).ToList();
         }
     }
 }
