@@ -61,6 +61,18 @@ namespace NotiGlow.Models
         public bool OnlyImportantInGames { get; set; } = false;
         public List<string> TrackedGames { get; set; } = new List<string>();
 
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool CanModifyGameSubSettings => GlowDuringGames;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool EffectiveReduceIntensityInGames => GlowDuringGames && ReduceIntensityInGames;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool EffectiveReduceDurationInGames => GlowDuringGames && ReduceDurationInGames;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool EffectiveOnlyImportantInGames => GlowDuringGames && OnlyImportantInGames;
+
         // Global defaults for new app profiles
         public string DefaultColorHex { get; set; } = "#5865F2";
         public int DefaultDurationMs { get; set; } = 4000;
@@ -74,6 +86,7 @@ namespace NotiGlow.Models
 
         // Auto Update Settings
         public bool AutoCheckUpdates { get; set; } = true;
+        public UpdateCheckFrequency UpdateFrequency { get; set; } = UpdateCheckFrequency.OnStartup;
         public DateTime? LastUpdateCheck { get; set; }
         public string? LastUpdateVersion { get; set; }
     }

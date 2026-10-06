@@ -111,7 +111,7 @@
                 </Border>
             </ui:CardControl>
 
-            <!-- Card 6: Color Themes (13 Distinct Palettes) -->
+            <!-- Card 6: Color Theme Dropdown (Apple-inspired modern select) -->
             <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
@@ -119,99 +119,84 @@
                         <TextBlock Text="Curated color systems with tailored Light and Dark variants." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
-                <WrapPanel x:Name="ColorThemesPanel" HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="520">
-                    <RadioButton x:Name="ThemeStandard" GroupName="ColorThemeGroup" Tag="Standard" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Standard (Vercel)">
+                <ComboBox x:Name="CmbColorTheme"
+                          Style="{DynamicResource AppleSelectComboBoxStyle}"
+                          Width="250"
+                          VerticalAlignment="Center"
+                          SelectionChanged="CmbColorTheme_SelectionChanged">
+                    <ComboBoxItem Tag="Standard">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#3B82F6" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Standard" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#3B82F6" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Standard (Vercel)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeZen" GroupName="ColorThemeGroup" Tag="Zen" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Zen (Zen Linen)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Zen">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#C7A97B" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Zen" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#C7A97B" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Zen (Linen)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeAmber" GroupName="ColorThemeGroup" Tag="Amber" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amber (Amber Hearth)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Amber">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#F59E0B" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Amber" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#F59E0B" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amber (Amber Hearth)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeMocha" GroupName="ColorThemeGroup" Tag="Mocha" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Mocha (Mocha Mousse)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Mocha">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#B45309" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Mocha" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#B45309" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Mocha (Mocha Mousse)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeBurgundy" GroupName="ColorThemeGroup" Tag="Burgundy" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Burgundy (Burgundy Wine)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Burgundy">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#E11D48" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Burgundy" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#E11D48" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Burgundy (Burgundy Wine)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeSakura" GroupName="ColorThemeGroup" Tag="Sakura" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sakura (Sakura Dawn)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Sakura">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#F43F5E" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Sakura" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#F43F5E" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sakura (Sakura Dawn)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeBubblegum" GroupName="ColorThemeGroup" Tag="Bubblegum" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Bubblegum (Bubblegum Remix)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Bubblegum">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#EC4899" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Bubblegum" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#EC4899" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Bubblegum (Bubblegum Remix)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeAmethyst" GroupName="ColorThemeGroup" Tag="Amethyst" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Amethyst (Royal Purple)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Amethyst">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#820AD1" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Amethyst" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#820AD1" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Amethyst (Royal Purple)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeViolet" GroupName="ColorThemeGroup" Tag="Violet" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Violet (Violet Dusk)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Violet">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#7C3AED" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Violet" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#7C3AED" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Violet (Violet Dusk)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeIndigo" GroupName="ColorThemeGroup" Tag="Indigo" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Indigo (Indigo Frost)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Indigo">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#6366F1" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Indigo" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#6366F1" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Indigo (Indigo Frost)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeSapphire" GroupName="ColorThemeGroup" Tag="Sapphire" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Sapphire (Promotor Wow)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Sapphire">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#0EA5E9" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Sapphire" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#0EA5E9" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sapphire (Promotor Wow)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                    <RadioButton x:Name="ThemeNature" GroupName="ColorThemeGroup" Tag="Nature" Style="{DynamicResource ColorThemeChipRadioButtonStyle}" Click="ColorTheme_Click" ToolTip="Nature (Emerald Nature)">
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="Nature">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse Width="10" Height="10" Fill="#10B981" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Nature" VerticalAlignment="Center"/>
+                            <Border Width="12" Height="12" CornerRadius="6" Background="#10B981" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Nature (Emerald Nature)" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </RadioButton>
-                </WrapPanel>
-            </ui:CardControl>
-
-            <!-- Card 7: Automatic Updates (v1.6) -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Automatic Updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.6 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                        <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnCheckUpdates" Content="Check for Updates" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="Automatically check for updates on startup"/>
-                </StackPanel>
+                    </ComboBoxItem>
+                </ComboBox>
             </ui:CardControl>
         </StackPanel>
     </ScrollViewer>

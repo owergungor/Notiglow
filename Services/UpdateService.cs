@@ -46,7 +46,7 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
-        public const string CurrentVersionString = "1.6";
+        public const string CurrentVersionString = "1.7";
         private const string GitHubOwner = "owergungor";
         private const string GitHubRepo = "NotiGlow";
 
@@ -87,6 +87,33 @@ namespace NotiGlow.Services
             }
 
             return false;
+        }
+
+        public static bool ShouldCheckForUpdates(AppSettings settings, DateTime utcNow)
+        {
+            if (!settings.AutoCheckUpdates)
+                return false;
+
+            if (settings.UpdateFrequency == UpdateCheckFrequency.OnStartup)
+                return true;
+
+            if (!settings.LastUpdateCheck.HasValue)
+                return true;
+
+            var elapsed = utcNow - settings.LastUpdateCheck.Value;
+            if (elapsed < TimeSpan.Zero)
+            {
+                // Skewed clock / system time moved backwards -> allow check
+                return true;
+            }
+
+            return settings.UpdateFrequency switch
+            {
+                UpdateCheckFrequency.Daily => elapsed >= TimeSpan.FromDays(1),
+                UpdateCheckFrequency.Weekly => elapsed >= TimeSpan.FromDays(7),
+                UpdateCheckFrequency.Monthly => elapsed >= TimeSpan.FromDays(30),
+                _ => true
+            };
         }
 
         public async Task<UpdateInfo> CheckForUpdatesAsync(CancellationToken cancellationToken = default)

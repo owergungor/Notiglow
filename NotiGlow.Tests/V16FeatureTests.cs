@@ -368,7 +368,7 @@ namespace NotiGlow.Tests
 
             Assert.IsNotNull(info);
             Assert.IsFalse(info.IsUpdateAvailable, "Cancelled/offline request must not falsely report update available.");
-            Assert.AreEqual("1.6", info.CurrentVersion);
+            Assert.AreEqual(UpdateService.CurrentVersionString, info.CurrentVersion);
         }
 
         [TestMethod]

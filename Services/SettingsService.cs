@@ -92,5 +92,21 @@ namespace NotiGlow.Services
                 LoggerService.LogError("Failed to save settings.json", ex);
             }
         }
+
+        /// <summary>
+        /// Enforces dependency rule: sub-settings cannot be modified when GlowDuringGames is false.
+        /// </summary>
+        public bool UpdateGameSubSetting(Action<AppSettings> updateAction)
+        {
+            if (!Current.GlowDuringGames)
+            {
+                LoggerService.LogWarning("Attempted to modify in-game sub-settings while GlowDuringGames is disabled.");
+                return false;
+            }
+
+            updateAction(Current);
+            Save(Current);
+            return true;
+        }
     }
 }

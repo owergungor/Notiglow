@@ -56,33 +56,33 @@
             </ui:CardControl>
 
             <!-- Reduce Intensity -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+            <ui:CardControl x:Name="CardReduceIntensityInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Reduce Intensity in Games" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Reduces glow brightness while gaming to minimize distraction." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtReduceIntensityTitle" Text="Reduce Intensity in Games" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtReduceIntensityDesc" Text="Reduces glow brightness while gaming to minimize distraction." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleReduceIntensityInGames" Click="ToggleReduceIntensityInGames_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
             <!-- Reduce Duration -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+            <ui:CardControl x:Name="CardReduceDurationInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Reduce Duration in Games" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Shortens glow animation duration while gaming." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtReduceDurationTitle" Text="Reduce Duration in Games" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtReduceDurationDesc" Text="Shortens glow animation duration while gaming." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleReduceDurationInGames" Click="ToggleReduceDurationInGames_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
             <!-- Only Important Notifications -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+            <ui:CardControl x:Name="CardOnlyImportantInGames" Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Only Show Important Notifications" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Shows only high-priority notifications while gaming." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtOnlyImportantTitle" Text="Only Show Important Notifications" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtOnlyImportantDesc" Text="Shows only high-priority notifications while gaming." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleOnlyImportantInGames" Click="ToggleOnlyImportantInGames_Click" VerticalAlignment="Center"/>

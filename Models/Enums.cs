@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace NotiGlow.Models
@@ -76,5 +77,46 @@ namespace NotiGlow.Models
         Indigo,
         Sapphire,
         Nature
+    }
+
+    [JsonConverter(typeof(UpdateCheckFrequencyJsonConverter))]
+    public enum UpdateCheckFrequency
+    {
+        OnStartup = 0,
+        Startup = 0,
+        Daily = 1,
+        Weekly = 2,
+        Monthly = 3
+    }
+
+    public class UpdateCheckFrequencyJsonConverter : JsonConverter<UpdateCheckFrequency>
+    {
+        public override UpdateCheckFrequency Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                string? str = reader.GetString();
+                if (string.Equals(str, "Startup", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(str, "OnStartup", StringComparison.OrdinalIgnoreCase))
+                {
+                    return UpdateCheckFrequency.OnStartup;
+                }
+                if (Enum.TryParse<UpdateCheckFrequency>(str, true, out var parsed))
+                {
+                    return parsed;
+                }
+            }
+            else if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int intVal))
+            {
+                if (Enum.IsDefined(typeof(UpdateCheckFrequency), intVal))
+                    return (UpdateCheckFrequency)intVal;
+            }
+            return UpdateCheckFrequency.OnStartup;
+        }
+
+        public override void Write(Utf8JsonWriter writer, UpdateCheckFrequency value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString());
+        }
     }
 }

@@ -200,8 +200,8 @@ namespace NotiGlow
                 // Start notification listener asynchronously (non-blocking for app startup)
                 _ = InitializeNotificationServiceAsync();
 
-                // Check for updates asynchronously in background if enabled
-                if (_settingsService.Current.AutoCheckUpdates)
+                // Check for updates asynchronously in background if enabled according to frequency
+                if (UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow))
                 {
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
@@ -228,8 +228,13 @@ namespace NotiGlow
             }
         }
 
+        private static bool _hasCheckedUpdatesThisSession = false;
+
         private async System.Threading.Tasks.Task CheckForUpdatesInBackgroundAsync()
         {
+            if (_hasCheckedUpdatesThisSession) return;
+            _hasCheckedUpdatesThisSession = true;
+
             try
             {
                 // Delay 5 seconds after startup to ensure zero impact on boot/initial render

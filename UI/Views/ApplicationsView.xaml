@@ -37,20 +37,28 @@
                         VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="RbListView"
+                                     GroupName="AppViewModeGroup"
                                      Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
-                                     Content="List"
                                      IsChecked="True"
                                      Click="RbViewMode_Click"
-                                     ToolTip="List View"
+                                     ToolTip="Liste görünümü"
+                                     AutomationProperties.Name="Liste görünümü"
                                      Height="28"
-                                     Padding="10,4"/>
+                                     Width="36"
+                                     Padding="0">
+                            <ui:SymbolIcon Symbol="TextBulletListLtr24" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </RadioButton>
                         <RadioButton x:Name="RbGridView"
+                                     GroupName="AppViewModeGroup"
                                      Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
-                                     Content="Grid"
                                      Click="RbViewMode_Click"
-                                     ToolTip="Grid View"
+                                     ToolTip="Izgara görünümü"
+                                     AutomationProperties.Name="Izgara görünümü"
                                      Height="28"
-                                     Padding="10,4"/>
+                                     Width="36"
+                                     Padding="0">
+                            <ui:SymbolIcon Symbol="Grid24" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </RadioButton>
                     </StackPanel>
                 </Border>
 

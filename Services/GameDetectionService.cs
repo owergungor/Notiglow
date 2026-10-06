@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using NotiGlow.Core.Win32;
 
@@ -56,14 +55,34 @@ namespace NotiGlow.Services
                 string procName = process.ProcessName.ToLowerInvariant();
                 string exeName = $"{procName}.exe";
 
+                string? fullProcPath = null;
+                try
+                {
+                    fullProcPath = process.MainModule?.FileName;
+                }
+                catch { }
+
                 var trackedGames = _settingsService.Current.TrackedGames;
 
                 foreach (var game in trackedGames)
                 {
-                    string cleanGame = game.Trim().ToLowerInvariant();
-                    if (cleanGame.EndsWith(".exe")) cleanGame = cleanGame.Substring(0, cleanGame.Length - 4);
+                    if (string.IsNullOrWhiteSpace(game)) continue;
+                    string trimmed = game.Trim();
 
-                    if (procName.Equals(cleanGame, StringComparison.OrdinalIgnoreCase))
+                    // Compare full executable paths if available
+                    if (!string.IsNullOrEmpty(fullProcPath) &&
+                        string.Equals(fullProcPath, trimmed, StringComparison.OrdinalIgnoreCase))
+                    {
+                        gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
+                        return true;
+                    }
+
+                    // Compare executable filename without path
+                    string fileName = Path.GetFileName(trimmed);
+                    string fileNameWithoutExt = Path.GetFileNameWithoutExtension(trimmed);
+
+                    if (procName.Equals(fileNameWithoutExt, StringComparison.OrdinalIgnoreCase) ||
+                        exeName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     {
                         gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
                         return true;

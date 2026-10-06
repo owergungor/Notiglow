@@ -44,7 +44,162 @@ namespace NotiGlow.UI.Views
             ToggleDebugLogging.IsChecked = settings.DebugLogging;
             ToggleIdentityDebug.IsChecked = settings.ShowIdentityDebugInfo;
 
+            // Auto Update Settings
+            ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
+            CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
+            SelectUpdateFrequencyItem(settings.UpdateFrequency);
+
+            if (settings.LastUpdateCheck.HasValue)
+            {
+                TxtUpdateStatus.Text = $"Current: v{UpdateService.CurrentVersionString} • Last check: {settings.LastUpdateCheck.Value.ToLocalTime():yyyy-MM-dd HH:mm}";
+            }
+            else
+            {
+                TxtUpdateStatus.Text = $"Current: v{UpdateService.CurrentVersionString} • Automatic update checking via GitHub Releases";
+            }
+
             _isInitializing = false;
+        }
+
+        private void SelectUpdateFrequencyItem(NotiGlow.Models.UpdateCheckFrequency frequency)
+        {
+            string tag = frequency.ToString();
+            foreach (var item in CmbUpdateFrequency.Items)
+            {
+                if (item is ComboBoxItem cbi)
+                {
+                    string itemTag = cbi.Tag?.ToString() ?? "";
+                    if (string.Equals(itemTag, tag, StringComparison.OrdinalIgnoreCase) ||
+                        (frequency == NotiGlow.Models.UpdateCheckFrequency.OnStartup && string.Equals(itemTag, "Startup", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        CmbUpdateFrequency.SelectedItem = cbi;
+                        return;
+                    }
+                }
+            }
+            // Fallback default
+            if (CmbUpdateFrequency.Items.Count > 0)
+                CmbUpdateFrequency.SelectedIndex = 0;
+        }
+
+        private void ToggleAutoUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing || _settingsService == null) return;
+            var settings = _settingsService.Current;
+            settings.AutoCheckUpdates = ToggleAutoUpdates.IsChecked == true;
+            CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
+            _settingsService.Save(settings);
+        }
+
+        private void CmbUpdateFrequency_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing || _settingsService == null) return;
+            if (CmbUpdateFrequency.SelectedItem is ComboBoxItem item &&
+                item.Tag is string tag &&
+                Enum.TryParse<NotiGlow.Models.UpdateCheckFrequency>(tag, true, out var freq))
+            {
+                var settings = _settingsService.Current;
+                if (settings.UpdateFrequency != freq)
+                {
+                    settings.UpdateFrequency = freq;
+                    _settingsService.Save(settings);
+                }
+            }
+        }
+
+        private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+
+            BtnCheckUpdates.IsEnabled = false;
+            TxtUpdateStatus.Text = "Checking for updates...";
+            PbUpdateProgress.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                var updater = new UpdateService(_settingsService);
+                updater.StatusChanged += (s, ev) =>
+                {
+                    Dispatcher?.Invoke(() =>
+                    {
+                        TxtUpdateStatus.Text = ev.Message;
+                        if (ev.Status == UpdateStatus.Downloading)
+                        {
+                            PbUpdateProgress.Visibility = Visibility.Visible;
+                            PbUpdateProgress.Value = ev.Progress;
+                        }
+                    });
+                };
+
+                var info = await updater.CheckForUpdatesAsync();
+
+                if (info.IsUpdateAvailable)
+                {
+                    var result = MessageBox.Show(
+                        $"A new version (v{info.LatestVersion}) of NotiGlow is available!\n\n" +
+                        $"Would you like to download, verify, and automatically install the update now?",
+                        "Update Available",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        PbUpdateProgress.Visibility = Visibility.Visible;
+                        PbUpdateProgress.Value = 0;
+
+                        var progress = new Progress<double>(p =>
+                        {
+                            PbUpdateProgress.Value = p;
+                        });
+
+                        string? packagePath = await updater.DownloadAndVerifyPackageAsync(info, progress);
+
+                        if (!string.IsNullOrEmpty(packagePath) && System.IO.File.Exists(packagePath))
+                        {
+                            TxtUpdateStatus.Text = "Update ready. Installing...";
+                            var installPrompt = MessageBox.Show(
+                                $"NotiGlow v{info.LatestVersion} downloaded and verified successfully!\n\n" +
+                                "The application will now close, apply the update, and automatically restart. Proceed?",
+                                "Ready to Install",
+                                MessageBoxButton.OKCancel,
+                                MessageBoxImage.Information);
+
+                            if (installPrompt == MessageBoxResult.OK)
+                            {
+                                UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
+                                {
+                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        if (System.Windows.Application.Current is App myApp)
+                                        {
+                                            myApp.ExitApplication();
+                                        }
+                                        else
+                                        {
+                                            System.Windows.Application.Current.Shutdown();
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    TxtUpdateStatus.Text = $"NotiGlow v{UpdateService.CurrentVersionString} is up to date.";
+                    PbUpdateProgress.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                TxtUpdateStatus.Text = "Update check failed.";
+                PbUpdateProgress.Visibility = Visibility.Collapsed;
+                LoggerService.LogWarning($"Update check error: {ex.Message}");
+            }
+            finally
+            {
+                BtnCheckUpdates.IsEnabled = true;
+            }
         }
 
         private void OnSettingsChanged(object? sender, EventArgs e)

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using NotiGlow.Services;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -34,14 +35,64 @@ namespace NotiGlow.UI.Views
             var settings = _settingsService.Current;
             ToggleGamingMode.IsChecked = settings.GamingModeEnabled;
             ToggleGlowDuringGames.IsChecked = settings.GlowDuringGames;
+
+            // Retain saved preferences for sub-settings
             ToggleReduceIntensityInGames.IsChecked = settings.ReduceIntensityInGames;
             ToggleReduceDurationInGames.IsChecked = settings.ReduceDurationInGames;
             ToggleOnlyImportantInGames.IsChecked = settings.OnlyImportantInGames;
+
+            ApplyGameSubSettingsDependency(settings.GlowDuringGames);
 
             ListTrackedGames.ItemsSource = null;
             ListTrackedGames.ItemsSource = settings.TrackedGames;
 
             _isInitializing = false;
+        }
+
+        private void ApplyGameSubSettingsDependency(bool glowDuringGames)
+        {
+            // Toggle controls interaction and accessibility
+            ToggleReduceIntensityInGames.IsEnabled = glowDuringGames;
+            ToggleReduceIntensityInGames.Focusable = glowDuringGames;
+            ToggleReduceIntensityInGames.IsHitTestVisible = glowDuringGames;
+
+            ToggleReduceDurationInGames.IsEnabled = glowDuringGames;
+            ToggleReduceDurationInGames.Focusable = glowDuringGames;
+            ToggleReduceDurationInGames.IsHitTestVisible = glowDuringGames;
+
+            ToggleOnlyImportantInGames.IsEnabled = glowDuringGames;
+            ToggleOnlyImportantInGames.Focusable = glowDuringGames;
+            ToggleOnlyImportantInGames.IsHitTestVisible = glowDuringGames;
+
+            // Card container visual & interaction states
+            CardReduceIntensityInGames.IsEnabled = glowDuringGames;
+            CardReduceIntensityInGames.Focusable = glowDuringGames;
+            CardReduceIntensityInGames.Opacity = glowDuringGames ? 1.0 : 0.45;
+
+            CardReduceDurationInGames.IsEnabled = glowDuringGames;
+            CardReduceDurationInGames.Focusable = glowDuringGames;
+            CardReduceDurationInGames.Opacity = glowDuringGames ? 1.0 : 0.45;
+
+            CardOnlyImportantInGames.IsEnabled = glowDuringGames;
+            CardOnlyImportantInGames.Focusable = glowDuringGames;
+            CardOnlyImportantInGames.Opacity = glowDuringGames ? 1.0 : 0.45;
+
+            // Contextual tooltips explaining disabled state
+            string? tooltip = glowDuringGames ? null : "Glow during games kapalıyken bu ayar uygulanamaz.";
+            CardReduceIntensityInGames.ToolTip = tooltip;
+            CardReduceDurationInGames.ToolTip = tooltip;
+            CardOnlyImportantInGames.ToolTip = tooltip;
+            ToggleReduceIntensityInGames.ToolTip = tooltip;
+            ToggleReduceDurationInGames.ToolTip = tooltip;
+            ToggleOnlyImportantInGames.ToolTip = tooltip;
+
+            // Muted header typography when disabled
+            System.Windows.Media.Brush? primaryBrush = TryFindResource("TextPrimary") as System.Windows.Media.Brush;
+            System.Windows.Media.Brush? mutedBrush = TryFindResource("TextTertiary") as System.Windows.Media.Brush ?? TryFindResource("TextSecondary") as System.Windows.Media.Brush;
+
+            TxtReduceIntensityTitle.Foreground = glowDuringGames ? primaryBrush : mutedBrush;
+            TxtReduceDurationTitle.Foreground = glowDuringGames ? primaryBrush : mutedBrush;
+            TxtOnlyImportantTitle.Foreground = glowDuringGames ? primaryBrush : mutedBrush;
         }
 
         private void OnSettingsChanged(object? sender, EventArgs e)
@@ -61,30 +112,57 @@ namespace NotiGlow.UI.Views
         {
             if (_isInitializing) return;
             var settings = _settingsService.Current;
-            settings.GlowDuringGames = ToggleGlowDuringGames.IsChecked ?? true;
+            bool isGlow = ToggleGlowDuringGames.IsChecked ?? true;
+            settings.GlowDuringGames = isGlow;
             _settingsService.Save(settings);
+
+            ApplyGameSubSettingsDependency(isGlow);
         }
 
         private void ToggleReduceIntensityInGames_Click(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
+
+            // Enforce dependency at UI/ViewModel level
+            if (!settings.GlowDuringGames)
+            {
+                ToggleReduceIntensityInGames.IsChecked = settings.ReduceIntensityInGames;
+                return;
+            }
+
             settings.ReduceIntensityInGames = ToggleReduceIntensityInGames.IsChecked ?? true;
             _settingsService.Save(settings);
         }
 
         private void ToggleReduceDurationInGames_Click(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
+
+            // Enforce dependency at UI/ViewModel level
+            if (!settings.GlowDuringGames)
+            {
+                ToggleReduceDurationInGames.IsChecked = settings.ReduceDurationInGames;
+                return;
+            }
+
             settings.ReduceDurationInGames = ToggleReduceDurationInGames.IsChecked ?? true;
             _settingsService.Save(settings);
         }
 
         private void ToggleOnlyImportantInGames_Click(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
+
+            // Enforce dependency at UI/ViewModel level
+            if (!settings.GlowDuringGames)
+            {
+                ToggleOnlyImportantInGames.IsChecked = settings.OnlyImportantInGames;
+                return;
+            }
+
             settings.OnlyImportantInGames = ToggleOnlyImportantInGames.IsChecked ?? false;
             _settingsService.Save(settings);
         }
