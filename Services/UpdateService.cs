@@ -46,7 +46,7 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
-        public const string CurrentVersionString = "1.7";
+        public const string CurrentVersionString = "1.8";
         private const string GitHubOwner = "owergungor";
         private const string GitHubRepo = "NotiGlow";
 
