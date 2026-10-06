@@ -96,15 +96,41 @@ namespace NotiGlow.Models
             if (reader.TokenType == JsonTokenType.String)
             {
                 string? str = reader.GetString();
-                if (string.Equals(str, "Startup", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(str, "OnStartup", StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(str))
                 {
-                    return UpdateCheckFrequency.OnStartup;
+                    string normalized = str.Trim();
+                    if (string.Equals(normalized, "Startup", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "OnStartup", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "On Startup", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Açılışta", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Acilista", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return UpdateCheckFrequency.OnStartup;
+                    }
+                    if (string.Equals(normalized, "Daily", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Günlük", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Gunluk", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return UpdateCheckFrequency.Daily;
+                    }
+                    if (string.Equals(normalized, "Weekly", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Haftalık", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Haftalik", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return UpdateCheckFrequency.Weekly;
+                    }
+                    if (string.Equals(normalized, "Monthly", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Aylık", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "Aylik", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return UpdateCheckFrequency.Monthly;
+                    }
+                    if (Enum.TryParse<UpdateCheckFrequency>(normalized, true, out var parsed))
+                    {
+                        return parsed;
+                    }
                 }
-                if (Enum.TryParse<UpdateCheckFrequency>(str, true, out var parsed))
-                {
-                    return parsed;
-                }
+                return UpdateCheckFrequency.OnStartup;
             }
             else if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int intVal))
             {

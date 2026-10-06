@@ -130,10 +130,14 @@ namespace NotiGlow.Tests
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
                 var window = new NotiGlow.UI.MainWindow();
-                Assert.AreEqual("NotiGlow 1.6", window.Title);
+                Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString}", window.Title);
+                Assert.AreEqual("NotiGlow 1.7", window.Title);
                 var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
                 Assert.IsNotNull(titleBar);
-                Assert.AreEqual("NotiGlow 1.6 — Ambient Notification Utility", titleBar.Title);
+                Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString} — Ambient Notification Utility", titleBar.Title);
+                Assert.AreEqual("NotiGlow 1.7 — Ambient Notification Utility", titleBar.Title);
+                Assert.IsFalse(window.Title?.Contains("1.6") == true, "Window title must not contain hardcoded 1.6.");
+                Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain hardcoded 1.6.");
             });
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
             thread.Start();

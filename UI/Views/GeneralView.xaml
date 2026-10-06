@@ -127,7 +127,7 @@
                     <ComboBoxItem Tag="Standard">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border Width="12" Height="12" CornerRadius="6" Background="#3B82F6" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Standard (Vercel)" VerticalAlignment="Center"/>
+                            <TextBlock Text="Vercel (Standard)" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ComboBoxItem>
                     <ComboBoxItem Tag="Zen">

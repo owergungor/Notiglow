@@ -69,8 +69,13 @@ namespace NotiGlow.UI.Views
                 if (item is ComboBoxItem cbi)
                 {
                     string itemTag = cbi.Tag?.ToString() ?? "";
+                    string itemContent = cbi.Content?.ToString() ?? "";
                     if (string.Equals(itemTag, tag, StringComparison.OrdinalIgnoreCase) ||
-                        (frequency == NotiGlow.Models.UpdateCheckFrequency.OnStartup && string.Equals(itemTag, "Startup", StringComparison.OrdinalIgnoreCase)))
+                        string.Equals(itemContent, tag, StringComparison.OrdinalIgnoreCase) ||
+                        (frequency == NotiGlow.Models.UpdateCheckFrequency.OnStartup &&
+                         (string.Equals(itemTag, "Startup", StringComparison.OrdinalIgnoreCase) ||
+                          string.Equals(itemContent, "On Startup", StringComparison.OrdinalIgnoreCase) ||
+                          string.Equals(itemContent, "Açılışta", StringComparison.OrdinalIgnoreCase))))
                     {
                         CmbUpdateFrequency.SelectedItem = cbi;
                         return;
@@ -94,15 +99,19 @@ namespace NotiGlow.UI.Views
         private void CmbUpdateFrequency_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing || _settingsService == null) return;
-            if (CmbUpdateFrequency.SelectedItem is ComboBoxItem item &&
-                item.Tag is string tag &&
-                Enum.TryParse<NotiGlow.Models.UpdateCheckFrequency>(tag, true, out var freq))
+            if (CmbUpdateFrequency.SelectedItem is ComboBoxItem item)
             {
-                var settings = _settingsService.Current;
-                if (settings.UpdateFrequency != freq)
+                string tag = item.Tag?.ToString() ?? item.Content?.ToString() ?? "";
+                if (Enum.TryParse<NotiGlow.Models.UpdateCheckFrequency>(tag, true, out var freq) ||
+                    (string.Equals(tag, "On Startup", StringComparison.OrdinalIgnoreCase) && (freq = NotiGlow.Models.UpdateCheckFrequency.OnStartup) == NotiGlow.Models.UpdateCheckFrequency.OnStartup) ||
+                    (string.Equals(tag, "Açılışta", StringComparison.OrdinalIgnoreCase) && (freq = NotiGlow.Models.UpdateCheckFrequency.OnStartup) == NotiGlow.Models.UpdateCheckFrequency.OnStartup))
                 {
-                    settings.UpdateFrequency = freq;
-                    _settingsService.Save(settings);
+                    var settings = _settingsService.Current;
+                    if (settings.UpdateFrequency != freq)
+                    {
+                        settings.UpdateFrequency = freq;
+                        _settingsService.Save(settings);
+                    }
                 }
             }
         }

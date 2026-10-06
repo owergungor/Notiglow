@@ -333,5 +333,164 @@ namespace NotiGlow.Tests
         }
 
         #endregion
+
+        #region 4. Patch v1.7 Regression Tests
+
+        [TestMethod]
+        public void Patch_VersionUI_MatchesCurrentVersionString_AndNoHardcoded16()
+        {
+            Assert.AreEqual("1.7", UpdateService.CurrentVersionString, "CurrentVersionString must be 1.7.");
+
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var window = new NotiGlow.UI.MainWindow();
+                Assert.AreEqual("NotiGlow 1.7", window.Title);
+                Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString}", window.Title);
+
+                var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
+                Assert.IsNotNull(titleBar);
+                Assert.AreEqual("NotiGlow 1.7 — Ambient Notification Utility", titleBar.Title);
+                Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString} — Ambient Notification Utility", titleBar.Title);
+
+                Assert.IsFalse(window.Title?.Contains("1.6") == true, "Window title must not contain hardcoded 1.6.");
+                Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain hardcoded 1.6.");
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [TestMethod]
+        public void Patch_AutoUpdate_FrequencyTurkishStrings_DeserializeSuccessfully()
+        {
+            var cases = new (string json, UpdateCheckFrequency expected)[]
+            {
+                ("{\"UpdateFrequency\": \"Açılışta\"}", UpdateCheckFrequency.OnStartup),
+                ("{\"UpdateFrequency\": \"Acilista\"}", UpdateCheckFrequency.OnStartup),
+                ("{\"UpdateFrequency\": \"Günlük\"}", UpdateCheckFrequency.Daily),
+                ("{\"UpdateFrequency\": \"Gunluk\"}", UpdateCheckFrequency.Daily),
+                ("{\"UpdateFrequency\": \"Haftalık\"}", UpdateCheckFrequency.Weekly),
+                ("{\"UpdateFrequency\": \"Haftalik\"}", UpdateCheckFrequency.Weekly),
+                ("{\"UpdateFrequency\": \"Aylık\"}", UpdateCheckFrequency.Monthly),
+                ("{\"UpdateFrequency\": \"Aylik\"}", UpdateCheckFrequency.Monthly)
+            };
+
+            foreach (var (json, expected) in cases)
+            {
+                var settings = JsonSerializer.Deserialize<AppSettings>(json);
+                Assert.IsNotNull(settings, $"Failed deserializing: {json}");
+                Assert.AreEqual(expected, settings.UpdateFrequency, $"Mismatch for: {json}");
+            }
+        }
+
+        [TestMethod]
+        public void Patch_AutoUpdate_FrequencyEnglishStrings_DeserializeSuccessfully()
+        {
+            var cases = new (string json, UpdateCheckFrequency expected)[]
+            {
+                ("{\"UpdateFrequency\": \"On Startup\"}", UpdateCheckFrequency.OnStartup),
+                ("{\"UpdateFrequency\": \"OnStartup\"}", UpdateCheckFrequency.OnStartup),
+                ("{\"UpdateFrequency\": \"Startup\"}", UpdateCheckFrequency.OnStartup),
+                ("{\"UpdateFrequency\": \"Daily\"}", UpdateCheckFrequency.Daily),
+                ("{\"UpdateFrequency\": \"Weekly\"}", UpdateCheckFrequency.Weekly),
+                ("{\"UpdateFrequency\": \"Monthly\"}", UpdateCheckFrequency.Monthly)
+            };
+
+            foreach (var (json, expected) in cases)
+            {
+                var settings = JsonSerializer.Deserialize<AppSettings>(json);
+                Assert.IsNotNull(settings, $"Failed deserializing: {json}");
+                Assert.AreEqual(expected, settings.UpdateFrequency, $"Mismatch for: {json}");
+            }
+        }
+
+        [TestMethod]
+        public void Patch_AutoUpdate_AdvancedView_ComboBoxItems_AreInEnglish()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var view = new NotiGlow.UI.Views.AdvancedView();
+                var cmb = view.FindName("CmbUpdateFrequency") as System.Windows.Controls.ComboBox;
+                Assert.IsNotNull(cmb, "CmbUpdateFrequency combobox must exist.");
+                Assert.AreEqual(4, cmb.Items.Count, "CmbUpdateFrequency must have exactly 4 items.");
+
+                var items = cmb.Items.OfType<System.Windows.Controls.ComboBoxItem>().ToList();
+                Assert.AreEqual("On Startup", items[0].Content?.ToString());
+                Assert.AreEqual("OnStartup", items[0].Tag?.ToString());
+
+                Assert.AreEqual("Daily", items[1].Content?.ToString());
+                Assert.AreEqual("Daily", items[1].Tag?.ToString());
+
+                Assert.AreEqual("Weekly", items[2].Content?.ToString());
+                Assert.AreEqual("Weekly", items[2].Tag?.ToString());
+
+                Assert.AreEqual("Monthly", items[3].Content?.ToString());
+                Assert.AreEqual("Monthly", items[3].Tag?.ToString());
+
+                foreach (var item in items)
+                {
+                    string text = item.Content?.ToString() ?? "";
+                    Assert.IsFalse(text.Contains("Açılışta", StringComparison.OrdinalIgnoreCase));
+                    Assert.IsFalse(text.Contains("Günlük", StringComparison.OrdinalIgnoreCase));
+                    Assert.IsFalse(text.Contains("Haftalık", StringComparison.OrdinalIgnoreCase));
+                    Assert.IsFalse(text.Contains("Aylık", StringComparison.OrdinalIgnoreCase));
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [TestMethod]
+        public void Patch_Theme_GeneralView_StandardTheme_ShowsVercelStandard()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var view = new NotiGlow.UI.Views.GeneralView();
+                var cmb = view.FindName("CmbColorTheme") as System.Windows.Controls.ComboBox;
+                Assert.IsNotNull(cmb, "CmbColorTheme combobox must exist.");
+
+                var standardItem = cmb.Items.OfType<System.Windows.Controls.ComboBoxItem>()
+                    .FirstOrDefault(i => string.Equals(i.Tag?.ToString(), "Standard", StringComparison.OrdinalIgnoreCase));
+                Assert.IsNotNull(standardItem, "Item with Tag 'Standard' must exist.");
+
+                var stack = standardItem.Content as System.Windows.Controls.StackPanel;
+                Assert.IsNotNull(stack, "Standard item content must be a StackPanel.");
+                var textBlock = stack.Children.OfType<System.Windows.Controls.TextBlock>().FirstOrDefault();
+                Assert.IsNotNull(textBlock, "TextBlock inside Standard item must exist.");
+                Assert.AreEqual("Vercel (Standard)", textBlock.Text);
+                Assert.AreNotEqual("Standard (Vercel)", textBlock.Text);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [TestMethod]
+        public void Patch_Theme_StandardPersistence_AndPaletteCompatibility()
+        {
+            string legacyJson = "{\"ColorTheme\": \"Standard\"}";
+            var settings = JsonSerializer.Deserialize<AppSettings>(legacyJson);
+            Assert.IsNotNull(settings);
+            Assert.AreEqual(ColorTheme.Standard, settings.ColorTheme);
+
+            string numericJson = "{\"ColorTheme\": 0}";
+            var settingsNum = JsonSerializer.Deserialize<AppSettings>(numericJson);
+            Assert.IsNotNull(settingsNum);
+            Assert.AreEqual(ColorTheme.Standard, settingsNum.ColorTheme);
+
+            var darkPalette = ThemeService.GetPalette(ColorTheme.Standard, true);
+            Assert.IsNotNull(darkPalette);
+            Assert.AreEqual("#0A0A0A", darkPalette.WindowBackground);
+
+            var lightPalette = ThemeService.GetPalette(ColorTheme.Standard, false);
+            Assert.IsNotNull(lightPalette);
+            Assert.AreEqual("#FAFAFA", lightPalette.WindowBackground);
+        }
+
+        #endregion
     }
 }

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
@@ -46,7 +47,45 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
-        public const string CurrentVersionString = "1.8";
+        public static string CurrentVersionString => ResolveCurrentVersion();
+        private static string? _cachedVersion;
+
+        private static string ResolveCurrentVersion()
+        {
+            if (_cachedVersion != null)
+                return _cachedVersion;
+
+            try
+            {
+                var assembly = typeof(UpdateService).Assembly;
+                var infoAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+                if (!string.IsNullOrWhiteSpace(infoAttr?.InformationalVersion))
+                {
+                    string infoVer = infoAttr.InformationalVersion.Split('+')[0].Trim();
+                    if (!string.IsNullOrWhiteSpace(infoVer))
+                    {
+                        _cachedVersion = infoVer;
+                        return _cachedVersion;
+                    }
+                }
+
+                var asmVer = assembly.GetName().Version;
+                if (asmVer != null)
+                {
+                    _cachedVersion = asmVer.Build > 0
+                        ? $"{asmVer.Major}.{asmVer.Minor}.{asmVer.Build}"
+                        : $"{asmVer.Major}.{asmVer.Minor}";
+                    return _cachedVersion;
+                }
+            }
+            catch
+            {
+                // Fallback
+            }
+
+            _cachedVersion = "1.8";
+            return _cachedVersion;
+        }
         private const string GitHubOwner = "owergungor";
         private const string GitHubRepo = "NotiGlow";
 

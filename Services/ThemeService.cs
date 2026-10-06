@@ -71,7 +71,7 @@ namespace NotiGlow.Services
 
         private static void RegisterPalettes()
         {
-            // 1. Standard (Vercel)
+            // 1. Vercel (Standard)
             Palettes[(ColorTheme.Standard, true)] = new ThemePalette
             {
                 WindowBackground = "#0A0A0A",
