@@ -60,6 +60,7 @@ namespace NotiGlow.Models
         public double GamingDurationMultiplier { get; set; } = 0.5; // 50% of original
         public bool OnlyImportantInGames { get; set; } = false;
         public List<string> TrackedGames { get; set; } = new List<string>();
+        public List<string> IgnoredGames { get; set; } = new List<string>();
 
         [System.Text.Json.Serialization.JsonIgnore]
         public bool CanModifyGameSubSettings => GlowDuringGames;

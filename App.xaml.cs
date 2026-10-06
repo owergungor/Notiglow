@@ -206,6 +206,20 @@ namespace NotiGlow
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
 
+                // Sync installed games from Steam & Epic asynchronously in background (non-blocking)
+                _ = System.Threading.Tasks.Task.Run(async () =>
+                {
+                    try
+                    {
+                        await System.Threading.Tasks.Task.Delay(2500);
+                        await _glowManager.GameDetectionService.ScanAndSyncTrackedGamesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerService.LogWarning($"Background game detection sync error: {ex.Message}");
+                    }
+                });
+
                 LoggerService.LogStartupPhase("READY");
             }
             catch (Exception ex)

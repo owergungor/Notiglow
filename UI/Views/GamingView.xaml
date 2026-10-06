@@ -94,13 +94,24 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Tracked Game Executables" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                <ui:Button Grid.Column="1" x:Name="BtnAddGamePickerTop" Appearance="Primary" Click="BtnAddGamePicker_Click" VerticalAlignment="Center" ToolTip="Select game executable via file browser" Foreground="{DynamicResource TextPrimary}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Add a Game" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Tracked Game Executables" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock x:Name="TxtDetectionStatus" Text="Steam &amp; Epic Games automatic detection supported." FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:Button x:Name="BtnScanGames" Appearance="Secondary" Click="BtnScanGames_Click" VerticalAlignment="Center" ToolTip="Scan for Steam and Epic Games automatically" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Scan Launchers" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                    <ui:Button x:Name="BtnAddGamePickerTop" Appearance="Primary" Click="BtnAddGamePicker_Click" VerticalAlignment="Center" ToolTip="Select game executable via file browser" Foreground="{DynamicResource TextPrimary}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Add a Game" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </StackPanel>
             </Grid>
 
             <Border CornerRadius="8" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">

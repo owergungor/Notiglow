@@ -142,7 +142,7 @@ namespace NotiGlow.UI
                     _viewGaming = new Views.GamingView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
                     if (_settingsService != null && _glowManager != null)
                     {
-                        _viewGaming.Initialize(_settingsService, _glowManager);
+                        _viewGaming.Initialize(_settingsService, _glowManager, _glowManager.GameDetectionService);
                     }
                     RootContentGrid.Children.Add(_viewGaming);
                 }

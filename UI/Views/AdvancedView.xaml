@@ -36,7 +36,7 @@
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Automatic Updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.8 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.9 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
                     </StackPanel>
                 </ui:CardControl.Header>
