@@ -339,18 +339,16 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void Patch_VersionUI_MatchesCurrentVersionString_AndNoHardcoded16()
         {
-            Assert.AreEqual("1.7", UpdateService.CurrentVersionString, "CurrentVersionString must be 1.7.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(UpdateService.CurrentVersionString), "CurrentVersionString must not be empty.");
 
             var thread = new System.Threading.Thread(() =>
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
                 var window = new NotiGlow.UI.MainWindow();
-                Assert.AreEqual("NotiGlow 1.7", window.Title);
                 Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString}", window.Title);
 
                 var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
                 Assert.IsNotNull(titleBar);
-                Assert.AreEqual("NotiGlow 1.7 — Ambient Notification Utility", titleBar.Title);
                 Assert.AreEqual($"NotiGlow {UpdateService.CurrentVersionString} — Ambient Notification Utility", titleBar.Title);
 
                 Assert.IsFalse(window.Title?.Contains("1.6") == true, "Window title must not contain hardcoded 1.6.");

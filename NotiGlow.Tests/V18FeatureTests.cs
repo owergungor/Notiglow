@@ -183,5 +183,26 @@ namespace NotiGlow.Tests
                 }
             }
         }
+
+        [TestMethod]
+        public void V18_VersionMetadata_MatchesVersion18()
+        {
+            Assert.AreEqual("1.8", UpdateService.CurrentVersionString, "CurrentVersionString must dynamically resolve to 1.8 in v1.8.");
+
+            var thread = new System.Threading.Thread(() =>
+            {
+                var app = System.Windows.Application.Current ?? new System.Windows.Application();
+                var window = new NotiGlow.UI.MainWindow();
+                Assert.AreEqual("NotiGlow 1.8", window.Title);
+                var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
+                Assert.IsNotNull(titleBar);
+                Assert.AreEqual("NotiGlow 1.8 — Ambient Notification Utility", titleBar.Title);
+                Assert.IsFalse(window.Title?.Contains("1.6") == true);
+                Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true);
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }
