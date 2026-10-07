@@ -12,6 +12,7 @@ namespace NotiGlow.Models
         public bool OledMode { get; set; } = false;
         public ThemeMode ThemeMode { get; set; } = ThemeMode.Dark;
         public ColorTheme ColorTheme { get; set; } = ColorTheme.Standard;
+        public string AppLanguage { get; set; } = "en-US";
         public AppTheme Theme
         {
             get => ThemeMode switch

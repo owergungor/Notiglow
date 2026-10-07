@@ -108,7 +108,11 @@ namespace NotiGlow.UI.Views
             if (_profileService == null) return;
             var cloned = profile.Clone();
             _profileService.AddOrUpdateProfile(cloned);
-            MessageBox.Show($"Profile '{cloned.Name}' created!", "Profile Duplicated", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                LocalizationService.Instance.GetString("Applications.ProfileCreatedMsg", cloned.Name),
+                LocalizationService.Instance.GetString("Applications.ProfileCreatedTitle"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void OpenEditor(AppProfile profile, bool isNew)
@@ -130,7 +134,9 @@ namespace NotiGlow.UI.Views
             };
             _isNewProfile = isNew;
 
-            TxtEditorTitle.Text = isNew ? "Add New Application Profile" : $"Edit Profile: {profile.Name}";
+            TxtEditorTitle.Text = isNew
+                ? LocalizationService.Instance.GetString("Applications.NewProfile")
+                : $"{LocalizationService.Instance.GetString("Applications.EditProfile")}: {profile.Name}";
             TxtEditAppName.Text = _editingProfile.Name;
             TxtEditAppId.Text = _editingProfile.AppId;
 
@@ -253,7 +259,7 @@ namespace NotiGlow.UI.Views
                     }
                     else if (!string.IsNullOrEmpty(error))
                     {
-                        MessageBox.Show(error, "Invalid File Selection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        MessageBox.Show(error, LocalizationService.Instance.GetString("Applications.InvalidFileTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
@@ -278,7 +284,11 @@ namespace NotiGlow.UI.Views
 
             if (string.IsNullOrEmpty(_editingProfile.Name) || string.IsNullOrEmpty(_editingProfile.AppId))
             {
-                MessageBox.Show("Please enter valid Application Name and App Identifier.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    LocalizationService.Instance.GetString("Applications.ValidationMsg"),
+                    LocalizationService.Instance.GetString("Applications.ValidationTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
                 return;
             }
 
@@ -303,7 +313,11 @@ namespace NotiGlow.UI.Views
 
         private void DeleteProfile(AppProfile profile)
         {
-            var result = MessageBox.Show($"Are you sure you want to remove profile for {profile.Name}?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show(
+                LocalizationService.Instance.GetString("Applications.ConfirmDeleteMsg", profile.Name),
+                LocalizationService.Instance.GetString("Applications.ConfirmDeleteTitle"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 _profileService?.RemoveProfile(profile.AppId);

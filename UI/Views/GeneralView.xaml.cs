@@ -35,6 +35,17 @@ namespace NotiGlow.UI.Views
                 UpdateListenerStatus(_notificationService.CurrentAccessStatus);
             }
 
+            LocalizationService.Instance.LanguageChanged += (s, e) =>
+            {
+                Dispatcher?.Invoke(() =>
+                {
+                    if (_notificationService != null)
+                    {
+                        UpdateListenerStatus(_notificationService.CurrentAccessStatus);
+                    }
+                });
+            };
+
             LoadSettings();
         }
 
@@ -44,7 +55,7 @@ namespace NotiGlow.UI.Views
             {
                 IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
                 IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
-                TxtListenerStatus.Text = "Active & Listening";
+                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerActive");
                 TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
                 BtnFixAccess.Visibility = Visibility.Collapsed;
             }
@@ -52,7 +63,7 @@ namespace NotiGlow.UI.Views
             {
                 IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
                 IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
-                TxtListenerStatus.Text = "Access Denied by Windows";
+                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerPermissionRequired");
                 TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
                 BtnFixAccess.Visibility = Visibility.Visible;
             }
@@ -60,7 +71,7 @@ namespace NotiGlow.UI.Views
             {
                 IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
                 IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
-                TxtListenerStatus.Text = "Permission Required";
+                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerPermissionRequired");
                 TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
                 BtnFixAccess.Visibility = Visibility.Visible;
             }

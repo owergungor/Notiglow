@@ -17,14 +17,14 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="General Settings" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Control how NotiGlow behaves and handles ambient animations." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{DynamicResource General.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource General.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
@@ -33,8 +33,8 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="NotiGlow Activation" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Enables or disables NotiGlow notification effects." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.Activation}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ActivationDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="MasterToggle" IsChecked="True" Click="MasterToggle_Click" VerticalAlignment="Center"/>
@@ -44,14 +44,14 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Notification Listener" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Windows Notification Listener access status for catching app toasts." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.Listener}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ListenerDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon x:Name="IconListenerStatus" Symbol="CheckmarkCircle24" Foreground="#FF25D366" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="TxtListenerStatus" Text="Active &amp; Listening" Foreground="#FF25D366" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
-                    <ui:Button x:Name="BtnFixAccess" Content="Open Settings" Appearance="Secondary" Margin="12,0,0,0" Padding="8,4" FontSize="12" Visibility="Collapsed" Click="BtnFixAccess_Click"/>
+                    <TextBlock x:Name="TxtListenerStatus" Text="{DynamicResource General.ListenerActive}" Foreground="#FF25D366" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"/>
+                    <ui:Button x:Name="BtnFixAccess" Content="{DynamicResource General.OpenSettings}" Appearance="Secondary" Margin="12,0,0,0" Padding="8,4" FontSize="12" Visibility="Collapsed" Click="BtnFixAccess_Click"/>
                 </StackPanel>
             </ui:CardControl>
 
@@ -59,8 +59,8 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Start with Windows" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Automatically starts NotiGlow when you sign in to Windows." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.StartWithWindows}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.StartWithWindowsDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleStartWithWindows" Click="ToggleStartWithWindows_Click" VerticalAlignment="Center"/>
@@ -70,53 +70,51 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Reduce Animations" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Reduces animation effects to make the interface and notifications less dynamic." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.ReduceAnimations}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ReduceAnimationsDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleReduceAnimations" Click="ToggleReduceAnimations_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
-
-
-            <!-- Card 5: Application Theme Mode (Reference: 21st.dev/@ncdai/components/theme-switcher-1) -->
+            <!-- Card 5: Application Theme Mode -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Theme Mode" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Choose between Windows system preference, Light, or Dark mode." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.ThemeMode}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ThemeModeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <Border Background="{DynamicResource InputBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="8" Padding="3" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="BtnModeSystem" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Follow Windows system theme">
+                        <RadioButton x:Name="BtnModeSystem" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="{DynamicResource General.ThemeSystemToolTip}">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Desktop24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Sistem" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource General.ThemeSystem}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
-                        <RadioButton x:Name="BtnModeLight" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Force Light mode">
+                        <RadioButton x:Name="BtnModeLight" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="{DynamicResource General.ThemeLightToolTip}">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="WeatherSunny24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Aydınlık" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource General.ThemeLight}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
-                        <RadioButton x:Name="BtnModeDark" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="Force Dark mode">
+                        <RadioButton x:Name="BtnModeDark" GroupName="ThemeModeGroup" Style="{DynamicResource SegmentedThemeRadioButtonStyle}" Click="ThemeMode_Click" ToolTip="{DynamicResource General.ThemeDarkToolTip}">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="WeatherMoon24" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Karanlık" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource General.ThemeDark}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </RadioButton>
                     </StackPanel>
                 </Border>
             </ui:CardControl>
 
-            <!-- Card 6: Color Theme Dropdown (Apple-inspired modern select) -->
+            <!-- Card 6: Color Theme Dropdown -->
             <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Color Theme" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Curated color systems with tailored Light and Dark variants." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource General.ColorTheme}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ColorThemeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ComboBox x:Name="CmbColorTheme"

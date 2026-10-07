@@ -17,8 +17,19 @@ namespace NotiGlow.Services
         private DateTime _lastCheckTime = DateTime.MinValue;
         private bool _cachedIsGaming = false;
         private string _activeGameName = string.Empty;
+        private string? _simulatedGameName = null;
 
         public string ActiveGameName => _activeGameName;
+        public bool IsSimulatingGame => !string.IsNullOrEmpty(_simulatedGameName);
+
+        public void SetSimulatedGame(string? gameName)
+        {
+            _simulatedGameName = gameName;
+            if (!string.IsNullOrEmpty(gameName))
+            {
+                _activeGameName = gameName;
+            }
+        }
 
         public GameDetectionService(
             SettingsService settingsService,
@@ -134,6 +145,12 @@ namespace NotiGlow.Services
 
         public bool IsGameRunning()
         {
+            if (!string.IsNullOrEmpty(_simulatedGameName))
+            {
+                _activeGameName = _simulatedGameName;
+                return true;
+            }
+
             if (!_settingsService.Current.GamingModeEnabled)
             {
                 _activeGameName = string.Empty;

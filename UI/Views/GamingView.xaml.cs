@@ -16,7 +16,38 @@ namespace NotiGlow.UI.Views
 
         public GamingView()
         {
+            LocalizationService.Instance.ApplyToWpfResources();
+            LocalizationService.Instance.ApplyToWpfResources(this.Resources);
             InitializeComponent();
+            if (TxtBtnTestGameAnimation != null)
+            {
+                TxtBtnTestGameAnimation.Text = LocalizationService.Instance.GetString("Gaming.TestGameAnimation");
+            }
+            Loaded += (s, e) =>
+            {
+                LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            };
+            Unloaded += (s, e) =>
+            {
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            };
+        }
+
+        private void OnLanguageChanged(object? sender, string lang)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            if (Dispatcher.Thread != null && !Dispatcher.Thread.IsAlive) return;
+            try
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    if (TxtBtnTestGameAnimation != null)
+                    {
+                        TxtBtnTestGameAnimation.Text = LocalizationService.Instance.GetString("Gaming.TestGameAnimation");
+                    }
+                });
+            }
+            catch { }
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null, GameDetectionService? gameDetectionService = null)
@@ -80,7 +111,7 @@ namespace NotiGlow.UI.Views
             CardOnlyImportantInGames.Opacity = glowDuringGames ? 1.0 : 0.45;
 
             // Contextual tooltips explaining disabled state
-            string? tooltip = glowDuringGames ? null : "Glow during games kapalıyken bu ayar uygulanamaz.";
+            string? tooltip = glowDuringGames ? null : LocalizationService.Instance.GetString("Gaming.SubSettingsDisabledToolTip");
             CardReduceIntensityInGames.ToolTip = tooltip;
             CardReduceDurationInGames.ToolTip = tooltip;
             CardOnlyImportantInGames.ToolTip = tooltip;
@@ -176,7 +207,7 @@ namespace NotiGlow.UI.Views
                 var dialog = new Microsoft.Win32.OpenFileDialog
                 {
                     Filter = "Executable Files (*.exe)|*.exe|All Files (*.*)|*.*",
-                    Title = "Select Game Executable",
+                    Title = LocalizationService.Instance.GetString("Gaming.SelectExecutableDialogTitle"),
                     CheckFileExists = true,
                     Multiselect = false
                 };
@@ -197,7 +228,7 @@ namespace NotiGlow.UI.Views
             if (_gameDetectionService == null || _settingsService == null) return;
 
             BtnScanGames.IsEnabled = false;
-            TxtDetectionStatus.Text = "Scanning Steam & Epic Games...";
+            TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.ScanningGames");
 
             try
             {
@@ -207,16 +238,16 @@ namespace NotiGlow.UI.Views
 
                 if (newGames > 0)
                 {
-                    TxtDetectionStatus.Text = $"Found and added {newGames} new games to tracked list.";
+                    TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.FoundGames", newGames);
                 }
                 else
                 {
-                    TxtDetectionStatus.Text = "No new games found (games list is up to date).";
+                    TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.NoNewGames");
                 }
             }
             catch (Exception ex)
             {
-                TxtDetectionStatus.Text = "Game scan encountered an issue.";
+                TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.ScanError");
                 LoggerService.LogWarning($"Manual game scan failed: {ex.Message}");
             }
             finally
@@ -280,18 +311,23 @@ namespace NotiGlow.UI.Views
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null || _settingsService == null) return;
-            var testProfile = new NotiGlow.Models.AppProfile
+
+            var trackedGames = _settingsService.Current.TrackedGames;
+            if (trackedGames == null || trackedGames.Count == 0)
             {
-                AppId = "TestApp",
-                Name = "NotiGlow Test",
-                ColorHex = _settingsService.Current.DefaultColorHex,
-                DurationMs = _settingsService.Current.DefaultDurationMs,
-                Intensity = _settingsService.Current.DefaultIntensity,
-                Style = _settingsService.Current.DefaultStyle,
-                Thickness = _settingsService.Current.DefaultThickness,
-                GlowSize = _settingsService.Current.DefaultGlowSize
-            };
-            _glowManager.TriggerProfile(testProfile);
+                TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.EmptyTrackedGamesWarning");
+                return;
+            }
+
+            string? selectedGame = ListTrackedGames.SelectedItem as string;
+            bool triggered = _glowManager.TriggerGameAnimationTest(selectedGame);
+            if (!triggered)
+            {
+                if (!_settingsService.Current.GlowDuringGames)
+                {
+                    TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.SubSettingsDisabledToolTip");
+                }
+            }
         }
     }
 }
