@@ -260,10 +260,149 @@ namespace NotiGlow.UI
             InitializeActiveSelectionBoxTransform();
             if (RootNavigationView != null)
             {
-                RootNavigationView.PaneOpened += (s, e) => UpdateNavSelectionVisuals(_currentTag);
-                RootNavigationView.PaneClosed += (s, e) => UpdateNavSelectionVisuals(_currentTag);
+                RootNavigationView.PaneOpened += (s, e) =>
+                {
+                    UpdateNavSelectionVisuals(_currentTag);
+                    UpdateLanguageButtonDisplay(true);
+                };
+                RootNavigationView.PaneClosed += (s, e) =>
+                {
+                    UpdateNavSelectionVisuals(_currentTag);
+                    UpdateLanguageButtonDisplay(false);
+                };
+                UpdateLanguageButtonDisplay(RootNavigationView.IsPaneOpen);
             }
             UpdateNavSelectionVisuals(_currentTag);
+            UpdateLanguageButtonVisuals();
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged(object? sender, string langCode)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UpdateLanguageButtonVisuals();
+                UpdateAppTitle();
+                UpdateNavSelectionVisuals(_currentTag);
+            });
+        }
+
+        public void UpdateLanguageButtonDisplay(bool isPaneOpen)
+        {
+            if (BtnLanguage == null) return;
+
+            if (isPaneOpen)
+            {
+                if (TxtLanguageLabel != null) TxtLanguageLabel.Visibility = Visibility.Visible;
+                if (PnlLanguageBadge != null) PnlLanguageBadge.Visibility = Visibility.Visible;
+                BtnLanguage.Width = double.NaN;
+                BtnLanguage.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+                if (PopupLanguage != null)
+                {
+                    PopupLanguage.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+                }
+            }
+            else
+            {
+                if (TxtLanguageLabel != null) TxtLanguageLabel.Visibility = Visibility.Collapsed;
+                if (PnlLanguageBadge != null) PnlLanguageBadge.Visibility = Visibility.Collapsed;
+                BtnLanguage.Width = 38;
+                BtnLanguage.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
+                if (PopupLanguage != null)
+                {
+                    PopupLanguage.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
+                }
+            }
+        }
+
+        public void UpdateLanguageButtonVisuals()
+        {
+            string currentLang = LocalizationService.Instance.CurrentLanguage;
+            var langItem = LocalizationService.Instance.CurrentLanguageItem;
+
+            if (TxtCurrentLangCode != null)
+            {
+                TxtCurrentLangCode.Text = langItem.ShortCode;
+            }
+
+            if (BtnLanguage != null)
+            {
+                string langName = LocalizationService.Instance.GetString("Language.Language");
+                BtnLanguage.ToolTip = $"{langName}: {langItem.DisplayName} ({langItem.ShortCode})";
+                System.Windows.Automation.AutomationProperties.SetName(BtnLanguage, $"{langName}: {langItem.DisplayName}");
+            }
+
+            if (CheckLangEn != null) CheckLangEn.Visibility = string.Equals(currentLang, "en-US", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+            if (CheckLangEs != null) CheckLangEs.Visibility = string.Equals(currentLang, "es-ES", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+            if (CheckLangFr != null) CheckLangFr.Visibility = string.Equals(currentLang, "fr-FR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+            if (CheckLangTr != null) CheckLangTr.Visibility = string.Equals(currentLang, "tr-TR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void BtnLanguage_Click(object sender, RoutedEventArgs e)
+        {
+            if (PopupLanguage == null) return;
+
+            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
+            {
+                PopupLanguage.PopupAnimation = System.Windows.Controls.Primitives.PopupAnimation.None;
+            }
+            else
+            {
+                PopupLanguage.PopupAnimation = System.Windows.Controls.Primitives.PopupAnimation.Fade;
+            }
+
+            PopupLanguage.IsOpen = !PopupLanguage.IsOpen;
+        }
+
+        private void BtnLanguage_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Down || e.Key == System.Windows.Input.Key.Up || e.Key == System.Windows.Input.Key.Enter || e.Key == System.Windows.Input.Key.Space)
+            {
+                if (PopupLanguage != null && !PopupLanguage.IsOpen)
+                {
+                    PopupLanguage.IsOpen = true;
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void PopupLanguage_Opened(object sender, EventArgs e)
+        {
+            string current = LocalizationService.Instance.CurrentLanguage;
+            System.Windows.Controls.Button? buttonToFocus = current switch
+            {
+                "es-ES" => BtnLangEs,
+                "fr-FR" => BtnLangFr,
+                "tr-TR" => BtnLangTr,
+                _ => BtnLangEn
+            };
+            buttonToFocus?.Focus();
+        }
+
+        private void PopupLanguage_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+            {
+                if (PopupLanguage != null)
+                {
+                    PopupLanguage.IsOpen = false;
+                }
+                BtnLanguage?.Focus();
+                e.Handled = true;
+            }
+        }
+
+        private void BtnSelectLanguage_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button btn && btn.Tag is string langCode)
+            {
+                LocalizationService.Instance.SetLanguage(langCode, persist: true);
+                if (PopupLanguage != null)
+                {
+                    PopupLanguage.IsOpen = false;
+                }
+                BtnLanguage?.Focus();
+            }
         }
 
         private void RootNavigationView_SizeChanged(object sender, SizeChangedEventArgs e)

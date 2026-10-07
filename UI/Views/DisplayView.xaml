@@ -16,14 +16,14 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Display" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Choose which displays show the glow border animation when notifications trigger." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{DynamicResource Display.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource Display.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
@@ -34,8 +34,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Target24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Active Monitor" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Show glow on the monitor containing the active window / mouse cursor focus." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Display.ActiveMonitor}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Display.ActiveMonitorDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -48,8 +48,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Primary Monitor (Default)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Always use the primary Windows display for notification glow animations." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Display.PrimaryMonitor}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Display.PrimaryMonitorDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -62,8 +62,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="All Monitors" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Show glow edge animations on every connected display simultaneously." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Display.AllMonitors}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Display.AllMonitorsDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -71,7 +71,7 @@
             </RadioButton>
 
             <!-- Detected Monitors List -->
-            <TextBlock Text="Detected Monitors" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,12"/>
+            <TextBlock Text="{DynamicResource Display.DetectedMonitors}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,12"/>
             <StackPanel x:Name="PnlMonitors" HorizontalAlignment="Stretch"/>
         </StackPanel>
     </ScrollViewer>

@@ -22,6 +22,8 @@ namespace NotiGlow.Services
 
         public bool IsAnimating => _isAnimating;
         public GameDetectionService GameDetectionService => _gameDetectionService;
+        public bool SuppressOverlayWindowsForTesting { get; set; } = false;
+        public AppProfile? LastTriggeredProfile { get; private set; }
 
         public GlowManager(SettingsService settingsService, ProfileService profileService)
         {
@@ -62,7 +64,69 @@ namespace NotiGlow.Services
 
         public void TriggerProfile(AppProfile profile)
         {
-            if (!_settingsService.Current.MasterEnabled) return;
+            TriggerProfileCore(profile, isTest: false);
+        }
+
+        public bool TriggerGameAnimationTest(string? specificGame = null)
+        {
+            var settings = _settingsService.Current;
+            if (!settings.MasterEnabled) return false;
+
+            var trackedGames = settings.TrackedGames;
+            if (trackedGames == null || trackedGames.Count == 0)
+            {
+                LoggerService.LogWarning("No tracked games configured for game animation test.");
+                return false;
+            }
+
+            string? chosenGame = specificGame;
+            if (string.IsNullOrWhiteSpace(chosenGame))
+            {
+                chosenGame = trackedGames.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g));
+            }
+
+            if (string.IsNullOrWhiteSpace(chosenGame))
+            {
+                return false;
+            }
+
+            string gameName = System.IO.Path.GetFileNameWithoutExtension(chosenGame);
+            if (string.IsNullOrWhiteSpace(gameName))
+            {
+                gameName = chosenGame;
+            }
+
+            var profile = _profileService.GetProfile(chosenGame, gameName);
+            if (profile == null)
+            {
+                profile = new AppProfile
+                {
+                    AppId = chosenGame,
+                    Name = gameName,
+                    ColorHex = settings.DefaultColorHex,
+                    DurationMs = settings.DefaultDurationMs,
+                    Intensity = settings.DefaultIntensity,
+                    Style = settings.DefaultStyle,
+                    Thickness = settings.DefaultThickness,
+                    GlowSize = settings.DefaultGlowSize,
+                    Priority = NotificationPriority.Normal
+                };
+            }
+
+            try
+            {
+                _gameDetectionService.SetSimulatedGame(gameName);
+                return TriggerProfileCore(profile, isTest: true);
+            }
+            finally
+            {
+                _gameDetectionService.SetSimulatedGame(null);
+            }
+        }
+
+        private bool TriggerProfileCore(AppProfile profile, bool isTest)
+        {
+            if (!_settingsService.Current.MasterEnabled) return false;
 
             var settings = _settingsService.Current;
 
@@ -73,18 +137,18 @@ namespace NotiGlow.Services
                 if (!settings.GlowDuringGames)
                 {
                     LoggerService.LogInfo("Glow suppressed due to Gaming Mode settings");
-                    return;
+                    return false;
                 }
 
                 if (settings.OnlyImportantInGames && profile.Priority != NotificationPriority.High)
                 {
                     LoggerService.LogInfo("Non-high priority notification suppressed in Gaming Mode");
-                    return;
+                    return false;
                 }
             }
 
             // Apply adjustments (Gaming multipliers, OLED Mode, Accessibility)
-            profile = AdjustProfileParameters(profile, settings);
+            profile = AdjustProfileParameters(profile, settings, isTest);
             LoggerService.LogInfo($"Triggering glow animation for profile '{profile.Name}' (AppId='{profile.AppId}'): Style={profile.Style}, Color={profile.ColorHex}, Duration={profile.DurationMs}ms, Intensity={profile.Intensity:0.00}");
 
             // Handle Burst Mode logic
@@ -94,12 +158,12 @@ namespace NotiGlow.Services
                 {
                     case BurstMode.Ignore:
                         LoggerService.LogInfo($"BurstMode IGNORE: Dropped glow for {profile.Name}");
-                        return;
+                        return false;
 
                     case BurstMode.Queue:
                         _notificationQueue.Enqueue(profile);
                         LoggerService.LogInfo($"BurstMode QUEUE: Queued glow for {profile.Name}");
-                        return;
+                        return true;
 
                     case BurstMode.Extend:
                         LoggerService.LogInfo($"BurstMode EXTEND: Extending glow for {profile.Name}");
@@ -114,16 +178,18 @@ namespace NotiGlow.Services
             }
 
             PlayGlowInternal(profile);
+            return true;
         }
 
-        private AppProfile AdjustProfileParameters(AppProfile original, AppSettings settings)
+        private AppProfile AdjustProfileParameters(AppProfile original, AppSettings settings, bool isTest = false)
         {
             double intensity = original.Intensity;
             int duration = original.DurationMs;
             GlowStyle style = original.Style;
 
             // Gaming mode scaling
-            if (settings.GamingModeEnabled && _gameDetectionService.IsGameRunning())
+            bool isGamingActive = _gameDetectionService.IsGameRunning() && (settings.GamingModeEnabled || isTest);
+            if (isGamingActive)
             {
                 if (settings.ReduceIntensityInGames)
                 {
@@ -177,6 +243,16 @@ namespace NotiGlow.Services
         {
             _isAnimating = true;
             _activeProfile = profile;
+            LastTriggeredProfile = profile;
+
+            if (SuppressOverlayWindowsForTesting ||
+                System.Windows.Application.Current == null ||
+                System.Threading.Thread.CurrentThread.GetApartmentState() != System.Threading.ApartmentState.STA)
+            {
+                _isAnimating = false;
+                _activeProfile = null;
+                return;
+            }
 
             List<Screen> targetScreens = GetTargetScreens();
 

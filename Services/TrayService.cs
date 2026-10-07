@@ -16,6 +16,9 @@ namespace NotiGlow.Services
 
         private ToolStripMenuItem _enableMenuItem = null!;
         private ToolStripMenuItem _gamingMenuItem = null!;
+        private ToolStripMenuItem _testItem = null!;
+        private ToolStripMenuItem _settingsItem = null!;
+        private ToolStripMenuItem _exitItem = null!;
 
         public bool IsVisible => _notifyIcon.Visible;
         public Icon? CurrentIcon => _notifyIcon.Icon;
@@ -35,7 +38,7 @@ namespace NotiGlow.Services
 
             _notifyIcon = new NotifyIcon
             {
-                Text = "NotiGlow - Ambient Notification Utility",
+                Text = LocalizationService.Instance.GetString("Tray.Tooltip"),
                 Icon = icon
             };
 
@@ -43,6 +46,7 @@ namespace NotiGlow.Services
 
             _notifyIcon.DoubleClick += (s, e) => _openSettingsAction();
             _settingsService.SettingsChanged += OnSettingsChanged;
+            LocalizationService.Instance.LanguageChanged += (s, e) => UpdateLocalizedLabels();
 
             _notifyIcon.Visible = true;
         }
@@ -113,7 +117,7 @@ namespace NotiGlow.Services
         {
             var menu = new ContextMenuStrip();
 
-            _enableMenuItem = new ToolStripMenuItem("✓ Glow Enabled", null, (s, e) =>
+            _enableMenuItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.GlowEnabled"), null, (s, e) =>
             {
                 var settings = _settingsService.Current;
                 settings.MasterEnabled = !_enableMenuItem.Checked;
@@ -123,7 +127,7 @@ namespace NotiGlow.Services
                 Checked = _settingsService.Current.MasterEnabled
             };
 
-            _gamingMenuItem = new ToolStripMenuItem("🎮 Gaming Mode", null, (s, e) =>
+            _gamingMenuItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.GamingMode"), null, (s, e) =>
             {
                 var settings = _settingsService.Current;
                 settings.GamingModeEnabled = !_gamingMenuItem.Checked;
@@ -133,19 +137,29 @@ namespace NotiGlow.Services
                 Checked = _settingsService.Current.GamingModeEnabled
             };
 
-            var testItem = new ToolStripMenuItem("✨ Test Animation", null, (s, e) => _testAnimationAction());
-            var settingsItem = new ToolStripMenuItem("⚙️ Open Settings", null, (s, e) => _openSettingsAction());
-            var exitItem = new ToolStripMenuItem("❌ Exit", null, (s, e) => _exitAppAction());
+            _testItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.TestAnimation"), null, (s, e) => _testAnimationAction());
+            _settingsItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.OpenSettings"), null, (s, e) => _openSettingsAction());
+            _exitItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.Exit"), null, (s, e) => _exitAppAction());
 
             menu.Items.Add(_enableMenuItem);
             menu.Items.Add(_gamingMenuItem);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(testItem);
-            menu.Items.Add(settingsItem);
+            menu.Items.Add(_testItem);
+            menu.Items.Add(_settingsItem);
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add(exitItem);
+            menu.Items.Add(_exitItem);
 
             _notifyIcon.ContextMenuStrip = menu;
+        }
+
+        private void UpdateLocalizedLabels()
+        {
+            if (_enableMenuItem != null) _enableMenuItem.Text = LocalizationService.Instance.GetString("Tray.GlowEnabled");
+            if (_gamingMenuItem != null) _gamingMenuItem.Text = LocalizationService.Instance.GetString("Tray.GamingMode");
+            if (_testItem != null) _testItem.Text = LocalizationService.Instance.GetString("Tray.TestAnimation");
+            if (_settingsItem != null) _settingsItem.Text = LocalizationService.Instance.GetString("Tray.OpenSettings");
+            if (_exitItem != null) _exitItem.Text = LocalizationService.Instance.GetString("Tray.Exit");
+            if (_notifyIcon != null) _notifyIcon.Text = LocalizationService.Instance.GetString("Tray.Tooltip");
         }
 
         private void OnSettingsChanged(object? sender, EventArgs e)

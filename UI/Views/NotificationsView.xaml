@@ -16,14 +16,14 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Notifications" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Control how NotiGlow behaves when rapid multiple notifications arrive within a short time window." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{DynamicResource Notifications.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource Notifications.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
@@ -34,8 +34,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowClockwise24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Restart Animation (Default)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Immediately resets the animation timer and restarts the glow animation from 0 ms for the new notification." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Notifications.Restart}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Notifications.RestartDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -48,8 +48,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Timer24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Extend Active Animation" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Extends the ongoing animation duration so the glow remains visible continuously during notification bursts." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Notifications.Extend}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Notifications.ExtendDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -62,8 +62,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="SquareMultiple24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Queue Notifications" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Queues incoming notifications and plays glow animations sequentially one after another." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Notifications.Queue}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Notifications.QueueDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>
@@ -76,8 +76,8 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="DismissCircle24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Ignore While Animating" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Ignores new incoming notifications while a glow animation is already playing." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
+                                <TextBlock Text="{DynamicResource Notifications.Ignore}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Notifications.IgnoreDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </ui:CardControl.Header>

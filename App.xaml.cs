@@ -137,6 +137,9 @@ namespace NotiGlow
                 _settingsService = new SettingsService();
                 LoggerService.LogStartupPhase("Settings loaded");
 
+                LocalizationService.Instance.Initialize(_settingsService);
+                LoggerService.LogStartupPhase("Localization initialized");
+
                 _profileService = new ProfileService();
                 LoggerService.LogStartupPhase("Profiles loaded");
 
@@ -147,7 +150,11 @@ namespace NotiGlow
 
                 // Apply Theme
                 ApplyTheme(_settingsService.Current.Theme);
-                _settingsService.SettingsChanged += (s, ev) => ApplyTheme(_settingsService.Current.Theme);
+                _settingsService.SettingsChanged += (s, ev) =>
+                {
+                    ApplyTheme(_settingsService.Current.Theme);
+                    LocalizationService.Instance.SetLanguage(_settingsService.Current.AppLanguage, persist: false);
+                };
 
                 // Wire Notification Event safely with Dispatcher check
                 _notificationService.NotificationReceived += (s, notification) =>

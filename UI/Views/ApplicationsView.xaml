@@ -22,8 +22,8 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="Tracked Applications" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                <TextBlock Text="Manage custom glow colors, durations, priorities, and animation styles per application" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                <TextBlock Text="{DynamicResource Applications.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Text="{DynamicResource Applications.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -41,8 +41,8 @@
                                      Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
                                      IsChecked="True"
                                      Click="RbViewMode_Click"
-                                     ToolTip="Liste görünümü"
-                                     AutomationProperties.Name="Liste görünümü"
+                                     ToolTip="{DynamicResource Applications.ListView}"
+                                     AutomationProperties.Name="{DynamicResource Applications.ListView}"
                                      Height="28"
                                      Width="36"
                                      Padding="0">
@@ -52,8 +52,8 @@
                                      GroupName="AppViewModeGroup"
                                      Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
                                      Click="RbViewMode_Click"
-                                     ToolTip="Izgara görünümü"
-                                     AutomationProperties.Name="Izgara görünümü"
+                                     ToolTip="{DynamicResource Applications.GridView}"
+                                     AutomationProperties.Name="{DynamicResource Applications.GridView}"
                                      Height="28"
                                      Width="36"
                                      Padding="0">
@@ -62,17 +62,17 @@
                     </StackPanel>
                 </Border>
 
-                <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Add a new custom application profile" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.AddApplicationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Add Application" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Applications.AddApplication}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
 
-                <ui:Button x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </StackPanel>
@@ -95,7 +95,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
                         <Grid Margin="0,0,0,20">
-                            <TextBlock x:Name="TxtEditorTitle" Text="Edit App Profile" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtEditorTitle" Text="{DynamicResource Applications.EditProfile}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                             <ui:Button x:Name="BtnCloseEditor" Icon="{ui:FontIcon &#xE711;}" HorizontalAlignment="Right" Appearance="Secondary" Click="BtnCloseEditor_Click"/>
                         </Grid>
 
@@ -109,22 +109,22 @@
                             <StackPanel Grid.Column="0" VerticalAlignment="Top">
                                 <!-- App Name & ID -->
                                 <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="Application Name" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ui:TextBox x:Name="TxtEditAppName" PlaceholderText="e.g. Discord"/>
+                                    <TextBlock Text="{DynamicResource Applications.AppName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ui:TextBox x:Name="TxtEditAppName" PlaceholderText="{DynamicResource Applications.AppNamePlaceholder}"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="App Identifier / Executable Name" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Applications.AppId}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <ui:TextBox x:Name="TxtEditAppId" PlaceholderText="e.g. discord or discord.exe" Grid.Column="0"/>
-                                        <ui:Button x:Name="BtnBrowseAppId" Grid.Column="1" Margin="8,0,0,0" Appearance="Secondary" Click="BtnBrowseAppId_Click" ToolTip="Select executable file (.exe)" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center">
+                                        <ui:TextBox x:Name="TxtEditAppId" PlaceholderText="{DynamicResource Applications.AppIdPlaceholder}" Grid.Column="0"/>
+                                        <ui:Button x:Name="BtnBrowseAppId" Grid.Column="1" Margin="8,0,0,0" Appearance="Secondary" Click="BtnBrowseAppId_Click" ToolTip="{DynamicResource Applications.BrowseToolTip}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:SymbolIcon Symbol="FolderOpen24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Browse..." FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{DynamicResource Common.Browse}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </ui:Button>
                                     </Grid>
@@ -132,30 +132,30 @@
 
                                 <!-- Animation Style -->
                                 <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="Animation Style" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="Pulse (Uniform Opacity Pulse)" Tag="Pulse"/>
-                                        <ComboBoxItem Content="Sweep (Moving Light Perimeter)" Tag="Sweep"/>
-                                        <ComboBoxItem Content="Ambient (Soft Breathing Glow)" Tag="Ambient"/>
-                                        <ComboBoxItem Content="Comet (Travelling Light Head &amp; Trail)" Tag="Comet"/>
-                                        <ComboBoxItem Content="Ripple (Expanding Corner Glow Wave)" Tag="Ripple"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple"/>
                                     </ComboBox>
                                 </StackPanel>
 
                                 <!-- Notification Priority -->
                                 <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="Notification Priority" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="Low Priority" Tag="Low"/>
-                                        <ComboBoxItem Content="Normal Priority" Tag="Normal"/>
-                                        <ComboBoxItem Content="High Priority (Bypasses Gaming Mode filter)" Tag="High"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High"/>
                                     </ComboBox>
                                 </StackPanel>
 
                                 <!-- Duration Slider -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="Duration (ms)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{DynamicResource Applications.Duration}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                         <TextBlock x:Name="TxtDurationVal" Text="4000 ms" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                                     </Grid>
                                     <Slider x:Name="SldDuration" Minimum="500" Maximum="15000" Value="4000" SmallChange="500" LargeChange="1000" TickFrequency="500" IsSnapToTickEnabled="True" ValueChanged="SldDuration_ValueChanged"/>
@@ -164,7 +164,7 @@
                                  <!-- Intensity Slider -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="Glow Intensity" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{DynamicResource Applications.Intensity}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                         <TextBlock x:Name="TxtIntensityVal" Text="80%" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                                     </Grid>
                                     <Slider x:Name="SldIntensity" Minimum="10" Maximum="100" Value="80" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldIntensity_ValueChanged"/>
@@ -173,7 +173,7 @@
                                  <!-- Glow Size -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="Glow Blur Size" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock Text="{DynamicResource Applications.GlowSize}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                         <TextBlock x:Name="TxtGlowSizeVal" Text="30 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                                     </Grid>
                                     <Slider x:Name="SldGlowSize" Minimum="5" Maximum="100" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldGlowSize_ValueChanged"/>
@@ -185,13 +185,13 @@
                                 <controls:ColorPickerControl x:Name="EditColorPicker" ColorChanged="EditColorPicker_ColorChanged" Margin="0,0,0,16"/>
 
                                 <!-- Live Preview Box -->
-                                <TextBlock Text="Live Preview" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                <TextBlock Text="{DynamicResource Applications.LivePreview}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
                                 <controls:EdgePreviewControl x:Name="EditEdgePreview" Height="160" HorizontalAlignment="Stretch"/>
 
                                 <!-- Save / Cancel Buttons -->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
-                                    <ui:Button x:Name="BtnSaveProfile" Content="Save Profile" Appearance="Primary" Click="BtnSaveProfile_Click" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                    <ui:Button Content="Cancel" Appearance="Secondary" Click="BtnCloseEditor_Click" VerticalAlignment="Center"/>
+                                    <ui:Button x:Name="BtnSaveProfile" Content="{DynamicResource Applications.SaveProfile}" Appearance="Primary" Click="BtnSaveProfile_Click" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <ui:Button Content="{DynamicResource Common.Cancel}" Appearance="Secondary" Click="BtnCloseEditor_Click" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>

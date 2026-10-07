@@ -18,7 +18,52 @@ namespace NotiGlow.UI.Views
 
         public AdvancedView()
         {
+            LocalizationService.Instance.ApplyToWpfResources();
+            LocalizationService.Instance.ApplyToWpfResources(this.Resources);
             InitializeComponent();
+            ApplyComboBoxItemTexts();
+            Loaded += (s, e) =>
+            {
+                LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            };
+            Unloaded += (s, e) =>
+            {
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            };
+        }
+
+        private void OnLanguageChanged(object? sender, string lang)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            if (Dispatcher.Thread != null && !Dispatcher.Thread.IsAlive) return;
+            try
+            {
+                Dispatcher.BeginInvoke(ApplyComboBoxItemTexts);
+            }
+            catch { }
+        }
+
+        private void ApplyComboBoxItemTexts()
+        {
+            if (CmbUpdateFrequency == null) return;
+            foreach (var item in CmbUpdateFrequency.Items)
+            {
+                if (item is ComboBoxItem cbi && cbi.Tag is string tag)
+                {
+                    string key = tag switch
+                    {
+                        "OnStartup" => "Advanced.FreqStartup",
+                        "Daily" => "Advanced.FreqDaily",
+                        "Weekly" => "Advanced.FreqWeekly",
+                        "Monthly" => "Advanced.FreqMonthly",
+                        _ => ""
+                    };
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        cbi.Content = LocalizationService.Instance.GetString(key);
+                    }
+                }
+            }
         }
 
         public void Initialize(SettingsService settingsService, ProfileService profileService, GlowManager? glowManager = null)
@@ -51,11 +96,16 @@ namespace NotiGlow.UI.Views
 
             if (settings.LastUpdateCheck.HasValue)
             {
-                TxtUpdateStatus.Text = $"Current: v{UpdateService.CurrentVersionString} • Last check: {settings.LastUpdateCheck.Value.ToLocalTime():yyyy-MM-dd HH:mm}";
+                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
+                    "Advanced.LastCheckFormat",
+                    UpdateService.CurrentVersionString,
+                    settings.LastUpdateCheck.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm"));
             }
             else
             {
-                TxtUpdateStatus.Text = $"Current: v{UpdateService.CurrentVersionString} • Automatic update checking via GitHub Releases";
+                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
+                    "Advanced.CurrentVersionFormat",
+                    UpdateService.CurrentVersionString);
             }
 
             _isInitializing = false;
@@ -121,7 +171,7 @@ namespace NotiGlow.UI.Views
             if (_settingsService == null) return;
 
             BtnCheckUpdates.IsEnabled = false;
-            TxtUpdateStatus.Text = "Checking for updates...";
+            TxtUpdateStatus.Text = LocalizationService.Instance.GetString("Advanced.CheckingUpdates");
             PbUpdateProgress.Visibility = Visibility.Collapsed;
 
             try
@@ -145,9 +195,8 @@ namespace NotiGlow.UI.Views
                 if (info.IsUpdateAvailable)
                 {
                     var result = MessageBox.Show(
-                        $"A new version (v{info.LatestVersion}) of NotiGlow is available!\n\n" +
-                        $"Would you like to download, verify, and automatically install the update now?",
-                        "Update Available",
+                        LocalizationService.Instance.GetString("Advanced.UpdateAvailableMsg", info.LatestVersion),
+                        LocalizationService.Instance.GetString("Advanced.UpdateAvailableTitle"),
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
 
@@ -165,11 +214,10 @@ namespace NotiGlow.UI.Views
 
                         if (!string.IsNullOrEmpty(packagePath) && System.IO.File.Exists(packagePath))
                         {
-                            TxtUpdateStatus.Text = "Update ready. Installing...";
+                            TxtUpdateStatus.Text = LocalizationService.Instance.GetString("Advanced.UpdateReadyInstalling");
                             var installPrompt = MessageBox.Show(
-                                $"NotiGlow v{info.LatestVersion} downloaded and verified successfully!\n\n" +
-                                "The application will now close, apply the update, and automatically restart. Proceed?",
-                                "Ready to Install",
+                                LocalizationService.Instance.GetString("Advanced.ReadyToInstallMsg", info.LatestVersion),
+                                LocalizationService.Instance.GetString("Advanced.ReadyToInstallTitle"),
                                 MessageBoxButton.OKCancel,
                                 MessageBoxImage.Information);
 
@@ -195,7 +243,7 @@ namespace NotiGlow.UI.Views
                 }
                 else
                 {
-                    TxtUpdateStatus.Text = $"NotiGlow v{UpdateService.CurrentVersionString} is up to date.";
+                    TxtUpdateStatus.Text = LocalizationService.Instance.GetString("Advanced.UpToDate", UpdateService.CurrentVersionString);
                     PbUpdateProgress.Visibility = Visibility.Collapsed;
                 }
             }
@@ -269,11 +317,19 @@ namespace NotiGlow.UI.Views
                 bool success = _importExportService.ExportSettings(sfd.FileName);
                 if (success)
                 {
-                    MessageBox.Show("Settings successfully exported!", "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        LocalizationService.Instance.GetString("Advanced.ExportSuccessMsg"),
+                        LocalizationService.Instance.GetString("Advanced.ExportSuccessTitle"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Failed to export settings.", "Export Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        LocalizationService.Instance.GetString("Advanced.ExportFailMsg"),
+                        LocalizationService.Instance.GetString("Advanced.ExportFailTitle"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
         }
@@ -290,22 +346,38 @@ namespace NotiGlow.UI.Views
                 bool success = _importExportService.ImportSettings(ofd.FileName);
                 if (success)
                 {
-                    MessageBox.Show("Settings successfully imported!", "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show(
+                        LocalizationService.Instance.GetString("Advanced.ImportSuccessMsg"),
+                        LocalizationService.Instance.GetString("Advanced.ImportSuccessTitle"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Failed to import settings. Invalid file format.", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(
+                        LocalizationService.Instance.GetString("Advanced.ImportFailMsg"),
+                        LocalizationService.Instance.GetString("Advanced.ImportFailTitle"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 }
             }
         }
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show("Reset all NotiGlow settings and application profiles to default?", "Confirm Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var result = MessageBox.Show(
+                LocalizationService.Instance.GetString("Advanced.ResetConfirmMsg"),
+                LocalizationService.Instance.GetString("Advanced.ResetConfirmTitle"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes)
             {
                 _importExportService.ResetToDefaults();
-                MessageBox.Show("NotiGlow has been reset to default settings.", "Reset Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(
+                    LocalizationService.Instance.GetString("Advanced.ResetCompleteMsg"),
+                    LocalizationService.Instance.GetString("Advanced.ResetCompleteTitle"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
         }
 

@@ -16,37 +16,37 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Advanced" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Performance tuning, OLED burn-in protection, diagnostic tools, and backup options." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{DynamicResource Advanced.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource Advanced.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
 
             <!-- Section 1: Auto Update -->
-            <TextBlock Text="Auto Update" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+            <TextBlock Text="{DynamicResource Advanced.AutoUpdate}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
 
             <!-- Automatic Updates -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Automatic Updates" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v1.9 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.AutomaticUpdates}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtUpdateStatus" Text="Current Version: v2.0 • Automatic update checking via GitHub Releases" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnCheckUpdates" Content="Check for Updates" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                    <ui:Button x:Name="BtnCheckUpdates" Content="{DynamicResource Advanced.CheckForUpdates}" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}"/>
                         </ui:Button.Icon>
                     </ui:Button>
-                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="Automatically check for updates"/>
+                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Advanced.AutoCheckUpdatesToolTip}"/>
                 </StackPanel>
             </ui:CardControl>
 
@@ -54,8 +54,8 @@
             <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Check Frequency" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Choose how often NotiGlow checks for newer releases." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.CheckFrequency}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.CheckFrequencyDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ComboBox x:Name="CmbUpdateFrequency"
@@ -63,15 +63,15 @@
                           Width="180"
                           VerticalAlignment="Center"
                           SelectionChanged="CmbUpdateFrequency_SelectionChanged">
-                    <ComboBoxItem Content="On Startup" Tag="OnStartup"/>
-                    <ComboBoxItem Content="Daily" Tag="Daily"/>
-                    <ComboBoxItem Content="Weekly" Tag="Weekly"/>
-                    <ComboBoxItem Content="Monthly" Tag="Monthly"/>
+                    <ComboBoxItem Content="{DynamicResource Advanced.FreqStartup}" Tag="OnStartup"/>
+                    <ComboBoxItem Content="{DynamicResource Advanced.FreqDaily}" Tag="Daily"/>
+                    <ComboBoxItem Content="{DynamicResource Advanced.FreqWeekly}" Tag="Weekly"/>
+                    <ComboBoxItem Content="{DynamicResource Advanced.FreqMonthly}" Tag="Monthly"/>
                 </ComboBox>
             </ui:CardControl>
 
             <!-- Section 2: Accessibility -->
-            <TextBlock Text="Accessibility" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+            <TextBlock Text="{DynamicResource Advanced.Accessibility}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
 
             <!-- OLED Mode -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
@@ -79,8 +79,8 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="OLED Friendly Mode" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="Reduces static bright elements to help minimize OLED image retention." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{DynamicResource Advanced.OledMode}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{DynamicResource Advanced.OledModeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </StackPanel>
                 </ui:CardControl.Header>
@@ -91,8 +91,8 @@
             <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Reduce Motion" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Reduces animated movement throughout notification effects." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.ReduceMotion}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.ReduceMotionDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleReduceMotion" Click="ToggleReduceMotion_Click" VerticalAlignment="Center"/>
@@ -102,40 +102,40 @@
             <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Reduce Glow" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Reduces glow brightness across notification effects." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.ReduceGlow}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.ReduceGlowDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleReduceGlow" Click="ToggleReduceGlow_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
             <!-- Section 2: Backup & Restore -->
-            <TextBlock Text="Backup &amp; Restore" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+            <TextBlock Text="{DynamicResource Advanced.BackupRestore}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
 
             <!-- Settings Import / Export / Reset -->
             <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Configuration Management" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Export profiles to JSON file, import backups, or restore factory defaults." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.ConfigManagement}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.ConfigManagementDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnExport" Content="Export Settings" Icon="{ui:SymbolIcon ArrowUpload24}" Appearance="Primary" Click="BtnExport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
-                    <ui:Button x:Name="BtnImport" Content="Import Settings" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary" Click="BtnImport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
-                    <ui:Button x:Name="BtnReset" Content="Factory Reset" Icon="{ui:SymbolIcon Delete24}" Appearance="Danger" Click="BtnReset_Click"/>
+                    <ui:Button x:Name="BtnExport" Content="{DynamicResource Advanced.ExportSettings}" Icon="{ui:SymbolIcon ArrowUpload24}" Appearance="Primary" Click="BtnExport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
+                    <ui:Button x:Name="BtnImport" Content="{DynamicResource Advanced.ImportSettings}" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary" Click="BtnImport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
+                    <ui:Button x:Name="BtnReset" Content="{DynamicResource Advanced.FactoryReset}" Icon="{ui:SymbolIcon Delete24}" Appearance="Danger" Click="BtnReset_Click"/>
                 </StackPanel>
             </ui:CardControl>
 
             <!-- Section 3: Diagnostics -->
-            <TextBlock Text="Diagnostics" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+            <TextBlock Text="{DynamicResource Advanced.Diagnostics}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
 
             <!-- Debug Logging Toggle -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Debug Logging" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Records diagnostic information to help troubleshoot application issues." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.DebugLogging}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.DebugLoggingDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleDebugLogging" Click="ToggleDebugLogging_Click" VerticalAlignment="Center"/>
@@ -145,8 +145,8 @@
             <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Notification Identity Debug" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Shows additional information used to identify notification sources." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        <TextBlock Text="{DynamicResource Advanced.IdentityDebug}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Advanced.IdentityDebugDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
                 </ui:CardControl.Header>
                 <ui:ToggleSwitch x:Name="ToggleIdentityDebug" Click="ToggleIdentityDebug_Click" VerticalAlignment="Center"/>

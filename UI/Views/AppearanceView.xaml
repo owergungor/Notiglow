@@ -17,14 +17,14 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="Appearance" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Configure global default animation parameters and preview screen glow." Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{DynamicResource Appearance.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{DynamicResource Appearance.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="Test notification glow animation" Foreground="{DynamicResource TextPrimary}">
+                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Test Animation" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
             </Grid>
@@ -41,8 +41,8 @@
                     <ui:CardControl Padding="16" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                         <ui:CardControl.Header>
                             <StackPanel>
-                                <TextBlock Text="Default Animation Style" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="Fallback motion effect for newly added app profiles." Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                                <TextBlock Text="{DynamicResource Appearance.DefaultStyle}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Appearance.DefaultStyleDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
                         </ui:CardControl.Header>
                         <ComboBox x:Name="CmbDefaultStyle"
@@ -194,18 +194,18 @@
                                     </Setter>
                                 </Style>
                             </ComboBox.Style>
-                            <ComboBoxItem Content="Pulse" Tag="Pulse"/>
-                            <ComboBoxItem Content="Sweep" Tag="Sweep"/>
-                            <ComboBoxItem Content="Ambient" Tag="Ambient"/>
-                            <ComboBoxItem Content="Comet" Tag="Comet"/>
-                            <ComboBoxItem Content="Ripple" Tag="Ripple"/>
+                            <ComboBoxItem Content="{DynamicResource Style.Pulse}" Tag="Pulse"/>
+                            <ComboBoxItem Content="{DynamicResource Style.Sweep}" Tag="Sweep"/>
+                            <ComboBoxItem Content="{DynamicResource Style.Ambient}" Tag="Ambient"/>
+                            <ComboBoxItem Content="{DynamicResource Style.Comet}" Tag="Comet"/>
+                            <ComboBoxItem Content="{DynamicResource Style.Ripple}" Tag="Ripple"/>
                         </ComboBox>
                     </ui:CardControl>
 
                     <ui:CardControl Padding="16" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Default Duration" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Appearance.DefaultDuration}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="TxtDefDurationVal" Text="4s (4000 ms)" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
                             <Slider x:Name="SldDefDuration" Minimum="500" Maximum="15000" Value="4000" SmallChange="500" LargeChange="1000" TickFrequency="500" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
@@ -215,7 +215,7 @@
                     <ui:CardControl Padding="16" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Default Glow Intensity" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Appearance.DefaultIntensity}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="TxtDefIntensityVal" Text="80%" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
                             <Slider x:Name="SldDefIntensity" Minimum="10" Maximum="100" Value="80" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
@@ -225,7 +225,7 @@
                     <ui:CardControl Padding="16" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
-                                <TextBlock Text="Default Glow Blur Size" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Appearance.DefaultGlowSize}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="TxtDefGlowSizeVal" Text="30 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
                             <Slider x:Name="SldDefGlowSize" Minimum="5" Maximum="100" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
@@ -237,12 +237,12 @@
                 <StackPanel Grid.Column="2">
                     <ui:CardControl Padding="16" Margin="0,0,0,16" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                         <StackPanel>
-                            <TextBlock Text="Default Glow Color" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource Appearance.DefaultColor}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
                             <controls:ColorPickerControl x:Name="DefColorPicker" ColorChanged="DefColorPicker_ColorChanged"/>
                         </StackPanel>
                     </ui:CardControl>
 
-                    <TextBlock Text="Live Glow Preview" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10"/>
+                    <TextBlock Text="{DynamicResource Appearance.LivePreview}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10"/>
                     <controls:EdgePreviewControl x:Name="AppearanceEdgePreview" Height="190" HorizontalAlignment="Stretch"/>
                 </StackPanel>
             </Grid>
