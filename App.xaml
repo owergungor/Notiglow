@@ -665,12 +665,16 @@
                             <ControlTemplate.Triggers>
                                 <!-- Collapsed Sidebar (Compact Mode): Perfectly Centered Icons & Tooltip -->
                                 <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}" Value="False">
+                                    <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
+                                    <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
                                     <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
                                     <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
                                     <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
                                     <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
                                 </DataTrigger>
                                 <Trigger Property="IsPaneOpen" Value="False">
+                                    <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
+                                    <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
                                     <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
                                     <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
                                     <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
@@ -718,6 +722,12 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsPaneOpen" Value="False">
+                        <Setter Property="Width" Value="40"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Fluent Full-Card Selection RadioButton Style (No Bullet Circle, Ambient Card Glow Outline) -->
@@ -838,6 +848,21 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ui:ToggleSwitch}">
+                            <ControlTemplate.Resources>
+                                <CubicEase x:Key="AppleEase" EasingMode="EaseOut"/>
+                                <Storyboard x:Key="ToggleOnAnim">
+                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="22" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                </Storyboard>
+                                <Storyboard x:Key="ToggleOffAnim">
+                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                </Storyboard>
+                                <Storyboard x:Key="ThumbPressAnim">
+                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.18" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
+                                </Storyboard>
+                                <Storyboard x:Key="ThumbReleaseAnim">
+                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.12" EasingFunction="{StaticResource AppleEase}"/>
+                                </Storyboard>
+                            </ControlTemplate.Resources>
                             <Grid x:Name="TemplateRoot" Width="48" Height="26" Background="Transparent" SnapsToDevicePixels="True">
                                 <!-- Apple Switch Pill Track (48x26, CornerRadius 13) -->
                                 <Border x:Name="SwitchTrack"
@@ -856,7 +881,14 @@
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Center"
                                                 Margin="2,0,0,0"
+                                                RenderTransformOrigin="0.5,0.5"
                                                 Background="#FFFFFF">
+                                            <Border.RenderTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform x:Name="ThumbScale" ScaleX="1.0" ScaleY="1.0"/>
+                                                    <TranslateTransform x:Name="ThumbTranslate" X="0" Y="0"/>
+                                                </TransformGroup>
+                                            </Border.RenderTransform>
                                             <Border.Effect>
                                                 <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.25" Color="#000000"/>
                                             </Border.Effect>
@@ -866,11 +898,23 @@
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource ToggleOnAnim}"/>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource ToggleOffAnim}"/>
+                                    </Trigger.ExitActions>
                                     <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource AccentColor}"/>
                                     <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-                                    <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right"/>
-                                    <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0"/>
                                     <Setter TargetName="SwitchThumb" Property="Background" Value="#FFFFFF"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource ThumbPressAnim}"/>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource ThumbReleaseAnim}"/>
+                                    </Trigger.ExitActions>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.92"/>

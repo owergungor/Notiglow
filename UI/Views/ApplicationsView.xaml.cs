@@ -21,6 +21,14 @@ namespace NotiGlow.UI.Views
         public ApplicationsView()
         {
             InitializeComponent();
+            Loaded += (s, e) => LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            Unloaded += (s, e) => LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged(object? sender, string lang)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            try { Dispatcher.BeginInvoke(RefreshAppCards); } catch { }
         }
 
         public void Initialize(ProfileService profileService, GlowManager glowManager, SettingsService? settingsService = null)
@@ -108,11 +116,9 @@ namespace NotiGlow.UI.Views
             if (_profileService == null) return;
             var cloned = profile.Clone();
             _profileService.AddOrUpdateProfile(cloned);
-            MessageBox.Show(
+            ToastNotificationService.Instance.ShowSuccess(
                 LocalizationService.Instance.GetString("Applications.ProfileCreatedMsg", cloned.Name),
-                LocalizationService.Instance.GetString("Applications.ProfileCreatedTitle"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                LocalizationService.Instance.GetString("Applications.ProfileCreatedTitle"));
         }
 
         private void OpenEditor(AppProfile profile, bool isNew)
@@ -259,13 +265,16 @@ namespace NotiGlow.UI.Views
                     }
                     else if (!string.IsNullOrEmpty(error))
                     {
-                        MessageBox.Show(error, LocalizationService.Instance.GetString("Applications.InvalidFileTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ToastNotificationService.Instance.ShowWarning(error, LocalizationService.Instance.GetString("Applications.InvalidFileTitle"));
                     }
                 }
             }
             catch (Exception ex)
             {
                 LoggerService.LogError("Failed to show OpenFileDialog for application selection", ex);
+                ToastNotificationService.Instance.ShowError(
+                    LocalizationService.Instance.GetString("Applications.InvalidFileMsg"),
+                    LocalizationService.Instance.GetString("Applications.InvalidFileTitle"));
             }
         }
 
@@ -284,11 +293,9 @@ namespace NotiGlow.UI.Views
 
             if (string.IsNullOrEmpty(_editingProfile.Name) || string.IsNullOrEmpty(_editingProfile.AppId))
             {
-                MessageBox.Show(
+                ToastNotificationService.Instance.ShowWarning(
                     LocalizationService.Instance.GetString("Applications.ValidationMsg"),
-                    LocalizationService.Instance.GetString("Applications.ValidationTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    LocalizationService.Instance.GetString("Applications.ValidationTitle"));
                 return;
             }
 

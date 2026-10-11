@@ -25,26 +25,26 @@
             </StackPanel>
 
             <!-- Column 1: Color Swatch -->
-            <Border Grid.Column="1" x:Name="ColorBadge" Width="18" Height="18" CornerRadius="5" Margin="0,0,16,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="App Glow Color">
+            <Border Grid.Column="1" x:Name="ColorBadge" Width="18" Height="18" CornerRadius="5" Margin="0,0,16,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="{DynamicResource Applications.CardColorToolTip}">
                 <Border.Background>
                     <SolidColorBrush x:Name="ColorBadgeBrush" Color="#FF5865F2"/>
                 </Border.Background>
             </Border>
 
             <!-- Column 2: Preview Button -->
-            <ui:Button Grid.Column="2" x:Name="BtnPreview" Content="Preview" Icon="{ui:SymbolIcon Play24}" Appearance="Secondary" Click="BtnPreview_Click" Margin="0,0,6,0" ToolTip="Preview" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <ui:Button Grid.Column="2" x:Name="BtnPreview" Content="{DynamicResource Applications.CardPreview}" Icon="{ui:SymbolIcon Play24}" Appearance="Secondary" Click="BtnPreview_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardPreview}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 3: Edit Button -->
-            <ui:Button Grid.Column="3" x:Name="BtnEdit" Content="Edit" Icon="{ui:SymbolIcon Edit24}" Appearance="Secondary" Click="BtnEdit_Click" Margin="0,0,6,0" ToolTip="Edit" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <ui:Button Grid.Column="3" x:Name="BtnEdit" Content="{DynamicResource Applications.CardEdit}" Icon="{ui:SymbolIcon Edit24}" Appearance="Secondary" Click="BtnEdit_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardEdit}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 4: Copy Button -->
-            <ui:Button Grid.Column="4" x:Name="BtnDuplicate" Content="Copy" Icon="{ui:SymbolIcon Copy24}" Appearance="Secondary" Click="BtnDuplicate_Click" Margin="0,0,6,0" ToolTip="Copy" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <ui:Button Grid.Column="4" x:Name="BtnDuplicate" Content="{DynamicResource Applications.CardCopy}" Icon="{ui:SymbolIcon Copy24}" Appearance="Secondary" Click="BtnDuplicate_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardCopy}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 5: Delete Button -->
-            <ui:Button Grid.Column="5" x:Name="BtnDelete" Content="Delete" Icon="{ui:SymbolIcon Delete24}" Appearance="Secondary" Click="BtnDelete_Click" Margin="0,0,12,0" ToolTip="Delete" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <ui:Button Grid.Column="5" x:Name="BtnDelete" Content="{DynamicResource Applications.CardDelete}" Icon="{ui:SymbolIcon Delete24}" Appearance="Secondary" Click="BtnDelete_Click" Margin="0,0,12,0" ToolTip="{DynamicResource Applications.CardDelete}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
 
             <!-- Column 6: Toggle Enabled -->
-            <ui:ToggleSwitch Grid.Column="6" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="Enable / Disable Profile"/>
+            <ui:ToggleSwitch Grid.Column="6" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.CardToggleToolTip}"/>
         </Grid>
     </ui:CardControl>
 </UserControl>

@@ -164,6 +164,11 @@ namespace NotiGlow.UI.Animations
             {
                 Attach(element);
             }
+
+            if (element.GetValue(StateTrackerProperty) is PressStateTracker tracker)
+            {
+                tracker.OnPreviewMouseDown(element, e);
+            }
         }
 
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -235,22 +240,19 @@ namespace NotiGlow.UI.Animations
                 element.MouseLeave += OnMouseLeave;
                 element.LostMouseCapture += OnLostMouseCapture;
 
-                // If element is a ButtonBase (Button, ToggleButton, RepeatButton, etc.), monitor IsPressed for keyboard & capture changes
+                // Support keyboard interaction for ButtonBase (Space and Enter keys)
                 if (element is ButtonBase button)
                 {
+                    button.PreviewKeyDown += OnPreviewKeyDown;
+                    button.PreviewKeyUp += OnPreviewKeyUp;
+                    button.LostFocus += OnLostFocus;
+
                     _isPressedDescriptor = DependencyPropertyDescriptor.FromProperty(ButtonBase.IsPressedProperty, typeof(ButtonBase));
                     _isPressedChangedHandler = (s, e) =>
                     {
                         if (s is ButtonBase b)
                         {
-                            if (b.IsPressed)
-                            {
-                                Animate(true);
-                            }
-                            else
-                            {
-                                Animate(false);
-                            }
+                            Animate(b.IsPressed);
                         }
                     };
                     _isPressedDescriptor?.AddValueChanged(button, _isPressedChangedHandler);
@@ -266,9 +268,16 @@ namespace NotiGlow.UI.Animations
                 element.MouseLeave -= OnMouseLeave;
                 element.LostMouseCapture -= OnLostMouseCapture;
 
-                if (element is ButtonBase button && _isPressedDescriptor != null && _isPressedChangedHandler != null)
+                if (element is ButtonBase button)
                 {
-                    _isPressedDescriptor.RemoveValueChanged(button, _isPressedChangedHandler);
+                    button.PreviewKeyDown -= OnPreviewKeyDown;
+                    button.PreviewKeyUp -= OnPreviewKeyUp;
+                    button.LostFocus -= OnLostFocus;
+
+                    if (_isPressedDescriptor != null && _isPressedChangedHandler != null)
+                    {
+                        _isPressedDescriptor.RemoveValueChanged(button, _isPressedChangedHandler);
+                    }
                 }
 
                 // Reset scale immediately
@@ -281,45 +290,54 @@ namespace NotiGlow.UI.Animations
                 }
             }
 
-            private void OnPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            public void OnPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
                 if (!_elementRef.TryGetTarget(out var element)) return;
 
-                // ButtonBase instances are driven authoritatively by ButtonBase.IsPressed property changes
-                if (element is ButtonBase) return;
-
-                // For non-ButtonBase elements explicitly attached: ensure click originated on element
+                // For elements attached: ensure click originated on element
                 if (e.OriginalSource is DependencyObject orig)
                 {
                     DependencyObject? cur = orig;
                     while (cur != null && cur != element)
                     {
-                        if (cur is ButtonBase) return; // Do not animate parent if a child button was clicked
+                        if (cur is ButtonBase && cur != element) return; // Do not animate parent if a child button was clicked
                         cur = VisualTreeHelper.GetParent(cur);
                     }
-                    Animate(true);
                 }
+                Animate(true);
             }
 
-            private void OnPreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            public void OnPreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
             {
-                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
-                {
-                    Animate(false);
-                }
+                Animate(false);
             }
 
             private void OnMouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
             {
-                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
-                {
-                    Animate(false);
-                }
+                Animate(false);
             }
 
             private void OnLostMouseCapture(object sender, System.Windows.Input.MouseEventArgs e)
             {
-                if (_elementRef.TryGetTarget(out var element) && element is not ButtonBase)
+                Animate(false);
+            }
+
+            private void OnLostFocus(object sender, RoutedEventArgs e)
+            {
+                Animate(false);
+            }
+
+            private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+            {
+                if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
+                {
+                    Animate(true);
+                }
+            }
+
+            private void OnPreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+            {
+                if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
                 {
                     Animate(false);
                 }

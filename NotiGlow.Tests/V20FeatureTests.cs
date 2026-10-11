@@ -94,10 +94,23 @@ namespace NotiGlow.Tests
         }
 
         [TestMethod]
-        public void Localization_InvalidLanguageFallback_DefaultsToEnglish()
+        public void Localization_GermanSelection_SwitchesCultureAndDictionary()
         {
             var service = new LocalizationService();
             service.SetLanguage("de-DE", persist: false);
+
+            Assert.AreEqual("de-DE", service.CurrentLanguage);
+            Assert.AreEqual("de-DE", service.CurrentCulture.Name);
+            Assert.AreEqual("Speichern", service.GetString("Common.Save"));
+            Assert.AreEqual("Allgemeine Einstellungen", service.GetString("General.Title"));
+            Assert.AreEqual("Spiel-Animation testen", service.GetString("Gaming.TestGameAnimation"));
+        }
+
+        [TestMethod]
+        public void Localization_InvalidLanguageFallback_DefaultsToEnglish()
+        {
+            var service = new LocalizationService();
+            service.SetLanguage("it-IT", persist: false);
             Assert.AreEqual("en-US", service.CurrentLanguage, "Unsupported language code must fallback to en-US.");
 
             service.SetLanguage("invalid-culture", persist: false);
@@ -143,9 +156,13 @@ namespace NotiGlow.Tests
             service.SetLanguage("en-US", persist: true);
             Assert.AreEqual("en-US", settingsService.Current.AppLanguage);
 
+            service.SetLanguage("de-DE", persist: true);
+            Assert.AreEqual("de-DE", settingsService.Current.AppLanguage);
+
             // Confirm none of the display names were persisted
             Assert.AreNotEqual("English", settingsService.Current.AppLanguage);
             Assert.AreNotEqual("Español", settingsService.Current.AppLanguage);
+            Assert.AreNotEqual("Deutsch", settingsService.Current.AppLanguage);
             Assert.AreNotEqual("Türkçe", settingsService.Current.AppLanguage);
         }
 
@@ -164,10 +181,10 @@ namespace NotiGlow.Tests
         }
 
         [TestMethod]
-        public void Localization_AllFourResourceSets_LoadSuccessfully()
+        public void Localization_AllFiveResourceSets_LoadSuccessfully()
         {
             var service = new LocalizationService();
-            var requiredCodes = new[] { "en-US", "es-ES", "fr-FR", "tr-TR" };
+            var requiredCodes = new[] { "en-US", "es-ES", "fr-FR", "de-DE", "tr-TR" };
 
             var coreKeys = new[]
             {

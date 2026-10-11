@@ -13,8 +13,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Glow Color Palette" Foreground="{DynamicResource TextPrimary}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-            <Border x:Name="BtnRgbOption" Grid.Column="1" Cursor="Hand" CornerRadius="6" Padding="10,4" BorderThickness="1.5" ToolTip="RGB Rainbow Spectrum Neon Effect">
+            <TextBlock Text="{DynamicResource ColorPicker.Palette}" Foreground="{DynamicResource TextPrimary}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <Border x:Name="BtnRgbOption" Grid.Column="1" Cursor="Hand" CornerRadius="6" Padding="10,4" BorderThickness="1.5" ToolTip="{DynamicResource ColorPicker.RgbToolTip}">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                         <GradientStop Color="#FFFF004D" Offset="0.0"/>
@@ -29,7 +29,7 @@
                     <SolidColorBrush Color="#FFFFFFFF"/>
                 </Border.BorderBrush>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="🌈 RGB Spectrum" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF">
+                    <TextBlock Text="{DynamicResource ColorPicker.RgbSpectrum}" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF">
                         <TextBlock.Effect>
                             <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
                         </TextBlock.Effect>
@@ -45,10 +45,10 @@
         <UniformGrid x:Name="PresetPalette" Columns="6" Margin="0,0,0,12" />
 
         <!-- Collapsible Custom Color Toggle -->
-        <ui:Button x:Name="BtnToggleCustom" Appearance="Secondary" FontSize="12" Padding="10,6" Click="BtnToggleCustom_Click" HorizontalAlignment="Left" Margin="0,2,0,8" ToolTip="Custom Hex Color Picker">
+        <ui:Button x:Name="BtnToggleCustom" Appearance="Secondary" FontSize="12" Padding="10,6" Click="BtnToggleCustom_Click" HorizontalAlignment="Left" Margin="0,2,0,8" ToolTip="{DynamicResource ColorPicker.CustomHexToolTip}">
             <StackPanel Orientation="Horizontal">
                 <ui:SymbolIcon Symbol="Color24" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                <TextBlock Text="Custom Hex Color..." VerticalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource ColorPicker.CustomHex}" VerticalAlignment="Center"/>
             </StackPanel>
         </ui:Button>
 
