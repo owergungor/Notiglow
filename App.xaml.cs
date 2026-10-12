@@ -148,12 +148,16 @@ namespace NotiGlow
 
                 _notificationService = new NotificationService();
 
+                // Apply MotionPolicy
+                NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
+
                 // Apply Theme
                 ApplyTheme(_settingsService.Current.Theme);
                 _settingsService.SettingsChanged += (s, ev) =>
                 {
                     ApplyTheme(_settingsService.Current.Theme);
                     LocalizationService.Instance.SetLanguage(_settingsService.Current.AppLanguage, persist: false);
+                    NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
                 };
 
                 // Wire Notification Event safely with Dispatcher check

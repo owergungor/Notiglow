@@ -292,6 +292,7 @@ namespace NotiGlow.UI.Views
             var settings = _settingsService.Current;
             settings.ReduceMotion = ToggleReduceMotion.IsChecked ?? false;
             _settingsService.Save(settings);
+            NotiGlow.UI.Animations.MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
         }
 
         private void ToggleReduceGlow_Click(object sender, RoutedEventArgs e)

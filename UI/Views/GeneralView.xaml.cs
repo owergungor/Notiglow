@@ -90,7 +90,7 @@ namespace NotiGlow.UI.Views
             MasterToggle.IsChecked = current.MasterEnabled;
             ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
             ToggleReduceAnimations.IsChecked = current.ReduceAnimations;
-            MotionPolicy.Update(current.ReduceAnimations);
+            MotionPolicy.Update(current.ReduceMotion, current.ReduceAnimations);
 
             // Load Theme Mode
             BtnModeSystem.IsChecked = (current.ThemeMode == ThemeMode.System);
@@ -212,7 +212,7 @@ namespace NotiGlow.UI.Views
             var settings = _settingsService.Current;
             settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
             _settingsService.Save(settings);
-            MotionPolicy.Update(settings.ReduceAnimations);
+            MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
         }
     }
 }

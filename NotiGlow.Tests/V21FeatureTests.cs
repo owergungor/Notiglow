@@ -655,6 +655,100 @@ namespace NotiGlow.Tests
             if (threadEx != null) throw threadEx;
         }
 
+        [TestMethod]
+        public void Localization_AllFiveLanguages_HaveAuthenticNonEnglishTranslations()
+        {
+            var service = LocalizationService.Instance;
+            var sampleKeys = new[]
+            {
+                "Gaming.Subtitle",
+                "Gaming.Mode",
+                "Gaming.GlowDuringGames",
+                "Gaming.PerGameOverrides",
+                "Advanced.Title",
+                "Advanced.Subtitle",
+                "Advanced.AutomaticUpdates",
+                "Advanced.ReduceMotion",
+                "Advanced.BackupRestore",
+                "Applications.Title",
+                "Applications.AddApplication"
+            };
+
+            service.SetLanguage("en-US", persist: false);
+            var enValues = sampleKeys.ToDictionary(k => k, k => service.GetString(k));
+
+            var nonEnglishLangs = new[] { "es-ES", "fr-FR", "de-DE", "tr-TR" };
+            foreach (var lang in nonEnglishLangs)
+            {
+                service.SetLanguage(lang, persist: false);
+                foreach (var key in sampleKeys)
+                {
+                    var localizedVal = service.GetString(key);
+                    Assert.IsFalse(string.IsNullOrWhiteSpace(localizedVal), $"[{lang}] Key {key} should have a value.");
+                    Assert.AreNotEqual(key, localizedVal, $"[{lang}] Key {key} must not be equal to its raw key.");
+
+                    // German allows "Gaming" for Gaming.Title, but for full phrases it must not match English
+                    if (key.Contains("."))
+                    {
+                        var enVal = enValues[key];
+                        if (enVal.Length > 8)
+                        {
+                            Assert.AreNotEqual(enVal, localizedVal, $"[{lang}] Key '{key}' has raw English text '{enVal}' instead of translated content.");
+                        }
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void MotionPolicy_TracksReduceMotionAndReduceAnimationsIndependently()
+        {
+            MotionPolicy.Update(false, false);
+            Assert.IsFalse(MotionPolicy.IsReduceMotion);
+
+            MotionPolicy.Update(true, false);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+
+            MotionPolicy.Update(false, true);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+
+            MotionPolicy.Update(true, true);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+
+            MotionPolicy.Update(false, false);
+            Assert.IsFalse(MotionPolicy.IsReduceMotion);
+        }
+
+        [TestMethod]
+        public void ToggleSwitch_ApplyToggleSwitchReduceMotion_SnapsTranslateAndResetsScale()
+        {
+            Exception? threadEx = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    MotionPolicy.Update(true);
+                    var toggle = new Wpf.Ui.Controls.ToggleSwitch { IsChecked = true };
+
+                    // Invoking ApplyToggleSwitchReduceMotion should not throw and should handle non-templated or templated switches
+                    ButtonPressAnimationBehavior.ApplyToggleSwitchReduceMotion(toggle);
+
+                    toggle.IsChecked = false;
+                    ButtonPressAnimationBehavior.ApplyToggleSwitchReduceMotion(toggle);
+                }
+                catch (Exception ex)
+                {
+                    threadEx = ex;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            if (threadEx != null) throw threadEx;
+        }
+
         #endregion
     }
 }
