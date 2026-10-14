@@ -89,14 +89,14 @@ namespace NotiGlow.UI.Controls
             else
             {
                 Opacity = 0.0;
-                ToastTransform.Y = 16;
+                ToastTransform.Y = -16;
 
                 var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
                 var fadeIn = new DoubleAnimation(0.0, 1.0, TimeSpan.FromMilliseconds(200)) { EasingFunction = ease };
-                var slideUp = new DoubleAnimation(16, 0, TimeSpan.FromMilliseconds(200)) { EasingFunction = ease };
+                var slideDown = new DoubleAnimation(-16, 0, TimeSpan.FromMilliseconds(200)) { EasingFunction = ease };
 
                 BeginAnimation(OpacityProperty, fadeIn);
-                ToastTransform.BeginAnimation(TranslateTransform.YProperty, slideUp);
+                ToastTransform.BeginAnimation(TranslateTransform.YProperty, slideDown);
             }
 
             _autoDismissTimer.Start();
@@ -116,7 +116,7 @@ namespace NotiGlow.UI.Controls
             {
                 var ease = new CubicEase { EasingMode = EasingMode.EaseIn };
                 var fadeOut = new DoubleAnimation(Opacity, 0.0, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease };
-                var slideUp = new DoubleAnimation(ToastTransform.Y, -10, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease };
+                var slideUp = new DoubleAnimation(ToastTransform.Y, -16, TimeSpan.FromMilliseconds(160)) { EasingFunction = ease };
 
                 fadeOut.Completed += (s, e) => Dismissed?.Invoke(this);
 

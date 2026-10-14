@@ -18,17 +18,13 @@ namespace NotiGlow.UI.Views
 
         public AdvancedView()
         {
-            LocalizationService.Instance.ApplyToWpfResources();
-            LocalizationService.Instance.ApplyToWpfResources(this.Resources);
             InitializeComponent();
             ApplyComboBoxItemTexts();
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Loaded += (s, e) =>
             {
-                LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-            };
-            Unloaded += (s, e) =>
-            {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+                ApplyComboBoxItemTexts();
+                UpdateStatusText();
             };
         }
 

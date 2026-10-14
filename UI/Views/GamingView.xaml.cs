@@ -22,8 +22,6 @@ namespace NotiGlow.UI.Views
 
         public GamingView()
         {
-            LocalizationService.Instance.ApplyToWpfResources();
-            LocalizationService.Instance.ApplyToWpfResources(this.Resources);
             InitializeComponent();
 
             if (TxtBtnTestGameAnimation != null)
@@ -31,14 +29,24 @@ namespace NotiGlow.UI.Views
                 TxtBtnTestGameAnimation.Text = LocalizationService.Instance.GetString("Gaming.TestGameAnimation");
             }
 
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Loaded += (s, e) =>
             {
-                LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+                UpdateLocalizedTexts();
+                RenderTrackedGameCards();
             };
-            Unloaded += (s, e) =>
+        }
+
+        private void UpdateLocalizedTexts()
+        {
+            if (TxtBtnTestGameAnimation != null)
             {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-            };
+                TxtBtnTestGameAnimation.Text = LocalizationService.Instance.GetString("Gaming.TestGameAnimation");
+            }
+            if (TxtDetectionStatus != null)
+            {
+                TxtDetectionStatus.Text = LocalizationService.Instance.GetString("Gaming.DetectionSupport");
+            }
         }
 
         private void OnLanguageChanged(object? sender, string lang)
@@ -49,11 +57,12 @@ namespace NotiGlow.UI.Views
             {
                 Dispatcher.BeginInvoke(() =>
                 {
-                    if (TxtBtnTestGameAnimation != null)
-                    {
-                        TxtBtnTestGameAnimation.Text = LocalizationService.Instance.GetString("Gaming.TestGameAnimation");
-                    }
+                    UpdateLocalizedTexts();
                     RenderTrackedGameCards();
+                    if (PnlEditGameOverride.Visibility == Visibility.Visible && !string.IsNullOrEmpty(_editingGameEntry))
+                    {
+                        OpenGameOverridesEditor(_editingGameEntry);
+                    }
                 });
             }
             catch { }
@@ -205,6 +214,7 @@ namespace NotiGlow.UI.Views
 
         private FrameworkElement CreateGameListCard(string gameEntry, GameGlowOverride? gameOverride, bool hasOverrides)
         {
+            var settings = _settingsService?.Current ?? new AppSettings();
             string fileName = Path.GetFileName(gameEntry);
             if (string.IsNullOrEmpty(fileName)) fileName = gameEntry;
 
@@ -298,7 +308,7 @@ namespace NotiGlow.UI.Views
             badgeStack.Children.Add(badgeBorder);
 
             string summaryText = hasOverrides
-                ? $"{gameOverride?.DurationMs ?? _settingsService.Current.DefaultDurationMs}ms • {(int)((gameOverride?.Intensity ?? _settingsService.Current.DefaultIntensity) * 100)}% • {gameOverride?.GlowSize ?? 30}px"
+                ? $"{(settings.CommonGamingDurationMs ?? settings.DefaultDurationMs)}ms • {(int)((settings.CommonGamingIntensity ?? settings.DefaultIntensity) * 100)}% • {(settings.CommonGamingGlowSize ?? 30.0):0}px"
                 : LocalizationService.Instance.GetString("Gaming.InheritGlobal");
 
             badgeStack.Children.Add(new TextBlock
@@ -363,6 +373,7 @@ namespace NotiGlow.UI.Views
 
         private FrameworkElement CreateGameGridCard(string gameEntry, GameGlowOverride? gameOverride, bool hasOverrides)
         {
+            var settings = _settingsService?.Current ?? new AppSettings();
             string fileName = Path.GetFileName(gameEntry);
             if (string.IsNullOrEmpty(fileName)) fileName = gameEntry;
 
@@ -463,10 +474,10 @@ namespace NotiGlow.UI.Views
             durGrid.Children.Add(new TextBlock { Text = LocalizationService.Instance.GetString("Gaming.GlowDuration"), FontSize = 11, Foreground = TryFindResource("TextMuted") as Brush });
             durGrid.Children.Add(new TextBlock
             {
-                Text = gameOverride?.DurationMs.HasValue == true ? $"{gameOverride.DurationMs.Value} ms" : $"{_settingsService.Current.DefaultDurationMs} ms*",
+                Text = hasOverrides ? $"{settings.CommonGamingDurationMs ?? settings.DefaultDurationMs} ms" : $"{settings.DefaultDurationMs} ms*",
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = gameOverride?.DurationMs.HasValue == true ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
+                Foreground = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Right
             });
             specsStack.Children.Add(durGrid);
@@ -476,10 +487,10 @@ namespace NotiGlow.UI.Views
             intGrid.Children.Add(new TextBlock { Text = LocalizationService.Instance.GetString("Gaming.GlowIntensity"), FontSize = 11, Foreground = TryFindResource("TextMuted") as Brush });
             intGrid.Children.Add(new TextBlock
             {
-                Text = gameOverride?.Intensity.HasValue == true ? $"{(int)(gameOverride.Intensity.Value * 100)}%" : $"{(int)(_settingsService.Current.DefaultIntensity * 100)}%*",
+                Text = hasOverrides ? $"{(int)((settings.CommonGamingIntensity ?? settings.DefaultIntensity) * 100)}%" : $"{(int)(settings.DefaultIntensity * 100)}%*",
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = gameOverride?.Intensity.HasValue == true ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
+                Foreground = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Right
             });
             specsStack.Children.Add(intGrid);
@@ -489,10 +500,10 @@ namespace NotiGlow.UI.Views
             blurGrid.Children.Add(new TextBlock { Text = LocalizationService.Instance.GetString("Gaming.GlowBlurSize"), FontSize = 11, Foreground = TryFindResource("TextMuted") as Brush });
             blurGrid.Children.Add(new TextBlock
             {
-                Text = gameOverride?.GlowSize.HasValue == true ? $"{gameOverride.GlowSize.Value:0} px" : "30 px*",
+                Text = hasOverrides ? $"{settings.CommonGamingGlowSize ?? 30.0:0} px" : "30 px*",
                 FontSize = 11,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = gameOverride?.GlowSize.HasValue == true ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
+                Foreground = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Right
             });
             specsStack.Children.Add(blurGrid);
@@ -567,16 +578,17 @@ namespace NotiGlow.UI.Views
             _editingGameEntry = gameEntry;
             var settings = _settingsService.Current;
             var currentOverride = settings.GetGameOverride(gameEntry);
+            bool hasCustom = settings.HasCustomCommonGamingSettings || currentOverride != null;
 
             string fileName = Path.GetFileName(gameEntry);
             TxtEditGameTitle.Text = $"{LocalizationService.Instance.GetString("Gaming.PerGameOverrides")}: {fileName}";
             TxtEditGameIdentifier.Text = gameEntry;
 
             // Duration
-            if (currentOverride?.DurationMs.HasValue == true)
+            if (hasCustom)
             {
                 ChkOverrideDuration.IsChecked = true;
-                SldGameDuration.Value = currentOverride.DurationMs.Value;
+                SldGameDuration.Value = settings.CommonGamingDurationMs ?? settings.DefaultDurationMs;
                 SldGameDuration.IsEnabled = true;
                 TxtDurationInheritHint.Text = LocalizationService.Instance.GetString("Gaming.CustomOverrides");
                 TxtDurationInheritHint.Foreground = TryFindResource("AccentColor") as Brush;
@@ -592,10 +604,10 @@ namespace NotiGlow.UI.Views
             TxtEditDurationVal.Text = $"{(int)SldGameDuration.Value} ms";
 
             // Intensity
-            if (currentOverride?.Intensity.HasValue == true)
+            if (hasCustom)
             {
                 ChkOverrideIntensity.IsChecked = true;
-                SldGameIntensity.Value = Math.Round(currentOverride.Intensity.Value * 100);
+                SldGameIntensity.Value = Math.Round((settings.CommonGamingIntensity ?? settings.DefaultIntensity) * 100);
                 SldGameIntensity.IsEnabled = true;
                 TxtIntensityInheritHint.Text = LocalizationService.Instance.GetString("Gaming.CustomOverrides");
                 TxtIntensityInheritHint.Foreground = TryFindResource("AccentColor") as Brush;
@@ -611,10 +623,10 @@ namespace NotiGlow.UI.Views
             TxtEditIntensityVal.Text = $"{(int)SldGameIntensity.Value}%";
 
             // Blur Glow Size
-            if (currentOverride?.GlowSize.HasValue == true)
+            if (hasCustom)
             {
                 ChkOverrideGlowSize.IsChecked = true;
-                SldGameGlowSize.Value = currentOverride.GlowSize.Value;
+                SldGameGlowSize.Value = settings.CommonGamingGlowSize ?? 30.0;
                 SldGameGlowSize.IsEnabled = true;
                 TxtGlowSizeInheritHint.Text = LocalizationService.Instance.GetString("Gaming.CustomOverrides");
                 TxtGlowSizeInheritHint.Foreground = TryFindResource("AccentColor") as Brush;
@@ -690,15 +702,20 @@ namespace NotiGlow.UI.Views
             if (string.IsNullOrEmpty(_editingGameEntry) || _settingsService == null) return;
 
             var settings = _settingsService.Current;
-            var overrideSettings = new GameGlowOverride
-            {
-                GameIdentifier = AppSettings.NormalizeGameIdentifier(_editingGameEntry),
-                DurationMs = (ChkOverrideDuration.IsChecked ?? false) ? (int)SldGameDuration.Value : null,
-                Intensity = (ChkOverrideIntensity.IsChecked ?? false) ? Math.Round(SldGameIntensity.Value) / 100.0 : null,
-                GlowSize = (ChkOverrideGlowSize.IsChecked ?? false) ? Math.Round(SldGameGlowSize.Value) : null
-            };
+            int? dur = (ChkOverrideDuration.IsChecked ?? false) ? (int)SldGameDuration.Value : null;
+            double? intens = (ChkOverrideIntensity.IsChecked ?? false) ? Math.Round(SldGameIntensity.Value) / 100.0 : null;
+            double? glow = (ChkOverrideGlowSize.IsChecked ?? false) ? Math.Round(SldGameGlowSize.Value) : null;
 
-            settings.SetGameOverride(_editingGameEntry, overrideSettings.HasOverrides ? overrideSettings : null);
+            if (dur.HasValue || intens.HasValue || glow.HasValue)
+            {
+                settings.SetCommonGamingSettings(dur, intens, glow);
+            }
+            else
+            {
+                settings.HasCustomCommonGamingSettings = false;
+                settings.GameOverrides?.Clear();
+            }
+
             _settingsService.Save(settings);
 
             PnlEditGameOverride.Visibility = Visibility.Collapsed;
@@ -714,7 +731,11 @@ namespace NotiGlow.UI.Views
             if (string.IsNullOrEmpty(_editingGameEntry) || _settingsService == null) return;
 
             var settings = _settingsService.Current;
-            settings.SetGameOverride(_editingGameEntry, null);
+            settings.HasCustomCommonGamingSettings = false;
+            settings.CommonGamingDurationMs = 3000;
+            settings.CommonGamingIntensity = 0.6;
+            settings.CommonGamingGlowSize = 30.0;
+            settings.GameOverrides?.Clear();
             _settingsService.Save(settings);
 
             PnlEditGameOverride.Visibility = Visibility.Collapsed;

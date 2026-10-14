@@ -110,7 +110,7 @@
             </ui:CardControl>
 
             <!-- Card 6: Color Theme Dropdown -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+            <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{DynamicResource General.ColorTheme}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -192,6 +192,52 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border Width="12" Height="12" CornerRadius="6" Background="#10B981" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock Text="Nature (Emerald Nature)" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ComboBoxItem>
+                </ComboBox>
+            </ui:CardControl>
+
+            <!-- Card 7: Application Language -->
+            <ui:CardControl Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource General.Language}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.LanguageDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <ComboBox x:Name="CmbLanguage"
+                          Style="{DynamicResource AppleSelectComboBoxStyle}"
+                          Width="250"
+                          VerticalAlignment="Center"
+                          SelectionChanged="CmbLanguage_SelectionChanged">
+                    <ComboBoxItem Tag="en-US">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🇬🇧" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="English" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="es-ES">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🇪🇸" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Español" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="fr-FR">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🇫🇷" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Français" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="de-DE">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🇩🇪" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Deutsch" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ComboBoxItem>
+                    <ComboBoxItem Tag="tr-TR">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🇹🇷" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Türkçe" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ComboBoxItem>
                 </ComboBox>

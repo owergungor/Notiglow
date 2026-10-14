@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
+using NotiGlow.Services;
 using UserControl = System.Windows.Controls.UserControl;
 using Color = System.Windows.Media.Color;
 
@@ -27,9 +28,18 @@ namespace NotiGlow.UI.Controls
         public void SetProfile(AppProfile profile)
         {
             Profile = profile;
-            TxtAppName.Text = profile.Name;
             string categoryPrefix = !string.IsNullOrEmpty(profile.Category) ? $"{profile.Category} • " : string.Empty;
-            TxtDetails.Text = $"{categoryPrefix}{profile.FormattedDuration} • {profile.FormattedIntensity} • {profile.Style} • Priority: {profile.Priority}";
+            string prioText = profile.Priority switch
+            {
+                NotificationPriority.Low => LocalizationService.Instance.GetString("Applications.PriorityLow"),
+                NotificationPriority.High => LocalizationService.Instance.GetString("Applications.PriorityHigh"),
+                _ => LocalizationService.Instance.GetString("Applications.PriorityNormal")
+            };
+            string styleKey = $"Style.{profile.Style}";
+            string styleText = LocalizationService.Instance.GetString(styleKey);
+            if (string.IsNullOrEmpty(styleText) || styleText == styleKey) styleText = profile.Style.ToString();
+            string prioLabel = LocalizationService.Instance.GetString("Applications.Priority");
+            TxtDetails.Text = $"{categoryPrefix}{profile.FormattedDuration} • {profile.FormattedIntensity} • {styleText} • {prioLabel}: {prioText}";
             ToggleEnabled.IsChecked = profile.Enabled;
 
             if (ColorHelper.IsRgbSpectrum(profile.ColorHex))

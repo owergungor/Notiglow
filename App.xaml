@@ -852,77 +852,87 @@
                                 <CubicEase x:Key="AppleEase" EasingMode="EaseOut"/>
                                 <Storyboard x:Key="ToggleOnAnim">
                                     <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="22" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ToggleOffAnim">
                                     <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="0.0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ThumbPressAnim">
-                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.18" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.15" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ThumbReleaseAnim">
                                     <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.12" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                             </ControlTemplate.Resources>
                             <Grid x:Name="TemplateRoot" Width="48" Height="26" Background="Transparent" SnapsToDevicePixels="True">
-                                <!-- Apple Switch Pill Track (48x26, CornerRadius 13) -->
+                                <!-- Apple Switch Pill Track (Inactive State) -->
                                 <Border x:Name="SwitchTrack"
                                         Width="48"
                                         Height="26"
                                         CornerRadius="13"
                                         Background="{DynamicResource InputBackground}"
                                         BorderBrush="{DynamicResource BorderColor}"
-                                        BorderThickness="1">
-                                    <Grid x:Name="TrackInnerGrid">
-                                        <!-- Apple Pure White Disc Thumb (22x22, CornerRadius 11) with Soft Drop Shadow -->
-                                        <Border x:Name="SwitchThumb"
-                                                Width="22"
-                                                Height="22"
-                                                CornerRadius="11"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"
-                                                Margin="2,0,0,0"
-                                                RenderTransformOrigin="0.5,0.5"
-                                                Background="#FFFFFF">
-                                            <Border.RenderTransform>
-                                                <TransformGroup>
-                                                    <ScaleTransform x:Name="ThumbScale" ScaleX="1.0" ScaleY="1.0"/>
-                                                    <TranslateTransform x:Name="ThumbTranslate" X="0" Y="0"/>
-                                                </TransformGroup>
-                                            </Border.RenderTransform>
-                                            <Border.Effect>
-                                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.25" Color="#000000"/>
-                                            </Border.Effect>
-                                        </Border>
-                                    </Grid>
-                                </Border>
+                                        BorderThickness="1"/>
+
+                                <!-- Active Track Overlay (Synchronously cross-fades with thumb movement) -->
+                                <Border x:Name="ActiveTrack"
+                                        Width="48"
+                                        Height="26"
+                                        CornerRadius="13"
+                                        Background="{DynamicResource AccentColor}"
+                                        BorderBrush="{DynamicResource AccentColor}"
+                                        BorderThickness="1"
+                                        Opacity="0.0"
+                                        IsHitTestVisible="False"/>
+
+                                <!-- Inner Grid Containing Disc Thumb -->
+                                <Grid x:Name="TrackInnerGrid" Width="48" Height="26">
+                                    <!-- Apple Pure White Disc Thumb (22x22, CornerRadius 11) with Soft Drop Shadow -->
+                                    <Border x:Name="SwitchThumb"
+                                            Width="22"
+                                            Height="22"
+                                            CornerRadius="11"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center"
+                                            Margin="2,0,0,0"
+                                            RenderTransformOrigin="0.5,0.5"
+                                            Background="#FFFFFF">
+                                        <Border.RenderTransform>
+                                            <TransformGroup>
+                                                <ScaleTransform x:Name="ThumbScale" ScaleX="1.0" ScaleY="1.0"/>
+                                                <TranslateTransform x:Name="ThumbTranslate" X="0" Y="0"/>
+                                            </TransformGroup>
+                                        </Border.RenderTransform>
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Direction="270" Opacity="0.25" Color="#000000"/>
+                                        </Border.Effect>
+                                    </Border>
+                                </Grid>
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
                                     <Trigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource ToggleOnAnim}"/>
+                                        <BeginStoryboard x:Name="BeginToggleOn" Storyboard="{StaticResource ToggleOnAnim}" HandoffBehavior="SnapshotAndReplace"/>
                                     </Trigger.EnterActions>
                                     <Trigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource ToggleOffAnim}"/>
+                                        <BeginStoryboard x:Name="BeginToggleOff" Storyboard="{StaticResource ToggleOffAnim}" HandoffBehavior="SnapshotAndReplace"/>
                                     </Trigger.ExitActions>
-                                    <Setter TargetName="SwitchTrack" Property="Background" Value="{DynamicResource AccentColor}"/>
-                                    <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
-                                    <Setter TargetName="SwitchThumb" Property="Background" Value="#FFFFFF"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Trigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource ThumbPressAnim}"/>
+                                        <BeginStoryboard x:Name="BeginThumbPress" Storyboard="{StaticResource ThumbPressAnim}" HandoffBehavior="SnapshotAndReplace"/>
                                     </Trigger.EnterActions>
                                     <Trigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource ThumbReleaseAnim}"/>
+                                        <BeginStoryboard x:Name="BeginThumbRelease" Storyboard="{StaticResource ThumbReleaseAnim}" HandoffBehavior="SnapshotAndReplace"/>
                                     </Trigger.ExitActions>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.92"/>
+                                    <Setter TargetName="TemplateRoot" Property="Opacity" Value="0.92"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Cursor" Value="Arrow"/>
-                                    <Setter TargetName="SwitchTrack" Property="Opacity" Value="0.38"/>
-                                    <Setter TargetName="SwitchThumb" Property="Opacity" Value="0.6"/>
+                                    <Setter TargetName="TemplateRoot" Property="Opacity" Value="0.38"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

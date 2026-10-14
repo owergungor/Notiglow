@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2] - 2026-10-14
+
+### Added
+- **Top-Right Non-Blocking Toast Notifications**:
+  - Relocated toast notifications to the top-right corner of the application window (`VerticalAlignment="Top"`).
+  - Dynamic smooth drop-down entrance from `Y = -16` to `0` (200ms cubic ease) and slide-up exit.
+  - Multi-monitor / DPI-safe layout and debounced non-blocking queue.
+- **Enhanced Language Selection & Flag Emojis**:
+  - Added national flag emojis across all supported languages (🇬🇧 English, 🇪🇸 Español, 🇫🇷 Français, 🇩🇪 Deutsch, 🇹🇷 Türkçe) in sidebar language dropdown and General Settings view.
+  - New dedicated "Application Language" setting card in General settings synchronized with global preferences.
+- **Apple-Inspired Fluid Switch Animation**:
+  - Re-architected `ToggleSwitch` template with dual-track architecture (`SwitchTrack` + `ActiveTrack`) with synchronized opacity crossfading.
+  - Smooth thumb glide using `SnapshotAndReplace` handoff behavior to prevent clock contention and eliminate stutter during rapid clicks.
+  - Apple-style thumb squish feedback on press and full Reduce Motion accessibility support.
+
+### Changed
+- **Root-Cause Dynamic Localization Engine**:
+  - Eliminated UI language desynchronization / stale string caching by introducing merged dictionary replacement in `Application.Current.Resources.MergedDictionaries`.
+  - Removed local UserControl resource shadowing in `AdvancedView` and `GamingView`.
+  - Unified dynamic re-localization across loaded/unloaded cached views, drawer modals, monitor cards, and dropdown converters.
+- **Shared Gaming Settings Model**:
+  - Replaced per-game override fragmentation with a unified gaming settings model (`CommonGamingDurationMs`, `CommonGamingIntensity`, `CommonGamingGlowSize`) shared across all games.
+  - Changes to duration, intensity, or blur size in any game immediately apply to all tracked games.
+  - Automatic migration preserves existing customized game overrides seamlessly.
+- **Add New Application Profile Drawer Dropdown Sizing**:
+  - Doubled closed control height of "Animation Style" and "Notification Priority" dropdowns from 56px to 112px for enhanced click targets and readability.
+  - Preserved vertical text and chevron centering across standard and high-DPI displays.
+
 ## [2.1] - 2026-10-14
 
 ### Added

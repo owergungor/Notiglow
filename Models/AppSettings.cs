@@ -62,6 +62,13 @@ namespace NotiGlow.Models
         public bool OnlyImportantInGames { get; set; } = false;
         public List<string> TrackedGames { get; set; } = new List<string>();
         public List<string> IgnoredGames { get; set; } = new List<string>();
+
+        // Shared Gaming Glow Settings (v2.2: Duration, Intensity, Blur Size unified across all games)
+        public int? CommonGamingDurationMs { get; set; } = 3000;
+        public double? CommonGamingIntensity { get; set; } = 0.6;
+        public double? CommonGamingGlowSize { get; set; } = 30.0;
+        public bool HasCustomCommonGamingSettings { get; set; } = false;
+
         public Dictionary<string, GameGlowOverride> GameOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         [System.Text.Json.Serialization.JsonIgnore]
@@ -76,6 +83,49 @@ namespace NotiGlow.Models
         [System.Text.Json.Serialization.JsonIgnore]
         public bool EffectiveOnlyImportantInGames => GlowDuringGames && OnlyImportantInGames;
 
+        public void MigrateLegacyGameOverridesIfNeeded()
+        {
+            if (!HasCustomCommonGamingSettings && GameOverrides != null && GameOverrides.Count > 0)
+            {
+                foreach (var kvp in GameOverrides)
+                {
+                    var ov = kvp.Value;
+                    if (ov != null && ov.HasOverrides)
+                    {
+                        CommonGamingDurationMs = ov.DurationMs.HasValue ? GameGlowOverride.ClampDuration(ov.DurationMs.Value) : null;
+                        CommonGamingIntensity = ov.Intensity.HasValue ? GameGlowOverride.ClampIntensity(ov.Intensity.Value) : null;
+                        CommonGamingGlowSize = ov.GlowSize.HasValue ? GameGlowOverride.ClampGlowSize(ov.GlowSize.Value) : null;
+                        HasCustomCommonGamingSettings = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void SetCommonGamingSettings(int? durationMs, double? intensity, double? glowSize)
+        {
+            CommonGamingDurationMs = durationMs.HasValue ? GameGlowOverride.ClampDuration(durationMs.Value) : null;
+            CommonGamingIntensity = intensity.HasValue ? GameGlowOverride.ClampIntensity(intensity.Value) : null;
+            CommonGamingGlowSize = glowSize.HasValue ? GameGlowOverride.ClampGlowSize(glowSize.Value) : null;
+            HasCustomCommonGamingSettings = durationMs.HasValue || intensity.HasValue || glowSize.HasValue;
+
+            GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
+            var sharedOverride = new GameGlowOverride
+            {
+                DurationMs = CommonGamingDurationMs,
+                Intensity = CommonGamingIntensity,
+                GlowSize = CommonGamingGlowSize
+            };
+            foreach (var game in TrackedGames)
+            {
+                string id = NormalizeGameIdentifier(game);
+                if (!string.IsNullOrEmpty(id))
+                {
+                    GameOverrides[id] = sharedOverride;
+                }
+            }
+        }
+
         public static string NormalizeGameIdentifier(string? gamePathOrName)
         {
             if (string.IsNullOrWhiteSpace(gamePathOrName)) return string.Empty;
@@ -86,17 +136,20 @@ namespace NotiGlow.Models
 
         public GameGlowOverride? GetGameOverride(string? gamePathOrName)
         {
-            if (GameOverrides == null || GameOverrides.Count == 0) return null;
-            string id = NormalizeGameIdentifier(gamePathOrName);
-            if (!string.IsNullOrEmpty(id) && GameOverrides.TryGetValue(id, out var overrideSettings))
+            MigrateLegacyGameOverridesIfNeeded();
+
+            if (!HasCustomCommonGamingSettings && (GameOverrides == null || GameOverrides.Count == 0))
             {
-                return overrideSettings;
+                return null;
             }
-            if (!string.IsNullOrWhiteSpace(gamePathOrName) && GameOverrides.TryGetValue(gamePathOrName.Trim(), out var byPath))
+
+            return new GameGlowOverride
             {
-                return byPath;
-            }
-            return null;
+                GameIdentifier = NormalizeGameIdentifier(gamePathOrName),
+                DurationMs = CommonGamingDurationMs,
+                Intensity = CommonGamingIntensity,
+                GlowSize = CommonGamingGlowSize
+            };
         }
 
         public bool HasGameOverride(string? gamePathOrName) => GetGameOverride(gamePathOrName)?.HasOverrides == true;
@@ -105,34 +158,21 @@ namespace NotiGlow.Models
 
         public void SetGameOverride(string? gamePathOrName, GameGlowOverride? overrideSettings)
         {
-            string id = NormalizeGameIdentifier(gamePathOrName);
-            if (string.IsNullOrEmpty(id)) return;
-
-            GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
-
             if (overrideSettings == null || !overrideSettings.HasOverrides)
             {
-                GameOverrides.Remove(id);
-                if (!string.IsNullOrWhiteSpace(gamePathOrName))
-                {
-                    GameOverrides.Remove(gamePathOrName.Trim());
-                }
+                HasCustomCommonGamingSettings = false;
+                CommonGamingDurationMs = null;
+                CommonGamingIntensity = null;
+                CommonGamingGlowSize = null;
+                GameOverrides?.Clear();
+                return;
             }
-            else
+
+            SetCommonGamingSettings(overrideSettings.DurationMs, overrideSettings.Intensity, overrideSettings.GlowSize);
+            string id = NormalizeGameIdentifier(gamePathOrName);
+            if (!string.IsNullOrEmpty(id))
             {
-                overrideSettings.GameIdentifier = id;
-                if (overrideSettings.DurationMs.HasValue)
-                {
-                    overrideSettings.DurationMs = GameGlowOverride.ClampDuration(overrideSettings.DurationMs.Value);
-                }
-                if (overrideSettings.Intensity.HasValue)
-                {
-                    overrideSettings.Intensity = GameGlowOverride.ClampIntensity(overrideSettings.Intensity.Value);
-                }
-                if (overrideSettings.GlowSize.HasValue)
-                {
-                    overrideSettings.GlowSize = GameGlowOverride.ClampGlowSize(overrideSettings.GlowSize.Value);
-                }
+                GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
                 GameOverrides[id] = overrideSettings;
             }
         }
