@@ -21,14 +21,27 @@ namespace NotiGlow.UI.Views
         public ApplicationsView()
         {
             InitializeComponent();
-            Loaded += (s, e) => LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-            Unloaded += (s, e) => LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            Loaded += (s, e) => RefreshAppCards();
         }
 
         private void OnLanguageChanged(object? sender, string lang)
         {
             if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
-            try { Dispatcher.BeginInvoke(RefreshAppCards); } catch { }
+            try
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    RefreshAppCards();
+                    if (_editingProfile != null && PnlEditProfile.Visibility == Visibility.Visible)
+                    {
+                        TxtEditorTitle.Text = _isNewProfile
+                            ? LocalizationService.Instance.GetString("Applications.NewProfile")
+                            : $"{LocalizationService.Instance.GetString("Applications.EditProfile")}: {_editingProfile.Name}";
+                    }
+                });
+            }
+            catch { }
         }
 
         public void Initialize(ProfileService profileService, GlowManager glowManager, SettingsService? settingsService = null)

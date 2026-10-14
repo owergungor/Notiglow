@@ -154,39 +154,17 @@ namespace NotiGlow.Services
             return _translations[DefaultLanguage].Keys.ToList();
         }
 
+        private ResourceDictionary? _activeLocalizationDictionary;
+
         public void ApplyToWpfResources(ResourceDictionary? target = null)
         {
             try
             {
-                if (target == null)
-                {
-                    var app = System.Windows.Application.Current;
-                    if (app == null) return;
-
-                    if (app.Dispatcher != null)
-                    {
-                        if (app.Dispatcher.HasShutdownStarted || app.Dispatcher.HasShutdownFinished) return;
-                        if (app.Dispatcher.Thread != null && !app.Dispatcher.Thread.IsAlive) return;
-
-                        if (!app.Dispatcher.CheckAccess())
-                        {
-                            try
-                            {
-                                app.Dispatcher.BeginInvoke(() => ApplyToWpfResources(target));
-                            }
-                            catch { }
-                            return;
-                        }
-                    }
-
-                    target = app.Resources;
-                }
-
-                if (target == null) return;
-
                 var currentDict = GetRawDictionary(_currentLanguage);
                 var fallbackDict = _translations[DefaultLanguage];
 
+                // Create a clean new ResourceDictionary populated with all localized strings
+                var newDict = new ResourceDictionary();
                 foreach (var kvp in fallbackDict)
                 {
                     string key = kvp.Key;
@@ -194,7 +172,63 @@ namespace NotiGlow.Services
                         ? localizedVal
                         : kvp.Value;
 
-                    target[key] = val;
+                    newDict[key] = val;
+                }
+
+                if (target != null)
+                {
+                    foreach (System.Collections.DictionaryEntry entry in newDict)
+                    {
+                        target[entry.Key] = entry.Value;
+                    }
+                    return;
+                }
+
+                var app = System.Windows.Application.Current;
+                if (app == null) return;
+
+                if (app.Dispatcher != null)
+                {
+                    if (app.Dispatcher.HasShutdownStarted || app.Dispatcher.HasShutdownFinished) return;
+                    if (app.Dispatcher.Thread != null && !app.Dispatcher.Thread.IsAlive) return;
+
+                    if (!app.Dispatcher.CheckAccess())
+                    {
+                        try
+                        {
+                            app.Dispatcher.BeginInvoke(() => ApplyToWpfResources(null));
+                        }
+                        catch { }
+                        return;
+                    }
+                }
+
+                if (app != null)
+                {
+                    // Swap MergedDictionaries entry to trigger comprehensive visual tree DynamicResource invalidation
+                    if (_activeLocalizationDictionary != null)
+                    {
+                        app.Resources.MergedDictionaries.Remove(_activeLocalizationDictionary);
+                    }
+
+                    _activeLocalizationDictionary = newDict;
+                    app.Resources.MergedDictionaries.Add(_activeLocalizationDictionary);
+
+                    // Also mirror directly onto app.Resources for direct lookups
+                    foreach (System.Collections.DictionaryEntry entry in newDict)
+                    {
+                        app.Resources[entry.Key] = entry.Value;
+                    }
+
+                    // Invalidate visual roots for any open windows to guarantee redraw
+                    foreach (System.Windows.Window window in app.Windows)
+                    {
+                        try
+                        {
+                            window.InvalidateVisual();
+                        }
+                        catch { }
+                    }
                 }
             }
             catch (Exception ex)
@@ -281,6 +315,8 @@ namespace NotiGlow.Services
                 ["General.ThemeDarkToolTip"] = "Force Dark mode",
                 ["General.ColorTheme"] = "Color Theme",
                 ["General.ColorThemeDesc"] = "Curated color systems with tailored Light and Dark variants.",
+                ["General.Language"] = "Language",
+                ["General.LanguageDesc"] = "Choose the display language for NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Appearance",
@@ -308,6 +344,9 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Display",
                 ["Display.Subtitle"] = "Choose which displays show the glow border animation when notifications trigger.",
+                ["Display.MonitorFormat"] = "Monitor {0}: {1}",
+                ["Display.PrimaryBadge"] = "(Primary)",
+                ["Display.ResolutionFormat"] = "Resolution: {0} x {1} | BitsPerPixel: {2}",
                 ["Display.ActiveMonitor"] = "Active Monitor",
                 ["Display.ActiveMonitorDesc"] = "Show glow on the monitor containing the active window / mouse cursor focus.",
                 ["Display.PrimaryMonitor"] = "Primary Monitor (Default)",
@@ -566,6 +605,8 @@ namespace NotiGlow.Services
                 ["General.ThemeDarkToolTip"] = "Forzar modo oscuro",
                 ["General.ColorTheme"] = "Tema de Color",
                 ["General.ColorThemeDesc"] = "Sistemas de color seleccionados con variantes clara y oscura.",
+                ["General.Language"] = "Idioma",
+                ["General.LanguageDesc"] = "Elija el idioma de visualización para NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Apariencia",
@@ -593,6 +634,9 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Pantalla",
                 ["Display.Subtitle"] = "Elija qué monitores muestran la animación de brillo al llegar notificaciones.",
+                ["Display.MonitorFormat"] = "Monitor {0}: {1}",
+                ["Display.PrimaryBadge"] = "(Principal)",
+                ["Display.ResolutionFormat"] = "Resolución: {0} x {1} | BitsPorPíxel: {2}",
                 ["Display.ActiveMonitor"] = "Monitor Activo",
                 ["Display.ActiveMonitorDesc"] = "Muestra el brillo en el monitor que contiene la ventana activa o el cursor.",
                 ["Display.PrimaryMonitor"] = "Monitor Principal (Predeterminado)",
@@ -851,6 +895,8 @@ namespace NotiGlow.Services
                 ["General.ThemeDarkToolTip"] = "Forcer le mode sombre",
                 ["General.ColorTheme"] = "Thème de Couleur",
                 ["General.ColorThemeDesc"] = "Palettes de couleurs harmonieuses avec déclinaisons claires et sombres.",
+                ["General.Language"] = "Langue",
+                ["General.LanguageDesc"] = "Choisissez la langue d'affichage pour NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Apparence",
@@ -878,6 +924,9 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Affichage",
                 ["Display.Subtitle"] = "Choisissez les écrans qui affichent l'effet lumineux lors des notifications.",
+                ["Display.MonitorFormat"] = "Moniteur {0}: {1}",
+                ["Display.PrimaryBadge"] = "(Principal)",
+                ["Display.ResolutionFormat"] = "Résolution: {0} x {1} | BitsParPixel: {2}",
                 ["Display.ActiveMonitor"] = "Écran Actif",
                 ["Display.ActiveMonitorDesc"] = "Affiche l'effet sur l'écran contenant la fenêtre active ou le curseur.",
                 ["Display.PrimaryMonitor"] = "Écran Principal (Par défaut)",
@@ -1127,6 +1176,8 @@ namespace NotiGlow.Services
                 ["General.ThemeDarkToolTip"] = "Dunklen Modus erzwingen",
                 ["General.ColorTheme"] = "Farbdesign",
                 ["General.ColorThemeDesc"] = "Kuratierte Farbschemata mit abgestimmten hellen und dunklen Varianten.",
+                ["General.Language"] = "Sprache",
+                ["General.LanguageDesc"] = "Wählen Sie die Anzeigesprache für NotiGlow.",
                 ["Appearance.Title"] = "Erscheinungsbild",
                 ["Appearance.Subtitle"] = "Globale Standardparameter für Animationen konfigurieren und Leuchteffekt voranzeigen.",
                 ["Appearance.DefaultStyle"] = "Standard-Animationsstil",
@@ -1148,6 +1199,9 @@ namespace NotiGlow.Services
                 ["Notifications.IgnoreDesc"] = "Ignoriert neue eingehende Benachrichtigungen, während bereits ein Leuchteffekt abgespielt wird.",
                 ["Display.Title"] = "Bildschirm",
                 ["Display.Subtitle"] = "Wählen Sie aus, welche Bildschirme den Leuchtumrandungseffekt bei Benachrichtigungen anzeigen.",
+                ["Display.MonitorFormat"] = "Monitor {0}: {1}",
+                ["Display.PrimaryBadge"] = "(Primär)",
+                ["Display.ResolutionFormat"] = "Auflösung: {0} x {1} | Farbtiefe: {2}",
                 ["Display.ActiveMonitor"] = "Aktiver Bildschirm",
                 ["Display.ActiveMonitorDesc"] = "Leuchteffekt auf dem Bildschirm mit dem aktiven Fenster-/Mausfokus anzeigen.",
                 ["Display.PrimaryMonitor"] = "Hauptbildschirm (Standard)",
@@ -1394,6 +1448,8 @@ namespace NotiGlow.Services
                 ["General.ThemeDarkToolTip"] = "Koyu temayı zorla",
                 ["General.ColorTheme"] = "Renk Teması",
                 ["General.ColorThemeDesc"] = "Özel Açık ve Koyu varyantlara sahip seçkin renk sistemleri.",
+                ["General.Language"] = "Uygulama Dili",
+                ["General.LanguageDesc"] = "NotiGlow için görüntüleme dilini seçin.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Görünüm",
@@ -1421,6 +1477,9 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Ekran",
                 ["Display.Subtitle"] = "Bildirimler tetiklendiğinde kenar ışığı animasyonunun hangi ekranlarda gösterileceğini seçin.",
+                ["Display.MonitorFormat"] = "Monitör {0}: {1}",
+                ["Display.PrimaryBadge"] = "(Birincil)",
+                ["Display.ResolutionFormat"] = "Çözünürlük: {0} x {1} | Renk Derinliği: {2}",
                 ["Display.ActiveMonitor"] = "Aktif Monitör",
                 ["Display.ActiveMonitorDesc"] = "Işığı, aktif pencereyi veya fare imlecini barındıran monitörde gösterir.",
                 ["Display.PrimaryMonitor"] = "Birincil Monitör (Varsayılan)",

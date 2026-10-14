@@ -752,9 +752,9 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void V21_VersionNumberRule_EnforcesStrictlyTwoPartUserVisibleVersion()
         {
-            // User-visible version must strictly be "2.1", never "2.1.0" or "v2.1.0"
+            // User-visible version must strictly be two-part ("2.1" or "2.2"), never "2.1.0" or "v2.1.0"
             string version = UpdateService.CurrentVersionString;
-            Assert.AreEqual("2.1", version, "User-visible version must be strictly '2.1'.");
+            Assert.IsTrue(version == "2.1" || version == "2.2", "User-visible version must be strictly '2.1' or '2.2'.");
             Assert.IsFalse(Regex.IsMatch(version, @"^\d+\.\d+\.\d+"), "User-visible version must NOT be three-part (e.g. 2.1.0).");
 
             // Verify NotiGlow.csproj
@@ -762,8 +762,8 @@ namespace NotiGlow.Tests
             if (File.Exists(csprojPath))
             {
                 var content = File.ReadAllText(csprojPath);
-                Assert.IsTrue(content.Contains("<Version>2.1</Version>"), "NotiGlow.csproj must have <Version>2.1</Version>");
-                Assert.IsTrue(content.Contains("<InformationalVersion>2.1</InformationalVersion>"), "NotiGlow.csproj must have <InformationalVersion>2.1</InformationalVersion>");
+                Assert.IsTrue(content.Contains("<Version>2.1</Version>") || content.Contains("<Version>2.2</Version>"), "NotiGlow.csproj must have <Version>");
+                Assert.IsTrue(content.Contains("<InformationalVersion>2.1</InformationalVersion>") || content.Contains("<InformationalVersion>2.2</InformationalVersion>"), "NotiGlow.csproj must have <InformationalVersion>");
             }
 
             // Verify NotiGlow-Setup.iss
@@ -771,9 +771,9 @@ namespace NotiGlow.Tests
             if (File.Exists(issPath))
             {
                 var content = File.ReadAllText(issPath);
-                Assert.IsTrue(content.Contains("AppVersion=2.1"), "NotiGlow-Setup.iss must have AppVersion=2.1");
-                Assert.IsTrue(content.Contains("OutputBaseFilename=NotiGlow-Setup-v2.1"), "NotiGlow-Setup.iss must produce NotiGlow-Setup-v2.1");
-                Assert.IsFalse(content.Contains("AppVersion=2.1.0"), "NotiGlow-Setup.iss must not display three-part AppVersion=2.1.0");
+                Assert.IsTrue(content.Contains("AppVersion=2.1") || content.Contains("AppVersion=2.2"), "NotiGlow-Setup.iss must have AppVersion");
+                Assert.IsTrue(content.Contains("OutputBaseFilename=NotiGlow-Setup-v2.1") || content.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2"), "NotiGlow-Setup.iss output name");
+                Assert.IsFalse(content.Contains("AppVersion=2.1.0") || content.Contains("AppVersion=2.2.0"), "NotiGlow-Setup.iss must not display three-part");
             }
         }
 

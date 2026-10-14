@@ -43,10 +43,41 @@ namespace NotiGlow.UI.Views
                     {
                         UpdateListenerStatus(_notificationService.CurrentAccessStatus);
                     }
+                    UpdateLanguageSelection(e);
                 });
             };
 
             LoadSettings();
+        }
+
+        private bool _isUpdatingLanguage = false;
+
+        private void UpdateLanguageSelection(string languageCode)
+        {
+            if (CmbLanguage == null) return;
+            _isUpdatingLanguage = true;
+            try
+            {
+                string norm = LocalizationService.NormalizeLanguageCode(languageCode);
+                foreach (var item in CmbLanguage.Items)
+                {
+                    if (item is ComboBoxItem cbi && cbi.Tag is string tag && string.Equals(tag, norm, StringComparison.OrdinalIgnoreCase))
+                    {
+                        CmbLanguage.SelectedItem = cbi;
+                        break;
+                    }
+                }
+            }
+            finally
+            {
+                _isUpdatingLanguage = false;
+            }
+        }
+
+        private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isUpdatingLanguage || CmbLanguage?.SelectedItem is not ComboBoxItem item || item.Tag is not string tag) return;
+            LocalizationService.Instance.SetLanguage(tag, persist: true);
         }
 
         private void UpdateListenerStatus(Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
@@ -99,6 +130,9 @@ namespace NotiGlow.UI.Views
 
             // Load Color Theme
             UpdateColorThemeSelection(current.ColorTheme);
+
+            // Load Language Selection
+            UpdateLanguageSelection(current.AppLanguage);
         }
 
         private void UpdateColorThemeSelection(ColorTheme colorTheme)

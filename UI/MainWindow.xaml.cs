@@ -349,6 +349,11 @@ namespace NotiGlow.UI
                 TxtCurrentLangCode.Text = langItem.ShortCode;
             }
 
+            if (TxtCurrentLangFlag != null)
+            {
+                TxtCurrentLangFlag.Text = langItem.FlagEmoji;
+            }
+
             if (BtnLanguage != null)
             {
                 string langName = LocalizationService.Instance.GetString("Language.Language");

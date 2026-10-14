@@ -17,6 +17,10 @@ namespace NotiGlow.UI.Views
         public DisplayView()
         {
             InitializeComponent();
+            LocalizationService.Instance.LanguageChanged += (s, e) =>
+            {
+                Dispatcher?.Invoke(RefreshDetectedMonitors);
+            };
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null)
@@ -59,15 +63,19 @@ namespace NotiGlow.UI.Views
                 };
 
                 var sp = new StackPanel();
+                string monitorFormat = LocalizationService.Instance.GetString("Display.MonitorFormat", index, screen.DeviceName);
+                string primaryBadge = screen.Primary ? $" {LocalizationService.Instance.GetString("Display.PrimaryBadge")}" : string.Empty;
+                string resolutionText = LocalizationService.Instance.GetString("Display.ResolutionFormat", screen.Bounds.Width, screen.Bounds.Height, screen.BitsPerPixel);
+
                 sp.Children.Add(new TextBlock
                 {
-                    Text = $"Monitor {index}: {screen.DeviceName} {(screen.Primary ? "(Primary)" : "")}",
+                    Text = $"{monitorFormat}{primaryBadge}",
                     FontSize = 14,
                     FontWeight = FontWeights.SemiBold
                 });
                 sp.Children.Add(new TextBlock
                 {
-                    Text = $"Resolution: {screen.Bounds.Width} x {screen.Bounds.Height} | BitsPerPixel: {screen.BitsPerPixel}",
+                    Text = resolutionText,
                     Foreground = System.Windows.Media.Brushes.Gray,
                     FontSize = 12,
                     Margin = new Thickness(0, 2, 0, 0)

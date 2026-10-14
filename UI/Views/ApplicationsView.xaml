@@ -130,10 +130,10 @@
                                     </Grid>
                                 </StackPanel>
 
-                                <!-- Animation Style (Doubled vertical allocation for spacious selection) -->
+                                <!-- Animation Style (Doubled vertical allocation for spacious selection: 112px) -->
                                 <StackPanel Margin="0,0,0,28">
                                     <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
-                                    <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch" MinHeight="56" Height="56" VerticalContentAlignment="Center" Padding="14,0">
+                                    <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch" MinHeight="112" Height="112" VerticalContentAlignment="Center" Padding="14,0">
                                         <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,10"/>
                                         <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,10"/>
                                         <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,10"/>
@@ -142,10 +142,10 @@
                                     </ComboBox>
                                 </StackPanel>
 
-                                <!-- Notification Priority (Doubled vertical allocation for spacious selection) -->
+                                <!-- Notification Priority (Doubled vertical allocation for spacious selection: 112px) -->
                                 <StackPanel Margin="0,0,0,28">
                                     <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
-                                    <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch" MinHeight="56" Height="56" VerticalContentAlignment="Center" Padding="14,0">
+                                    <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch" MinHeight="112" Height="112" VerticalContentAlignment="Center" Padding="14,0">
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,10"/>
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,10"/>
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,10"/>

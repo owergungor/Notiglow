@@ -18,6 +18,7 @@ namespace NotiGlow.UI.Views
         public AppearanceView()
         {
             InitializeComponent();
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Unloaded += (s, e) => FlushPendingSave();
             IsVisibleChanged += (s, e) =>
             {
@@ -26,6 +27,45 @@ namespace NotiGlow.UI.Views
                     FlushPendingSave();
                 }
             };
+        }
+
+        private void OnLanguageChanged(object? sender, string lang)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            try
+            {
+                Dispatcher.BeginInvoke(RefreshStyleComboBox);
+            }
+            catch { }
+        }
+
+        private void RefreshStyleComboBox()
+        {
+            if (CmbDefaultStyle == null) return;
+            var currentTag = (CmbDefaultStyle.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+            foreach (var item in CmbDefaultStyle.Items)
+            {
+                if (item is ComboBoxItem cbi && cbi.Tag is string tag)
+                {
+                    string styleKey = $"Style.{tag}";
+                    string str = LocalizationService.Instance.GetString(styleKey);
+                    if (!string.IsNullOrEmpty(str) && str != styleKey)
+                    {
+                        cbi.Content = str;
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(currentTag))
+            {
+                foreach (ComboBoxItem item in CmbDefaultStyle.Items)
+                {
+                    if (item.Tag?.ToString() == currentTag)
+                    {
+                        CmbDefaultStyle.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
         }
 
         private void FlushPendingSave()
@@ -81,6 +121,7 @@ namespace NotiGlow.UI.Views
             SldDefIntensity.Value = Math.Round(current.DefaultIntensity * 100);
             SldDefGlowSize.Value = Math.Round(current.DefaultGlowSize);
             DefColorPicker.SelectedColorHex = current.DefaultColorHex;
+            RefreshStyleComboBox();
 
             foreach (ComboBoxItem item in CmbDefaultStyle.Items)
             {

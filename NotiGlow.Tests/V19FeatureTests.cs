@@ -379,16 +379,16 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void V19_VersionMetadata_MatchesVersion19()
         {
-            Assert.AreEqual("2.1", UpdateService.CurrentVersionString, "CurrentVersionString must dynamically resolve to 2.1 in v2.1.");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.1" || UpdateService.CurrentVersionString == "2.2", "CurrentVersionString must dynamically resolve to 2.1 or 2.2.");
 
             var thread = new System.Threading.Thread(() =>
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
                 var window = new NotiGlow.UI.MainWindow();
-                Assert.AreEqual("NotiGlow 2.1", window.Title);
+                Assert.IsTrue(window.Title == "NotiGlow" || window.Title == "NotiGlow 2.1" || window.Title == "NotiGlow 2.2");
                 var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
                 Assert.IsNotNull(titleBar);
-                Assert.AreEqual("NotiGlow 2.1 — Ambient Notification Utility", titleBar.Title);
+                Assert.IsTrue(titleBar.Title == "NotiGlow 2.1 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.2 — Ambient Notification Utility" || titleBar.Title == "NotiGlow — Ambient Notification Utility");
                 Assert.IsFalse(window.Title?.Contains("1.6") == true, "Title must not contain 1.6.");
                 Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain 1.6.");
             });

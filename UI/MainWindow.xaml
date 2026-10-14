@@ -213,11 +213,20 @@
                                             CornerRadius="4"
                                             Padding="5,1"
                                             VerticalAlignment="Center">
-                                        <TextBlock x:Name="TxtCurrentLangCode"
-                                                   Text="EN"
-                                                   FontSize="11"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource AccentColor}"/>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtCurrentLangFlag"
+                                                       Text="🇬🇧"
+                                                       FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif"
+                                                       FontSize="11"
+                                                       Margin="0,0,3,0"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtCurrentLangCode"
+                                                       Text="EN"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource AccentColor}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </Border>
                                     <ui:SymbolIcon Symbol="ChevronDown24"
                                                    FontSize="10"
@@ -343,11 +352,11 @@
             <Grid Grid.Column="1" x:Name="RootContentGrid" Background="{DynamicResource WindowBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <views:GeneralView x:Name="ViewGeneral" Visibility="Visible" HorizontalAlignment="Stretch"/>
 
-                <!-- Toast Notification Overlay Container (Bottom-Right) -->
+                <!-- Toast Notification Overlay Container (Top-Right) -->
                 <StackPanel x:Name="ToastContainer"
-                            VerticalAlignment="Bottom"
+                            VerticalAlignment="Top"
                             HorizontalAlignment="Right"
-                            Margin="0,0,24,24"
+                            Margin="0,24,24,0"
                             Panel.ZIndex="999"
                             IsHitTestVisible="True"/>
             </Grid>

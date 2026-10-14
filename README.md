@@ -11,7 +11,7 @@ Modern, customizable ambient notification utility for Windows.
 - Application-specific notification profiles
 - Gaming mode with tracked game executables
 - Steam and Epic game discovery
-- Per-game notification glow duration, intensity, and blur size customization
+- Common notification glow duration, intensity, and blur size customization across all tracked games
 - List and Grid view layouts for tracked game profiles
 - English, Spanish, French, German, and Turkish localization
 - Non-blocking animated toast notifications
@@ -20,11 +20,11 @@ Modern, customizable ambient notification utility for Windows.
 
 ## Download
 
-Get the latest release (v2.1):
+Get the latest release (v2.2):
 [https://github.com/owergungor/Notiglow/releases/latest](https://github.com/owergungor/Notiglow/releases/latest)
 
-- **Installer (`NotiGlow-Setup-v2.1.exe`)** — Recommended installation
-- **ZIP (`NotiGlow_2.1_win-x64.zip`)** — Portable option, no setup required
+- **Installer (`NotiGlow-Setup-v2.2.exe`)** — Recommended installation
+- **ZIP (`NotiGlow_2.2_win-x64.zip`)** — Portable option, no setup required
 
 For bug reports and feature requests, visit [Issues](https://github.com/owergungor/Notiglow/issues).
 
