@@ -5,133 +5,354 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="650" d:DesignWidth="800">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24">
-            <!-- Header Section with Top-Right Test Game Animation Button -->
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+             d:DesignHeight="700" d:DesignWidth="800">
+    <Grid>
+        <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
+                <!-- Header Section with Top-Right Test Game Animation Button -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{DynamicResource Gaming.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="{DynamicResource Gaming.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
-                </StackPanel>
-
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.TestGameAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtBtnTestGameAnimation" Text="{DynamicResource Gaming.TestGameAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource Gaming.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource Gaming.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                     </StackPanel>
-                </ui:Button>
-            </Grid>
 
-            <!-- Master Gaming Mode Toggle -->
-            <ui:CardControl Padding="18" Margin="0,0,0,16" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Games24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.TestGameAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtBtnTestGameAnimation" Text="{DynamicResource Gaming.TestGameAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </Grid>
+
+                <!-- Master Gaming Mode Toggle -->
+                <ui:CardControl Padding="18" Margin="0,0,0,16" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <ui:CardControl.Header>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Games24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Gaming.Mode}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Gaming.ModeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ToggleGamingMode" Click="ToggleGamingMode_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
+
+                <TextBlock Text="{DynamicResource Gaming.BehaviorRules}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+
+                <!-- Glow During Games -->
+                <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <ui:CardControl.Header>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource Gaming.Mode}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="{DynamicResource Gaming.ModeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{DynamicResource Gaming.GlowDuringGames}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleGamingMode" Click="ToggleGamingMode_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ToggleGlowDuringGames" Click="ToggleGlowDuringGames_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
 
-            <TextBlock Text="{DynamicResource Gaming.BehaviorRules}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
-
-            <!-- Glow During Games -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Gaming.GlowDuringGames}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleGlowDuringGames" Click="ToggleGlowDuringGames_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Reduce Intensity -->
-            <ui:CardControl x:Name="CardReduceIntensityInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtReduceIntensityTitle" Text="{DynamicResource Gaming.ReduceIntensity}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtReduceIntensityDesc" Text="{DynamicResource Gaming.ReduceIntensityDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleReduceIntensityInGames" Click="ToggleReduceIntensityInGames_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Reduce Duration -->
-            <ui:CardControl x:Name="CardReduceDurationInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtReduceDurationTitle" Text="{DynamicResource Gaming.ReduceDuration}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtReduceDurationDesc" Text="{DynamicResource Gaming.ReduceDurationDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleReduceDurationInGames" Click="ToggleReduceDurationInGames_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Only Important Notifications -->
-            <ui:CardControl x:Name="CardOnlyImportantInGames" Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtOnlyImportantTitle" Text="{DynamicResource Gaming.OnlyImportant}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtOnlyImportantDesc" Text="{DynamicResource Gaming.OnlyImportantDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleOnlyImportantInGames" Click="ToggleOnlyImportantInGames_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Tracked Games Section Header & Add a Game Action Button -->
-            <Grid Margin="0,0,0,14">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{DynamicResource Gaming.TrackedGames}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock x:Name="TxtDetectionStatus" Text="{DynamicResource Gaming.DetectionSupport}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnScanGames" Appearance="Secondary" Click="BtnScanGames_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.ScanLaunchersToolTip}" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource Gaming.ScanLaunchers}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <!-- Reduce Intensity -->
+                <ui:CardControl x:Name="CardReduceIntensityInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <ui:CardControl.Header>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtReduceIntensityTitle" Text="{DynamicResource Gaming.ReduceIntensity}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtReduceIntensityDesc" Text="{DynamicResource Gaming.ReduceIntensityDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                    </ui:Button>
-                    <ui:Button x:Name="BtnAddGamePickerTop" Appearance="Primary" Click="BtnAddGamePicker_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.AddGameToolTip}" Foreground="{DynamicResource TextPrimary}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource Gaming.AddGame}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:Button>
-                </StackPanel>
-            </Grid>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ToggleReduceIntensityInGames" Click="ToggleReduceIntensityInGames_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
 
-            <Border CornerRadius="8" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
-                <ListView x:Name="ListTrackedGames" MinHeight="100" MaxHeight="260" Background="Transparent" BorderThickness="0">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="8,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding .}" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                <ui:Button Grid.Column="1" Appearance="Transparent" Click="BtnRemoveGame_Click" ToolTip="{DynamicResource Gaming.RemoveGameToolTip}" Padding="6,4" Margin="8,0,0,0">
-                                    <ui:SymbolIcon Symbol="Delete24" Foreground="{DynamicResource TextSecondary}"/>
-                                </ui:Button>
+                <!-- Reduce Duration -->
+                <ui:CardControl x:Name="CardReduceDurationInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <ui:CardControl.Header>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtReduceDurationTitle" Text="{DynamicResource Gaming.ReduceDuration}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtReduceDurationDesc" Text="{DynamicResource Gaming.ReduceDurationDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ToggleReduceDurationInGames" Click="ToggleReduceDurationInGames_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
+
+                <!-- Only Important Notifications -->
+                <ui:CardControl x:Name="CardOnlyImportantInGames" Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <ui:CardControl.Header>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtOnlyImportantTitle" Text="{DynamicResource Gaming.OnlyImportant}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtOnlyImportantDesc" Text="{DynamicResource Gaming.OnlyImportantDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <ui:ToggleSwitch x:Name="ToggleOnlyImportantInGames" Click="ToggleOnlyImportantInGames_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
+
+                <!-- Tracked Games Section Header & Controls -->
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource Gaming.TrackedGames}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtDetectionStatus" Text="{DynamicResource Gaming.DetectionSupport}" FontSize="12" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Segmented View Switcher: List vs Grid (Matching Applications page) -->
+                        <Border Background="{DynamicResource InputBackground}"
+                                BorderBrush="{DynamicResource BorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="2"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="RbGameListView"
+                                             GroupName="TrackedGameViewModeGroup"
+                                             Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
+                                             IsChecked="True"
+                                             Click="RbGameViewMode_Click"
+                                             ToolTip="{DynamicResource Gaming.ListView}"
+                                             AutomationProperties.Name="{DynamicResource Gaming.ListView}"
+                                             Height="28" Width="36" Padding="0">
+                                    <ui:SymbolIcon Symbol="TextBulletListLtr24" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </RadioButton>
+                                <RadioButton x:Name="RbGameGridView"
+                                             GroupName="TrackedGameViewModeGroup"
+                                             Style="{DynamicResource SegmentedThemeRadioButtonStyle}"
+                                             Click="RbGameViewMode_Click"
+                                             ToolTip="{DynamicResource Gaming.GridView}"
+                                             AutomationProperties.Name="{DynamicResource Gaming.GridView}"
+                                             Height="28" Width="36" Padding="0">
+                                    <ui:SymbolIcon Symbol="Grid24" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </RadioButton>
+                            </StackPanel>
+                        </Border>
+
+                        <ui:Button x:Name="BtnScanGames" Appearance="Secondary" Click="BtnScanGames_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.ScanLaunchersToolTip}" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Gaming.ScanLaunchers}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button x:Name="BtnAddGamePickerTop" Appearance="Primary" Click="BtnAddGamePicker_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Gaming.AddGameToolTip}" Foreground="{DynamicResource TextPrimary}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Gaming.AddGame}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Tracked Games Main Area -->
+                <Grid>
+                    <!-- List View Container -->
+                    <StackPanel x:Name="PnlGameList" HorizontalAlignment="Stretch"/>
+
+                    <!-- Grid View Container -->
+                    <WrapPanel x:Name="PnlGameGrid" HorizontalAlignment="Stretch" Visibility="Collapsed"/>
+
+                    <!-- Empty State Container -->
+                    <Border x:Name="PnlEmptyGames"
+                            Background="{DynamicResource CardBackgroundSecondary}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="32,24"
+                            Visibility="Collapsed">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Games24" FontSize="36" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <TextBlock Text="{DynamicResource Gaming.NoTrackedGames}"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       FontSize="13"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Edit Per-Game Glow Overrides Drawer Overlay -->
+        <Border x:Name="PnlEditGameOverride"
+                Background="{DynamicResource CardBackground}"
+                CornerRadius="12"
+                BorderThickness="1"
+                BorderBrush="{DynamicResource BorderColor}"
+                Padding="24"
+                Margin="24"
+                Visibility="Collapsed"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.3" Color="#000000"/>
+            </Border.Effect>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+                    <!-- Drawer Header -->
+                    <Grid Margin="0,0,0,20">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtEditGameTitle"
+                                       Text="{DynamicResource Gaming.PerGameOverrides}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtEditGameIdentifier"
+                                       Text="game.exe"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <ui:Button x:Name="BtnCloseGameEditor"
+                                   Appearance="Transparent"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Top"
+                                   Click="BtnCloseGameEditor_Click"
+                                   Padding="6">
+                            <ui:SymbolIcon Symbol="Dismiss24" Foreground="{DynamicResource TextSecondary}"/>
+                        </ui:Button>
+                    </Grid>
+
+                    <!-- Duration Override Section -->
+                    <Border Background="{DynamicResource CardBackgroundSecondary}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,14"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ChkOverrideDuration"
+                                              Content="{DynamicResource Gaming.GlowDuration}"
+                                              FontWeight="SemiBold"
+                                              FontSize="13"
+                                              Click="ChkOverride_Click"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtEditDurationVal"
+                                           Text="4000 ms"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+                            <Slider x:Name="SldGameDuration"
+                                    Minimum="500"
+                                    Maximum="15000"
+                                    Value="4000"
+                                    SmallChange="500"
+                                    LargeChange="1000"
+                                    TickFrequency="500"
+                                    IsSnapToTickEnabled="True"
+                                    ValueChanged="SldGameDuration_ValueChanged"/>
+                            <TextBlock x:Name="TxtDurationInheritHint"
+                                       Text="{DynamicResource Gaming.InheritGlobal}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Intensity Override Section -->
+                    <Border Background="{DynamicResource CardBackgroundSecondary}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,14"
+                            Margin="0,0,0,14">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ChkOverrideIntensity"
+                                              Content="{DynamicResource Gaming.GlowIntensity}"
+                                              FontWeight="SemiBold"
+                                              FontSize="13"
+                                              Click="ChkOverride_Click"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtEditIntensityVal"
+                                           Text="80%"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldGameIntensity"
+                                    Minimum="10"
+                                    Maximum="100"
+                                    Value="80"
+                                    SmallChange="1"
+                                    LargeChange="5"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    ValueChanged="SldGameIntensity_ValueChanged"/>
+                            <TextBlock x:Name="TxtIntensityInheritHint"
+                                       Text="{DynamicResource Gaming.InheritGlobal}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Blur Size Override Section -->
+                    <Border Background="{DynamicResource CardBackgroundSecondary}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,14"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ChkOverrideGlowSize"
+                                              Content="{DynamicResource Gaming.GlowBlurSize}"
+                                              FontWeight="SemiBold"
+                                              FontSize="13"
+                                              Click="ChkOverride_Click"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtEditGlowSizeVal"
+                                           Text="30 px"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldGameGlowSize"
+                                    Minimum="5"
+                                    Maximum="100"
+                                    Value="30"
+                                    SmallChange="1"
+                                    LargeChange="5"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    ValueChanged="SldGameGlowSize_ValueChanged"/>
+                            <TextBlock x:Name="TxtGlowSizeInheritHint"
+                                       Text="{DynamicResource Gaming.InheritGlobal}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <ui:Button x:Name="BtnResetGameOverrides"
+                                   Content="{DynamicResource Gaming.ResetToDefault}"
+                                   Appearance="Secondary"
+                                   Click="BtnResetGameOverrides_Click"
+                                   Margin="0,0,10,0"/>
+                        <ui:Button x:Name="BtnSaveGameOverrides"
+                                   Content="{DynamicResource Common.Save}"
+                                   Appearance="Primary"
+                                   Click="BtnSaveGameOverrides_Click"
+                                   Margin="0,0,10,0"/>
+                        <ui:Button Content="{DynamicResource Common.Cancel}"
+                                   Appearance="Secondary"
+                                   Click="BtnCloseGameEditor_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
 </UserControl>

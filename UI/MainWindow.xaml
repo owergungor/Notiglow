@@ -255,11 +255,13 @@
                                             AutomationProperties.Name="English">
                                         <Grid HorizontalAlignment="Stretch">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="English" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            <ui:SymbolIcon x:Name="CheckLangEn" Grid.Column="1" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Visible" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="🇬🇧" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="English" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon x:Name="CheckLangEn" Grid.Column="2" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Visible" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Button>
 
@@ -270,11 +272,13 @@
                                             AutomationProperties.Name="Español">
                                         <Grid HorizontalAlignment="Stretch">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Español" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            <ui:SymbolIcon x:Name="CheckLangEs" Grid.Column="1" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="🇪🇸" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Español" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon x:Name="CheckLangEs" Grid.Column="2" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Button>
 
@@ -285,11 +289,30 @@
                                             AutomationProperties.Name="Français">
                                         <Grid HorizontalAlignment="Stretch">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Français" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            <ui:SymbolIcon x:Name="CheckLangFr" Grid.Column="1" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="🇫🇷" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Français" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon x:Name="CheckLangFr" Grid.Column="2" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Button>
+
+                                    <Button x:Name="BtnLangDe"
+                                            Tag="de-DE"
+                                            Click="BtnSelectLanguage_Click"
+                                            Style="{DynamicResource LanguageItemButtonStyle}"
+                                            AutomationProperties.Name="Deutsch">
+                                        <Grid HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="🇩🇪" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Deutsch" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon x:Name="CheckLangDe" Grid.Column="2" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Button>
 
@@ -300,11 +323,13 @@
                                             AutomationProperties.Name="Türkçe">
                                         <Grid HorizontalAlignment="Stretch">
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Türkçe" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                            <ui:SymbolIcon x:Name="CheckLangTr" Grid.Column="1" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="0" Text="🇹🇷" FontFamily="Segoe UI Emoji, Noto Color Emoji, Segoe UI, sans-serif" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Türkçe" FontSize="13" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon x:Name="CheckLangTr" Grid.Column="2" Symbol="Checkmark24" FontSize="13" Foreground="{DynamicResource AccentColor}" Visibility="Collapsed" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Button>
                                 </StackPanel>
@@ -317,6 +342,14 @@
             <!-- Single Authoritative Main Views Container (Expands dynamically to fill entire remaining space) -->
             <Grid Grid.Column="1" x:Name="RootContentGrid" Background="{DynamicResource WindowBackground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <views:GeneralView x:Name="ViewGeneral" Visibility="Visible" HorizontalAlignment="Stretch"/>
+
+                <!-- Toast Notification Overlay Container (Bottom-Right) -->
+                <StackPanel x:Name="ToastContainer"
+                            VerticalAlignment="Bottom"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,24,24"
+                            Panel.ZIndex="999"
+                            IsHitTestVisible="True"/>
             </Grid>
         </Grid>
     </Grid>

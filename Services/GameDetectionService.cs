@@ -17,9 +17,21 @@ namespace NotiGlow.Services
         private DateTime _lastCheckTime = DateTime.MinValue;
         private bool _cachedIsGaming = false;
         private string _activeGameName = string.Empty;
+        private string _activeGameIdentifier = string.Empty;
         private string? _simulatedGameName = null;
 
-        public string ActiveGameName => _activeGameName;
+        public string ActiveGameName
+        {
+            get => _activeGameName;
+            set => _activeGameName = value ?? string.Empty;
+        }
+
+        public string ActiveGameIdentifier
+        {
+            get => _activeGameIdentifier;
+            set => _activeGameIdentifier = value ?? string.Empty;
+        }
+
         public bool IsSimulatingGame => !string.IsNullOrEmpty(_simulatedGameName);
 
         public void SetSimulatedGame(string? gameName)
@@ -28,6 +40,12 @@ namespace NotiGlow.Services
             if (!string.IsNullOrEmpty(gameName))
             {
                 _activeGameName = gameName;
+                _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(gameName);
+            }
+            else
+            {
+                _activeGameName = string.Empty;
+                _activeGameIdentifier = string.Empty;
             }
         }
 
@@ -202,6 +220,7 @@ namespace NotiGlow.Services
                         string.Equals(fullProcPath, trimmed, StringComparison.OrdinalIgnoreCase))
                     {
                         gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
+                        _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
                         return true;
                     }
 
@@ -213,6 +232,7 @@ namespace NotiGlow.Services
                         exeName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     {
                         gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
+                        _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
                         return true;
                     }
                 }
@@ -222,6 +242,7 @@ namespace NotiGlow.Services
                 LoggerService.LogError("Error during GameDetection process check", ex);
             }
 
+            _activeGameIdentifier = string.Empty;
             return false;
         }
 

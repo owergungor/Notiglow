@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1] - 2026-10-14
+
+### Added
+- **German Localization & 5-Language Key Parity**:
+  - Added native German (`de-DE`) localization alongside English (`en-US`), Spanish (`es-ES`), French (`fr-FR`), and Turkish (`tr-TR`).
+  - Added national flags and native language labels in the sidebar language selection menu.
+  - Reached 100% key parity across all 250+ UI string resources in all five languages.
+- **Per-Game Glow Duration, Intensity, and Blur Size Overrides**:
+  - Added executable-level configuration drawer allowing users to customize duration (500–15000 ms), intensity (10–100%), and blur size (5–100 px) per tracked game.
+  - Unset properties cleanly inherit global settings and game reduction multipliers.
+  - Safe range clamping and path normalization (`NormalizeGameIdentifier`) across case variations.
+- **Tracked Games List & Grid Views**:
+  - Segmented view switcher supporting both compact List and visual Grid layouts for tracked game cards.
+  - Persistent `GamingViewMode` preference saved to application settings.
+- **Non-Blocking Hero UI Animated Toast Notifications**:
+  - Thread-safe `ToastNotificationService` displaying modern animated toast cards (Info, Success, Warning, Error) in the bottom-right corner.
+  - 1.5-second debouncing window preventing notification flooding from rapid duplicate events.
+  - Exception sanitization ensuring sensitive filesystem paths are never leaked to user-facing toasts while preserving full diagnostic data in logs.
+
+### Changed
+- **New Application Profile Modal Sizing**:
+  - Doubled vertical height of Animation Style and Notification Priority ComboBoxes (56px) for comfortable interaction and clean typography.
+- **Sidebar & Accessibility Motion Synchronization**:
+  - Perfectly centered icons in collapsed navigation sidebar with tooltips.
+  - Synchronized `MotionPolicy` across all controls; enabling Reduce Motion or Reduce Animations instantly eliminates scaling, slider animations, and transition delays.
+
+## [2.0] - 2026-10-07
+
+### Added
+- **Multi-Language Localization Foundation**:
+  - Core `LocalizationService` supporting dynamic runtime switching between English, Spanish, French, and Turkish without application restart.
+  - Interactive sidebar language selector with immediate UI re-rendering.
+- **Gaming Animation Testing & Simulation**:
+  - Added live game animation test preview button in Gaming view.
+  - Simulated active game mode triggers for testing overlay response.
+- **Localized System Tray & Notifications**:
+  - Localized system tray context menu items and status tooltips.
+
 ## [1.6] - 2026-09-27
 
 ### Added
@@ -147,6 +185,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inno Setup installer script (`NotiGlow-Setup.iss`).
   - GitHub Actions CI pipeline for Windows x64 .NET 9 build and unit test verification.
 
+[2.1]: https://github.com/owergungor/NotiGlow/releases/tag/v2.1
+[2.0]: https://github.com/owergungor/NotiGlow/releases/tag/v2.0
+[1.6]: https://github.com/owergungor/NotiGlow/releases/tag/v1.6
+[1.5]: https://github.com/owergungor/NotiGlow/releases/tag/v1.5
 [1.4]: https://github.com/owergungor/NotiGlow/releases/tag/v1.4
 [1.3]: https://github.com/owergungor/NotiGlow/releases/tag/v1.3
 [1.2]: https://github.com/owergungor/NotiGlow/releases/tag/v1.2

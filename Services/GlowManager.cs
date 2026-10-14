@@ -25,11 +25,11 @@ namespace NotiGlow.Services
         public bool SuppressOverlayWindowsForTesting { get; set; } = false;
         public AppProfile? LastTriggeredProfile { get; private set; }
 
-        public GlowManager(SettingsService settingsService, ProfileService profileService)
+        public GlowManager(SettingsService settingsService, ProfileService profileService, GameDetectionService? gameDetectionService = null)
         {
             _settingsService = settingsService;
             _profileService = profileService;
-            _gameDetectionService = new GameDetectionService(settingsService);
+            _gameDetectionService = gameDetectionService ?? new GameDetectionService(settingsService);
         }
 
         public void TriggerNotification(NotificationItem notification)
@@ -181,23 +181,43 @@ namespace NotiGlow.Services
             return true;
         }
 
-        private AppProfile AdjustProfileParameters(AppProfile original, AppSettings settings, bool isTest = false)
+        public AppProfile AdjustProfileParameters(AppProfile original, AppSettings settings, bool isTest = false)
         {
             double intensity = original.Intensity;
             int duration = original.DurationMs;
+            double glowSize = original.GlowSize;
             GlowStyle style = original.Style;
 
-            // Gaming mode scaling
+            // Gaming mode scaling & per-game overrides
             bool isGamingActive = _gameDetectionService.IsGameRunning() && (settings.GamingModeEnabled || isTest);
             if (isGamingActive)
             {
-                if (settings.ReduceIntensityInGames)
+                var gameOverride = settings.GetGameOverride(_gameDetectionService.ActiveGameIdentifier)
+                                ?? settings.GetGameOverride(_gameDetectionService.ActiveGameName);
+
+                if (gameOverride != null)
                 {
-                    intensity *= Math.Clamp(settings.GamingIntensityMultiplier, 0.2, 1.0);
+                    if (gameOverride.DurationMs.HasValue)
+                    {
+                        duration = GameGlowOverride.ClampDuration(gameOverride.DurationMs.Value);
+                    }
+                    if (gameOverride.Intensity.HasValue)
+                    {
+                        intensity = GameGlowOverride.ClampIntensity(gameOverride.Intensity.Value);
+                    }
+                    if (gameOverride.GlowSize.HasValue)
+                    {
+                        glowSize = GameGlowOverride.ClampGlowSize(gameOverride.GlowSize.Value);
+                    }
                 }
-                if (settings.ReduceDurationInGames)
+
+                if ((gameOverride == null || !gameOverride.DurationMs.HasValue) && settings.ReduceDurationInGames)
                 {
                     duration = (int)(duration * Math.Clamp(settings.GamingDurationMultiplier, 0.2, 1.0));
+                }
+                if ((gameOverride == null || !gameOverride.Intensity.HasValue) && settings.ReduceIntensityInGames)
+                {
+                    intensity *= Math.Clamp(settings.GamingIntensityMultiplier, 0.2, 1.0);
                 }
             }
 
@@ -230,7 +250,7 @@ namespace NotiGlow.Services
                 DurationMs = Math.Max(500, duration),
                 Intensity = Math.Clamp(intensity, 0.05, 1.0),
                 Thickness = original.Thickness,
-                GlowSize = original.GlowSize,
+                GlowSize = glowSize,
                 Style = style,
                 Priority = original.Priority,
                 Speed = original.Speed,

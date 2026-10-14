@@ -19,6 +19,30 @@ namespace NotiGlow.UI
             InitializeComponent();
             UpdateAppTitle();
             InitializeTitleBarIcon();
+            ToastNotificationService.Instance.ToastRequested += OnToastRequested;
+            Closed += (s, e) => ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
+        }
+
+        private void OnToastRequested(ToastItem item)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (ToastContainer == null) return;
+                var control = new NotiGlow.UI.Controls.ToastNotificationControl(item);
+                control.Dismissed += c =>
+                {
+                    Dispatcher.BeginInvoke(new Action(() => ToastContainer.Children.Remove(c)));
+                };
+                if (ToastContainer.Children.Count >= 4)
+                {
+                    if (ToastContainer.Children[0] is NotiGlow.UI.Controls.ToastNotificationControl oldest)
+                    {
+                        oldest.Dismiss();
+                    }
+                }
+                ToastContainer.Children.Add(control);
+            }));
         }
 
         private void UpdateAppTitle()
@@ -335,6 +359,7 @@ namespace NotiGlow.UI
             if (CheckLangEn != null) CheckLangEn.Visibility = string.Equals(currentLang, "en-US", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
             if (CheckLangEs != null) CheckLangEs.Visibility = string.Equals(currentLang, "es-ES", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
             if (CheckLangFr != null) CheckLangFr.Visibility = string.Equals(currentLang, "fr-FR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
+            if (CheckLangDe != null) CheckLangDe.Visibility = string.Equals(currentLang, "de-DE", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
             if (CheckLangTr != null) CheckLangTr.Visibility = string.Equals(currentLang, "tr-TR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -373,6 +398,7 @@ namespace NotiGlow.UI
             {
                 "es-ES" => BtnLangEs,
                 "fr-FR" => BtnLangFr,
+                "de-DE" => BtnLangDe,
                 "tr-TR" => BtnLangTr,
                 _ => BtnLangEn
             };

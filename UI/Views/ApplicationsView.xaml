@@ -130,25 +130,25 @@
                                     </Grid>
                                 </StackPanel>
 
-                                <!-- Animation Style -->
-                                <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple"/>
+                                <!-- Animation Style (Doubled vertical allocation for spacious selection) -->
+                                <StackPanel Margin="0,0,0,28">
+                                    <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                    <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch" MinHeight="56" Height="56" VerticalContentAlignment="Center" Padding="14,0">
+                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple" Padding="12,10"/>
                                     </ComboBox>
                                 </StackPanel>
 
-                                <!-- Notification Priority -->
-                                <StackPanel Margin="0,0,0,16">
-                                    <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High"/>
+                                <!-- Notification Priority (Doubled vertical allocation for spacious selection) -->
+                                <StackPanel Margin="0,0,0,28">
+                                    <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                                    <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch" MinHeight="56" Height="56" VerticalContentAlignment="Center" Padding="14,0">
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,10"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,10"/>
                                     </ComboBox>
                                 </StackPanel>
 

@@ -38,9 +38,32 @@ namespace NotiGlow.UI.Views
             if (Dispatcher.Thread != null && !Dispatcher.Thread.IsAlive) return;
             try
             {
-                Dispatcher.BeginInvoke(ApplyComboBoxItemTexts);
+                Dispatcher.BeginInvoke(() =>
+                {
+                    ApplyComboBoxItemTexts();
+                    UpdateStatusText();
+                });
             }
             catch { }
+        }
+
+        private void UpdateStatusText()
+        {
+            if (TxtUpdateStatus == null || _settingsService == null) return;
+            var settings = _settingsService.Current;
+            if (settings.LastUpdateCheck.HasValue)
+            {
+                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
+                    "Advanced.LastCheckFormat",
+                    UpdateService.CurrentVersionString,
+                    settings.LastUpdateCheck.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm"));
+            }
+            else
+            {
+                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
+                    "Advanced.CurrentVersionFormat",
+                    UpdateService.CurrentVersionString);
+            }
         }
 
         private void ApplyComboBoxItemTexts()
@@ -93,20 +116,7 @@ namespace NotiGlow.UI.Views
             ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
             CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
             SelectUpdateFrequencyItem(settings.UpdateFrequency);
-
-            if (settings.LastUpdateCheck.HasValue)
-            {
-                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
-                    "Advanced.LastCheckFormat",
-                    UpdateService.CurrentVersionString,
-                    settings.LastUpdateCheck.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm"));
-            }
-            else
-            {
-                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
-                    "Advanced.CurrentVersionFormat",
-                    UpdateService.CurrentVersionString);
-            }
+            UpdateStatusText();
 
             _isInitializing = false;
         }
@@ -249,9 +259,13 @@ namespace NotiGlow.UI.Views
             }
             catch (Exception ex)
             {
-                TxtUpdateStatus.Text = "Update check failed.";
+                string errMsg = LocalizationService.Instance.GetString("Advanced.UpdateCheckFailed");
+                TxtUpdateStatus.Text = errMsg;
                 PbUpdateProgress.Visibility = Visibility.Collapsed;
                 LoggerService.LogWarning($"Update check error: {ex.Message}");
+                ToastNotificationService.Instance.ShowWarning(
+                    errMsg,
+                    LocalizationService.Instance.GetString("Advanced.CheckForUpdates"));
             }
             finally
             {
@@ -278,6 +292,7 @@ namespace NotiGlow.UI.Views
             var settings = _settingsService.Current;
             settings.ReduceMotion = ToggleReduceMotion.IsChecked ?? false;
             _settingsService.Save(settings);
+            NotiGlow.UI.Animations.MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
         }
 
         private void ToggleReduceGlow_Click(object sender, RoutedEventArgs e)
@@ -317,19 +332,15 @@ namespace NotiGlow.UI.Views
                 bool success = _importExportService.ExportSettings(sfd.FileName);
                 if (success)
                 {
-                    MessageBox.Show(
+                    ToastNotificationService.Instance.ShowSuccess(
                         LocalizationService.Instance.GetString("Advanced.ExportSuccessMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ExportSuccessTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        LocalizationService.Instance.GetString("Advanced.ExportSuccessTitle"));
                 }
                 else
                 {
-                    MessageBox.Show(
+                    ToastNotificationService.Instance.ShowError(
                         LocalizationService.Instance.GetString("Advanced.ExportFailMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ExportFailTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                        LocalizationService.Instance.GetString("Advanced.ExportFailTitle"));
                 }
             }
         }
@@ -346,19 +357,15 @@ namespace NotiGlow.UI.Views
                 bool success = _importExportService.ImportSettings(ofd.FileName);
                 if (success)
                 {
-                    MessageBox.Show(
+                    ToastNotificationService.Instance.ShowSuccess(
                         LocalizationService.Instance.GetString("Advanced.ImportSuccessMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ImportSuccessTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        LocalizationService.Instance.GetString("Advanced.ImportSuccessTitle"));
                 }
                 else
                 {
-                    MessageBox.Show(
+                    ToastNotificationService.Instance.ShowError(
                         LocalizationService.Instance.GetString("Advanced.ImportFailMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ImportFailTitle"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                        LocalizationService.Instance.GetString("Advanced.ImportFailTitle"));
                 }
             }
         }
@@ -373,11 +380,9 @@ namespace NotiGlow.UI.Views
             if (result == MessageBoxResult.Yes)
             {
                 _importExportService.ResetToDefaults();
-                MessageBox.Show(
+                ToastNotificationService.Instance.ShowSuccess(
                     LocalizationService.Instance.GetString("Advanced.ResetCompleteMsg"),
-                    LocalizationService.Instance.GetString("Advanced.ResetCompleteTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    LocalizationService.Instance.GetString("Advanced.ResetCompleteTitle"));
             }
         }
 

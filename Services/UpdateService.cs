@@ -83,7 +83,7 @@ namespace NotiGlow.Services
                 // Fallback
             }
 
-            _cachedVersion = "2.0";
+            _cachedVersion = "2.1";
             return _cachedVersion;
         }
         private const string GitHubOwner = "owergungor";
@@ -116,13 +116,27 @@ namespace NotiGlow.Services
 
         public static bool IsNewerVersion(string latestTagOrVersion, string currentVersion)
         {
-            if (string.IsNullOrWhiteSpace(latestTagOrVersion)) return false;
-            string cleanLatest = latestTagOrVersion.Trim().TrimStart('v', 'V');
-            string cleanCurrent = currentVersion.Trim().TrimStart('v', 'V');
+            if (string.IsNullOrWhiteSpace(latestTagOrVersion) || string.IsNullOrWhiteSpace(currentVersion))
+                return false;
+
+            string cleanLatest = latestTagOrVersion.Trim().TrimStart('v', 'V').Split('+')[0].Split('-')[0].Trim();
+            string cleanCurrent = currentVersion.Trim().TrimStart('v', 'V').Split('+')[0].Split('-')[0].Trim();
 
             if (Version.TryParse(cleanLatest, out var vLatest) && Version.TryParse(cleanCurrent, out var vCurrent))
             {
-                return vLatest > vCurrent;
+                var normLatest = new Version(
+                    vLatest.Major,
+                    Math.Max(0, vLatest.Minor),
+                    Math.Max(0, vLatest.Build),
+                    Math.Max(0, vLatest.Revision));
+
+                var normCurrent = new Version(
+                    vCurrent.Major,
+                    Math.Max(0, vCurrent.Minor),
+                    Math.Max(0, vCurrent.Build),
+                    Math.Max(0, vCurrent.Revision));
+
+                return normLatest > normCurrent;
             }
 
             return false;

@@ -9,8 +9,8 @@
         <Grid Name="PreviewGrid">
             <!-- Simulated Screen Content -->
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="✨ LIVE PREVIEW ✨" Foreground="{DynamicResource TextSecondary}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" />
-                <TextBlock Text="Simulated Screen Edge Glow" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center" />
+                <TextBlock Text="{DynamicResource EdgePreview.LivePreviewBanner}" Foreground="{DynamicResource TextSecondary}" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="{DynamicResource EdgePreview.SimulatedGlow}" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Center" />
             </StackPanel>
 
             <!-- Base Preview Layer -->
