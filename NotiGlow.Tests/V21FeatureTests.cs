@@ -749,6 +749,64 @@ namespace NotiGlow.Tests
             if (threadEx != null) throw threadEx;
         }
 
+        [TestMethod]
+        public void V21_VersionNumberRule_EnforcesStrictlyTwoPartUserVisibleVersion()
+        {
+            // User-visible version must strictly be "2.1", never "2.1.0" or "v2.1.0"
+            string version = UpdateService.CurrentVersionString;
+            Assert.AreEqual("2.1", version, "User-visible version must be strictly '2.1'.");
+            Assert.IsFalse(Regex.IsMatch(version, @"^\d+\.\d+\.\d+"), "User-visible version must NOT be three-part (e.g. 2.1.0).");
+
+            // Verify NotiGlow.csproj
+            var csprojPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "NotiGlow.csproj");
+            if (File.Exists(csprojPath))
+            {
+                var content = File.ReadAllText(csprojPath);
+                Assert.IsTrue(content.Contains("<Version>2.1</Version>"), "NotiGlow.csproj must have <Version>2.1</Version>");
+                Assert.IsTrue(content.Contains("<InformationalVersion>2.1</InformationalVersion>"), "NotiGlow.csproj must have <InformationalVersion>2.1</InformationalVersion>");
+            }
+
+            // Verify NotiGlow-Setup.iss
+            var issPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "NotiGlow-Setup.iss");
+            if (File.Exists(issPath))
+            {
+                var content = File.ReadAllText(issPath);
+                Assert.IsTrue(content.Contains("AppVersion=2.1"), "NotiGlow-Setup.iss must have AppVersion=2.1");
+                Assert.IsTrue(content.Contains("OutputBaseFilename=NotiGlow-Setup-v2.1"), "NotiGlow-Setup.iss must produce NotiGlow-Setup-v2.1");
+                Assert.IsFalse(content.Contains("AppVersion=2.1.0"), "NotiGlow-Setup.iss must not display three-part AppVersion=2.1.0");
+            }
+        }
+
+        [TestMethod]
+        public void UpdateService_VersionComparison_HandlesTwoPartAndThreePartTags_Correctly()
+        {
+            // Upgrade from v2.0 to v2.1 must succeed whether tags have 'v' or not
+            Assert.IsTrue(UpdateService.IsNewerVersion("v2.1", "2.0"), "v2.1 must be newer than 2.0");
+            Assert.IsTrue(UpdateService.IsNewerVersion("2.1", "2.0"), "2.1 must be newer than 2.0");
+            Assert.IsTrue(UpdateService.IsNewerVersion("v2.1", "v2.0"), "v2.1 must be newer than v2.0");
+            Assert.IsTrue(UpdateService.IsNewerVersion("2.1", "2.0.0"), "2.1 must be newer than 2.0.0");
+
+            // Same version must return false
+            Assert.IsFalse(UpdateService.IsNewerVersion("v2.1", "2.1"), "v2.1 is identical to 2.1");
+            Assert.IsFalse(UpdateService.IsNewerVersion("2.1", "2.1"), "2.1 is identical to 2.1");
+            Assert.IsFalse(UpdateService.IsNewerVersion("v2.1.0", "2.1"), "v2.1.0 must be recognized as equivalent to 2.1");
+            Assert.IsFalse(UpdateService.IsNewerVersion("v2.1", "2.1.0"), "v2.1 must be recognized as equivalent to 2.1.0");
+
+            // Newer future versions
+            Assert.IsTrue(UpdateService.IsNewerVersion("v2.1.1", "2.1"), "v2.1.1 is newer than 2.1");
+            Assert.IsTrue(UpdateService.IsNewerVersion("v2.2", "2.1"), "v2.2 is newer than 2.1");
+            Assert.IsTrue(UpdateService.IsNewerVersion("v3.0", "2.1"), "v3.0 is newer than 2.1");
+
+            // Downgrade protection
+            Assert.IsFalse(UpdateService.IsNewerVersion("v2.0", "2.1"), "v2.0 is older than 2.1");
+            Assert.IsFalse(UpdateService.IsNewerVersion("v1.9", "2.1"), "v1.9 is older than 2.1");
+
+            // Invalid or empty inputs
+            Assert.IsFalse(UpdateService.IsNewerVersion("", "2.1"), "Empty latest tag should return false");
+            Assert.IsFalse(UpdateService.IsNewerVersion("v2.1", ""), "Empty current version should return false");
+            Assert.IsFalse(UpdateService.IsNewerVersion("invalid", "2.1"), "Unparseable tag should return false");
+        }
+
         #endregion
     }
 }
