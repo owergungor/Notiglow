@@ -7,50 +7,54 @@
              mc:Ignorable="d" 
              d:DesignHeight="380" d:DesignWidth="360">
     <StackPanel>
-        <!-- Preset Color Palette Grid with RGB Spectrum Button -->
+        <!-- Preset Color Palette Grid with RGB Spectrum Button and Custom Color Toggle -->
         <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{DynamicResource ColorPicker.Palette}" Foreground="{DynamicResource TextPrimary}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-            <Border x:Name="BtnRgbOption" Grid.Column="1" Cursor="Hand" CornerRadius="6" Padding="10,4" BorderThickness="1.5" ToolTip="{DynamicResource ColorPicker.RgbToolTip}">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#FFFF004D" Offset="0.0"/>
-                        <GradientStop Color="#FFFF7A00" Offset="0.2"/>
-                        <GradientStop Color="#FFFFD600" Offset="0.4"/>
-                        <GradientStop Color="#FF00E676" Offset="0.6"/>
-                        <GradientStop Color="#FF00E5FF" Offset="0.8"/>
-                        <GradientStop Color="#FF7C3AED" Offset="1.0"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-                <Border.BorderBrush>
-                    <SolidColorBrush Color="#FFFFFFFF"/>
-                </Border.BorderBrush>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{DynamicResource ColorPicker.RgbSpectrum}" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF">
-                        <TextBlock.Effect>
-                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
-                        </TextBlock.Effect>
-                    </TextBlock>
-                    <TextBlock x:Name="TxtRgbCheck" Text=" ✓" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" Visibility="Collapsed">
-                        <TextBlock.Effect>
-                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
-                        </TextBlock.Effect>
-                    </TextBlock>
-                </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Custom Color Picker Toggle Button -->
+                <ui:Button x:Name="BtnToggleCustom" Appearance="Secondary" FontSize="11" Padding="8,4" Click="BtnToggleCustom_Click" Margin="0,0,8,0" VerticalAlignment="Center" ToolTip="{DynamicResource ColorPicker.CustomHexToolTip}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Color24" FontSize="13" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource ColorPicker.CustomHex}" FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <!-- RGB Rainbow Spectrum Option -->
+                <Border x:Name="BtnRgbOption" Focusable="True" Cursor="Hand" CornerRadius="6" Padding="10,4" BorderThickness="1.5" VerticalAlignment="Center" ToolTip="{DynamicResource ColorPicker.RgbToolTip}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#FFFF004D" Offset="0.0"/>
+                            <GradientStop Color="#FFFF7A00" Offset="0.2"/>
+                            <GradientStop Color="#FFFFD600" Offset="0.4"/>
+                            <GradientStop Color="#FF00E676" Offset="0.6"/>
+                            <GradientStop Color="#FF00E5FF" Offset="0.8"/>
+                            <GradientStop Color="#FF7C3AED" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <SolidColorBrush Color="#FFFFFFFF"/>
+                    </Border.BorderBrush>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Sparkle24" FontSize="12" Foreground="#FFFFFF" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource ColorPicker.RgbSpectrum}" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" VerticalAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                        <TextBlock x:Name="TxtRgbCheck" Text=" ✓" FontWeight="Bold" FontSize="11" Foreground="#FFFFFF" Visibility="Collapsed" VerticalAlignment="Center">
+                            <TextBlock.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.8" Color="#000000"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </Grid>
         <UniformGrid x:Name="PresetPalette" Columns="6" Margin="0,0,0,12" />
-
-        <!-- Collapsible Custom Color Toggle -->
-        <ui:Button x:Name="BtnToggleCustom" Appearance="Secondary" FontSize="12" Padding="10,6" Click="BtnToggleCustom_Click" HorizontalAlignment="Left" Margin="0,2,0,8" ToolTip="{DynamicResource ColorPicker.CustomHexToolTip}">
-            <StackPanel Orientation="Horizontal">
-                <ui:SymbolIcon Symbol="Color24" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{DynamicResource ColorPicker.CustomHex}" VerticalAlignment="Center"/>
-            </StackPanel>
-        </ui:Button>
 
         <!-- Custom Color Panel (Interactive Color Canvas & Hue Slider) -->
         <Border x:Name="PnlCustomHex" Visibility="Collapsed" Background="{DynamicResource CardBackgroundSecondary}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,4,0,8">

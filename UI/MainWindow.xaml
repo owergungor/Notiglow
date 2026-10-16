@@ -82,23 +82,16 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Active Selection Box Overlay (Layer behind items with rounded border & indicator) -->
+                <!-- Active Selection Box Overlay (Retained for visual tree compatibility without duplicate rendering) -->
                 <Canvas Grid.Row="0" x:Name="SidebarOverlayCanvas" IsHitTestVisible="False" ClipToBounds="True">
                     <Border x:Name="ActiveSelectionBox"
                             CornerRadius="8"
                             Height="40"
-                            Background="{DynamicResource NavActiveBackground}"
+                            Background="Transparent"
+                            BorderThickness="0"
                             IsHitTestVisible="False"
                             Visibility="Collapsed"
-                            SnapsToDevicePixels="True">
-                        <!-- Sol Aktif Indicator (3px x 24px, CornerRadius 1.5px) -->
-                        <Border Width="3"
-                                Height="24"
-                                CornerRadius="1.5"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Background="{DynamicResource NavIndicatorColor}"/>
-                    </Border>
+                            SnapsToDevicePixels="True"/>
                 </Canvas>
 
                 <!-- Navigation View Sidebar Pane (Base Layer) -->

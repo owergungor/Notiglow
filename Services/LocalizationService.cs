@@ -522,6 +522,24 @@ namespace NotiGlow.Services
                 ["Toast.Success"] = "Success",
                 ["Toast.Info"] = "Information",
 
+                ["ColorPicker.RgbSpectrum"] = "RGB Spectrum",
+                ["ColorPicker.RgbToolTip"] = "RGB Rainbow Spectrum Neon Effect",
+                ["ColorPicker.CustomHex"] = "Custom Hex Color...",
+                ["ColorPicker.CustomHexToolTip"] = "Enter or edit custom hex color code",
+
+                // In-App Error Dialog
+                ["Error.StartupTitle"] = "NotiGlow could not start",
+                ["Error.StartupDesc"] = "A critical error occurred while starting the application.",
+                ["Error.UnhandledTitle"] = "An unexpected error occurred",
+                ["Error.UnhandledDesc"] = "NotiGlow encountered an unexpected issue.",
+                ["Error.Details"] = "Details",
+                ["Error.CopyLogPath"] = "Copy Log Path",
+                ["Error.CopyDetails"] = "Copy Details",
+                ["Error.Copied"] = "Copied!",
+                ["Error.Close"] = "Close",
+                ["Error.Retry"] = "Retry",
+                ["Error.LogLocation"] = "Log file location:",
+
                 // Tray
                 ["Tray.GlowEnabled"] = "✓ Glow Enabled",
                 ["Tray.GamingMode"] = "🎮 Gaming Mode",
@@ -811,6 +829,24 @@ namespace NotiGlow.Services
                 ["Toast.Warning"] = "Advertencia",
                 ["Toast.Success"] = "Éxito",
                 ["Toast.Info"] = "Información",
+
+                ["ColorPicker.RgbSpectrum"] = "Espectro RGB",
+                ["ColorPicker.RgbToolTip"] = "Efecto Neón Espectro Arcoíris RGB",
+                ["ColorPicker.CustomHex"] = "Color Hex Personalizado...",
+                ["ColorPicker.CustomHexToolTip"] = "Introducir o editar código de color hexadecimal personalizado",
+
+                // In-App Error Dialog
+                ["Error.StartupTitle"] = "NotiGlow no pudo iniciarse",
+                ["Error.StartupDesc"] = "Ocurrió un error crítico al iniciar la aplicación.",
+                ["Error.UnhandledTitle"] = "Ocurrió un error inesperado",
+                ["Error.UnhandledDesc"] = "NotiGlow encontró un problema inesperado.",
+                ["Error.Details"] = "Detalles",
+                ["Error.CopyLogPath"] = "Copiar ruta del registro",
+                ["Error.CopyDetails"] = "Copiar detalles",
+                ["Error.Copied"] = "¡Copiado!",
+                ["Error.Close"] = "Cerrar",
+                ["Error.Retry"] = "Reintentar",
+                ["Error.LogLocation"] = "Ubicación del archivo de registro:",
 
                 // Tray
                 ["Tray.GlowEnabled"] = "✓ Brillo Habilitado",
@@ -1102,6 +1138,24 @@ namespace NotiGlow.Services
                 ["Toast.Success"] = "Succès",
                 ["Toast.Info"] = "Information",
 
+                ["ColorPicker.RgbSpectrum"] = "Spectre RVB",
+                ["ColorPicker.RgbToolTip"] = "Effet néon spectre arc-en-ciel RVB",
+                ["ColorPicker.CustomHex"] = "Couleur Hex Personnalisée...",
+                ["ColorPicker.CustomHexToolTip"] = "Saisir ou modifier le code de couleur hexadécimal personnalisé",
+
+                // In-App Error Dialog
+                ["Error.StartupTitle"] = "NotiGlow n'a pas pu démarrer",
+                ["Error.StartupDesc"] = "Une erreur critique s'est produite lors du démarrage de l'application.",
+                ["Error.UnhandledTitle"] = "Une erreur inattendue est survenue",
+                ["Error.UnhandledDesc"] = "NotiGlow a rencontré un problème inattendu.",
+                ["Error.Details"] = "Détails",
+                ["Error.CopyLogPath"] = "Copier le chemin du journal",
+                ["Error.CopyDetails"] = "Copier les détails",
+                ["Error.Copied"] = "Copié !",
+                ["Error.Close"] = "Fermer",
+                ["Error.Retry"] = "Réessayer",
+                ["Error.LogLocation"] = "Emplacement du fichier journal :",
+
                 // Tray
                 ["Tray.GlowEnabled"] = "✓ Effet Lumineux Activé",
                 ["Tray.GamingMode"] = "🎮 Mode Jeu",
@@ -1366,6 +1420,25 @@ namespace NotiGlow.Services
                 ["ColorPicker.PreviewTooltip"] = "Aktuelle Farbvorschau",
                 ["ColorPicker.CopyHexTooltip"] = "Hex-Code kopieren",
                 ["EdgePreview.SimulatedGlow"] = "Simulierter Bildschirmrand-Leuchteffekt",
+                ["ColorPicker.RgbSpectrum"] = "RGB-Spektrum",
+                ["ColorPicker.RgbToolTip"] = "RGB-Regenbogenspektrum-Neoneffekt",
+                ["ColorPicker.CustomHex"] = "Benutzerdefinierte Hex-Farbe...",
+                ["ColorPicker.CustomHexToolTip"] = "Benutzerdefinierten Hex-Farbcode eingeben oder bearbeiten",
+
+                // In-App Error Dialog
+                ["Error.StartupTitle"] = "NotiGlow konnte nicht gestartet werden",
+                ["Error.StartupDesc"] = "Beim Starten der Anwendung ist ein kritischer Fehler aufgetreten.",
+                ["Error.UnhandledTitle"] = "Ein unerwarteter Fehler ist aufgetreten",
+                ["Error.UnhandledDesc"] = "NotiGlow ist auf ein unerwartetes Problem gestoßen.",
+                ["Error.Details"] = "Details",
+                ["Error.CopyLogPath"] = "Protokollpfad kopieren",
+                ["Error.CopyDetails"] = "Details kopieren",
+                ["Error.Copied"] = "Kopiert!",
+                ["Error.Close"] = "Schließen",
+                ["Error.Retry"] = "Wiederholen",
+                ["Error.LogLocation"] = "Speicherort der Protokolldatei:",
+
+                // Tray
                 ["Tray.GlowEnabled"] = "✓ Leuchten aktiviert",
                 ["Tray.GamingMode"] = "🎮 Spielmodus",
                 ["Tray.TestAnimation"] = "✨ Animation testen",
@@ -1653,6 +1726,24 @@ namespace NotiGlow.Services
                 ["Toast.Warning"] = "Uyarı",
                 ["Toast.Success"] = "Başarılı",
                 ["Toast.Info"] = "Bilgi",
+                ["ColorPicker.RgbSpectrum"] = "RGB Renk Spektrumu",
+                ["ColorPicker.RgbToolTip"] = "RGB Gökkuşağı Spektrumu Neon Efekti",
+                ["ColorPicker.CustomHex"] = "Özel Onaltılık Renk...",
+                ["ColorPicker.CustomHexToolTip"] = "Özel onaltılık (Hex) renk kodunu girin veya düzenleyin",
+
+                // In-App Error Dialog
+                ["Error.StartupTitle"] = "NotiGlow başlatılamadı",
+                ["Error.StartupDesc"] = "Uygulama başlatılırken kritik bir hata oluştu.",
+                ["Error.UnhandledTitle"] = "Beklenmeyen bir hata oluştu",
+                ["Error.UnhandledDesc"] = "NotiGlow beklenmeyen bir sorunla karşılaştı.",
+                ["Error.Details"] = "Ayrıntılar",
+                ["Error.CopyLogPath"] = "Log konumunu kopyala",
+                ["Error.CopyDetails"] = "Ayrıntıları kopyala",
+                ["Error.Copied"] = "Kopyalandı!",
+                ["Error.Close"] = "Kapat",
+                ["Error.Retry"] = "Tekrar Dene",
+                ["Error.LogLocation"] = "Log dosyası konumu:",
+
                 // Tray
                 ["Tray.GlowEnabled"] = "✓ Kenar Işığı Açık",
                 ["Tray.GamingMode"] = "🎮 Oyun Modu",
