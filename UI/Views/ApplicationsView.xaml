@@ -91,12 +91,14 @@
             </ScrollViewer>
 
             <!-- Edit / Add Profile Dialog Drawer Overlay -->
-            <Border x:Name="PnlEditProfile" Background="{DynamicResource CardBackground}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Padding="24" Visibility="Collapsed" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Border x:Name="PnlEditProfile" Background="{DynamicResource CardBackground}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" Padding="0" Visibility="Collapsed" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="24,20,16,20" Margin="0,2,4,2">
                     <StackPanel>
                         <Grid Margin="0,0,0,20">
                             <TextBlock x:Name="TxtEditorTitle" Text="{DynamicResource Applications.EditProfile}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                            <ui:Button x:Name="BtnCloseEditor" Icon="{ui:FontIcon &#xE711;}" HorizontalAlignment="Right" Appearance="Secondary" Click="BtnCloseEditor_Click"/>
+                            <ui:Button x:Name="BtnCloseEditor" HorizontalAlignment="Right" Appearance="Secondary" Click="BtnCloseEditor_Click" ToolTip="{DynamicResource Common.Cancel}" Width="36" Height="36" Padding="0">
+                                <ui:SymbolIcon Symbol="Dismiss24" FontSize="16" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </ui:Button>
                         </Grid>
 
                         <Grid>
@@ -108,19 +110,19 @@
 
                             <StackPanel Grid.Column="0" VerticalAlignment="Top">
                                 <!-- App Name & ID -->
-                                <StackPanel Margin="0,0,0,16">
+                                <StackPanel Margin="0,0,0,14">
                                     <TextBlock Text="{DynamicResource Applications.AppName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ui:TextBox x:Name="TxtEditAppName" PlaceholderText="{DynamicResource Applications.AppNamePlaceholder}"/>
+                                    <ui:TextBox x:Name="TxtEditAppName" MinHeight="36" Padding="10,6" PlaceholderText="{DynamicResource Applications.AppNamePlaceholder}"/>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,0,0,16">
+                                <StackPanel Margin="0,0,0,14">
                                     <TextBlock Text="{DynamicResource Applications.AppId}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <ui:TextBox x:Name="TxtEditAppId" PlaceholderText="{DynamicResource Applications.AppIdPlaceholder}" Grid.Column="0"/>
+                                        <ui:TextBox x:Name="TxtEditAppId" MinHeight="36" Padding="10,6" PlaceholderText="{DynamicResource Applications.AppIdPlaceholder}" Grid.Column="0"/>
                                         <ui:Button x:Name="BtnBrowseAppId" Grid.Column="1" Margin="8,0,0,0" Appearance="Secondary" Click="BtnBrowseAppId_Click" ToolTip="{DynamicResource Applications.BrowseToolTip}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:SymbolIcon Symbol="FolderOpen24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
@@ -130,25 +132,25 @@
                                     </Grid>
                                 </StackPanel>
 
-                                <!-- Animation Style (Doubled vertical allocation for spacious selection: 112px) -->
-                                <StackPanel Margin="0,0,0,28">
-                                    <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
-                                    <ComboBox x:Name="CmbEditStyle" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch" MinHeight="112" Height="112" VerticalContentAlignment="Center" Padding="14,0">
-                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple" Padding="12,10"/>
+                                <!-- Animation Style (Compact Apple select combobox style: 36px) -->
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbEditStyle" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple" Padding="12,7"/>
                                     </ComboBox>
                                 </StackPanel>
 
-                                <!-- Notification Priority (Doubled vertical allocation for spacious selection: 112px) -->
-                                <StackPanel Margin="0,0,0,28">
-                                    <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
-                                    <ComboBox x:Name="CmbEditPriority" HorizontalAlignment="Stretch" MinHeight="112" Height="112" VerticalContentAlignment="Center" Padding="14,0">
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,10"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,10"/>
+                                <!-- Notification Priority (Compact Apple select combobox style: 36px) -->
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbEditPriority" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,7"/>
                                     </ComboBox>
                                 </StackPanel>
 

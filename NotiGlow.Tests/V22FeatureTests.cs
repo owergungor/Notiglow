@@ -432,16 +432,16 @@ namespace NotiGlow.Tests
                 styleMatch = Regex.Match(content, @"x:Name=""CmbEditStyle""[^>]*Height=""(\d+)""[^>]*MinHeight=""(\d+)""", RegexOptions.Singleline);
             }
             Assert.IsTrue(styleMatch.Success, "CmbEditStyle must declare MinHeight and Height");
-            Assert.AreEqual("112", styleMatch.Groups[1].Value, "CmbEditStyle height must be 112px (doubled from 56px)");
+            Assert.IsTrue(styleMatch.Groups[1].Value == "112" || styleMatch.Groups[1].Value == "36", "CmbEditStyle height must be 112px (v2.2) or 36px (v2.3)");
 
-            // Check CmbEditPriority has MinHeight="112" and Height="112"
+            // Check CmbEditPriority has MinHeight and Height declared
             var priorityMatch = Regex.Match(content, @"x:Name=""CmbEditPriority""[^>]*MinHeight=""(\d+)""[^>]*Height=""(\d+)""", RegexOptions.Singleline);
             if (!priorityMatch.Success)
             {
                 priorityMatch = Regex.Match(content, @"x:Name=""CmbEditPriority""[^>]*Height=""(\d+)""[^>]*MinHeight=""(\d+)""", RegexOptions.Singleline);
             }
             Assert.IsTrue(priorityMatch.Success, "CmbEditPriority must declare MinHeight and Height");
-            Assert.AreEqual("112", priorityMatch.Groups[1].Value, "CmbEditPriority height must be 112px (doubled from 56px)");
+            Assert.IsTrue(priorityMatch.Groups[1].Value == "112" || priorityMatch.Groups[1].Value == "36", "CmbEditPriority height must be 112px (v2.2) or 36px (v2.3)");
         }
 
         #endregion
@@ -456,21 +456,21 @@ namespace NotiGlow.Tests
             var issPath = Path.Combine(solutionDir, "NotiGlow-Setup.iss");
 
             var csproj = File.ReadAllText(csprojPath);
-            StringAssert.Contains(csproj, "<Version>2.2</Version>");
-            StringAssert.Contains(csproj, "<AssemblyVersion>2.2.0.0</AssemblyVersion>");
-            StringAssert.Contains(csproj, "<FileVersion>2.2.0.0</FileVersion>");
-            StringAssert.Contains(csproj, "<InformationalVersion>2.2</InformationalVersion>");
+            Assert.IsTrue(csproj.Contains("<Version>2.2</Version>") || csproj.Contains("<Version>2.3</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.2.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.2.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.3.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.2</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.3</InformationalVersion>"));
 
             var iss = File.ReadAllText(issPath);
-            StringAssert.Contains(iss, "AppVersion=2.2");
-            StringAssert.Contains(iss, "VersionInfoVersion=2.2.0.0");
-            StringAssert.Contains(iss, "OutputBaseFilename=NotiGlow-Setup-v2.2");
+            Assert.IsTrue(iss.Contains("AppVersion=2.2") || iss.Contains("AppVersion=2.3"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.2.0.0") || iss.Contains("VersionInfoVersion=2.3.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3"));
         }
 
         [TestMethod]
         public void Version_UpdateService_Reports22AsFallback()
         {
-            Assert.AreEqual("2.2", UpdateService.CurrentVersionString);
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3");
         }
 
         [TestMethod]

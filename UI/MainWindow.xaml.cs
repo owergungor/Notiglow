@@ -245,14 +245,6 @@ namespace NotiGlow.UI
             ActiveSelectionBox.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
             _activeSelectionBoxScale = new System.Windows.Media.ScaleTransform(1.0, 1.0);
             ActiveSelectionBox.RenderTransform = _activeSelectionBoxScale;
-
-            if (RootNavigationView != null)
-            {
-                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) => AnimateActiveSelectionBoxPress(true)), true);
-                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) => AnimateActiveSelectionBoxPress(false)), true);
-                RootNavigationView.MouseLeave += (s, e) => AnimateActiveSelectionBoxPress(false);
-                RootNavigationView.LostMouseCapture += (s, e) => AnimateActiveSelectionBoxPress(false);
-            }
         }
 
         private void AnimateActiveSelectionBoxPress(bool pressed)
@@ -579,7 +571,7 @@ namespace NotiGlow.UI
                     ActiveSelectionBox.Height = targetHeight;
                     System.Windows.Controls.Canvas.SetLeft(ActiveSelectionBox, targetLeft);
                     System.Windows.Controls.Canvas.SetTop(ActiveSelectionBox, targetTop);
-                    ActiveSelectionBox.Visibility = Visibility.Visible;
+                    ActiveSelectionBox.Visibility = Visibility.Collapsed;
                 }
                 catch (Exception ex)
                 {

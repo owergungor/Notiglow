@@ -27,8 +27,12 @@ namespace NotiGlow
             DispatcherUnhandledException += (s, e) =>
             {
                 LoggerService.LogStartupError("Unhandled Dispatcher Exception", e.Exception);
-                ShowExceptionDialog("Unhandled UI Exception", e.Exception);
-                e.Handled = true;
+                bool isFatal = e.Exception is OutOfMemoryException or StackOverflowException or AccessViolationException;
+                ShowExceptionDialog("Unhandled UI Exception", e.Exception, isFatal);
+                if (!isFatal)
+                {
+                    e.Handled = true;
+                }
             };
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
@@ -36,7 +40,7 @@ namespace NotiGlow
                 if (e.ExceptionObject is Exception ex)
                 {
                     LoggerService.LogStartupError("Unhandled AppDomain Exception", ex);
-                    ShowExceptionDialog("Unhandled App Domain Exception", ex);
+                    ShowExceptionDialog("Unhandled App Domain Exception", ex, isFatal: true);
                 }
             };
 
@@ -298,26 +302,38 @@ namespace NotiGlow
         private void HandleStartupFailure(string phase, Exception ex)
         {
             LoggerService.LogStartupError(phase, ex);
-            ShowExceptionDialog("Startup Error", ex);
+            ShowExceptionDialog("Startup Error", ex, isFatal: true);
             Shutdown();
         }
 
-        private static void ShowExceptionDialog(string title, Exception ex)
+        private void ShowExceptionDialog(string title, Exception ex, bool isFatal = false)
         {
             try
             {
                 string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 string logPath = Path.Combine(localAppData, "NotiGlow", "startup.log");
-                string shortMsg = ex.Message;
-                string message = $"NotiGlow could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
 
-                System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                string displayTitle = LocalizationService.Instance?.GetString(isFatal ? "Error.StartupTitle" : "Error.UnhandledTitle") ?? title;
+                string displayMessage = LocalizationService.Instance?.GetString(isFatal ? "Error.StartupDesc" : "Error.UnhandledDesc")
+                    ?? $"NotiGlow encountered an unexpected error: {ex.Message}";
+
+                NotiGlow.UI.Dialogs.ErrorDialogWindow.ShowError(
+                    displayTitle,
+                    displayMessage,
+                    ex,
+                    logPath,
+                    retryAction: null,
+                    owner: _mainWindow?.IsVisible == true ? _mainWindow : null);
             }
             catch
             {
                 try
                 {
-                    System.Windows.Forms.MessageBox.Show(ex.Message, title, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                    string logPath = Path.Combine(localAppData, "NotiGlow", "startup.log");
+                    string shortMsg = ex.Message;
+                    string message = $"NotiGlow could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
+                    System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
                 catch
                 {

@@ -6,6 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
@@ -44,10 +45,136 @@
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             </Style>
 
+            <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+
             <Style TargetType="{x:Type ui:TextBox}">
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                 <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="MinHeight" Value="36"/>
+            </Style>
+
+            <Style TargetType="{x:Type TextBox}">
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="MinHeight" Value="36"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TextBox}">
+                            <Border x:Name="Border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="Border" Property="BorderThickness" Value="1.5"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Fluent/Apple ScrollBar Style (Direct Opacity Animation, 100% DependencyObject Crash-Proof) -->
+            <Style TargetType="{x:Type ScrollBar}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                <Style.Triggers>
+                    <Trigger Property="Orientation" Value="Vertical">
+                        <Setter Property="Width" Value="8"/>
+                        <Setter Property="MinWidth" Value="8"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                    <Grid x:Name="Bg" Background="Transparent" SnapsToDevicePixels="True">
+                                        <Track x:Name="PART_Track" IsDirectionReversed="True" HorizontalAlignment="Center">
+                                            <Track.Thumb>
+                                                <Thumb x:Name="Thumb">
+                                                    <Thumb.Template>
+                                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                                            <Border x:Name="ThumbBorder"
+                                                                    CornerRadius="4"
+                                                                    Width="6"
+                                                                    Background="{DynamicResource TextMuted}"
+                                                                    Opacity="0.45"
+                                                                    SnapsToDevicePixels="True"/>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.85"/>
+                                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentColor}"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsDragging" Value="True">
+                                                                    <Setter TargetName="ThumbBorder" Property="Opacity" Value="1.0"/>
+                                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentColor}"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Thumb.Template>
+                                                </Thumb>
+                                            </Track.Thumb>
+                                        </Track>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                    <Trigger Property="Orientation" Value="Horizontal">
+                        <Setter Property="Height" Value="8"/>
+                        <Setter Property="MinHeight" Value="8"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                    <Grid x:Name="Bg" Background="Transparent" SnapsToDevicePixels="True">
+                                        <Track x:Name="PART_Track" IsDirectionReversed="False" VerticalAlignment="Center">
+                                            <Track.Thumb>
+                                                <Thumb x:Name="Thumb">
+                                                    <Thumb.Template>
+                                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                                            <Border x:Name="ThumbBorder"
+                                                                    CornerRadius="4"
+                                                                    Height="6"
+                                                                    Background="{DynamicResource TextMuted}"
+                                                                    Opacity="0.45"
+                                                                    SnapsToDevicePixels="True"/>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.85"/>
+                                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentColor}"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsDragging" Value="True">
+                                                                    <Setter TargetName="ThumbBorder" Property="Opacity" Value="1.0"/>
+                                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentColor}"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Thumb.Template>
+                                                </Thumb>
+                                            </Track.Thumb>
+                                        </Track>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Hero UI / Modern Rounded ToolTip Style -->
@@ -838,6 +965,10 @@
 
             <!-- Apple-inspired ToggleSwitch Style (Reference: ui.unlumen.com/components/apple-switch & Apple HIG) -->
             <Style TargetType="{x:Type ui:ToggleSwitch}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                 <Setter Property="MinWidth" Value="48"/>
                 <Setter Property="MinHeight" Value="26"/>
@@ -851,18 +982,18 @@
                             <ControlTemplate.Resources>
                                 <CubicEase x:Key="AppleEase" EasingMode="EaseOut"/>
                                 <Storyboard x:Key="ToggleOnAnim">
-                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="22" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
-                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="22" Duration="0:0:0.15" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="1.0" Duration="0:0:0.15" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ToggleOffAnim">
-                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
-                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="0.0" Duration="0:0:0.18" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ThumbTranslate" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.15" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ActiveTrack" Storyboard.TargetProperty="Opacity" To="0.0" Duration="0:0:0.15" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ThumbPressAnim">
-                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.15" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.08" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                                 <Storyboard x:Key="ThumbReleaseAnim">
-                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.12" EasingFunction="{StaticResource AppleEase}"/>
+                                    <DoubleAnimation Storyboard.TargetName="ThumbScale" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.08" EasingFunction="{StaticResource AppleEase}"/>
                                 </Storyboard>
                             </ControlTemplate.Resources>
                             <Grid x:Name="TemplateRoot" Width="48" Height="26" Background="Transparent" SnapsToDevicePixels="True">
@@ -896,7 +1027,6 @@
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center"
                                             Margin="2,0,0,0"
-                                            RenderTransformOrigin="0.5,0.5"
                                             Background="#FFFFFF">
                                         <Border.RenderTransform>
                                             <TransformGroup>
@@ -942,8 +1072,8 @@
 
             <!-- Apple-inspired Modern Select / ComboBox Style -->
             <Style x:Key="AppleSelectComboBoxStyle" TargetType="{x:Type ComboBox}">
-                <Setter Property="Height" Value="38"/>
-                <Setter Property="MinHeight" Value="38"/>
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="MinHeight" Value="36"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                 <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>

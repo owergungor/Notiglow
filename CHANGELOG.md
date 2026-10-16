@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3] - 2026-10-14
+
+### Fixed
+- **Root-Cause Startup Background Exception (`(0).(1)`)**:
+  - Resolved WPF DependencyObject exception where `Storyboard.VerifyPathIsAnimatable` failed on `(Border.Background).(SolidColorBrush.Opacity)` due to null or unmerged theme brush resources.
+  - Integrated `<ui:ThemesDictionary Theme="Dark" />` in `App.xaml` merged dictionaries.
+  - Implemented robust, crash-proof native ScrollBar template with non-null background and direct `UIElement.Opacity` animation.
+- **Application Profile Modal Visual Fixes**:
+  - Replaced broken exit/close font glyph with fluent vector `Dismiss24` symbol icon.
+  - Restored custom color picker & RGB rainbow spectrum option with vector icons, focusable interaction, and button press animations.
+  - Styled application name and executable ID textboxes with smooth rounded corners (8 DIP).
+  - Compacted closed ComboBox height (36 DIP) with `AppleSelectComboBoxStyle` and eliminated excessive vertical void before Duration.
+  - Repositioned modal ScrollBar to the inner right panel boundary with proper content padding to eliminate component overlap.
+- **Switch Animation & Visual Streamlining**:
+  - Nullified FocusVisualStyle and root border outlines to eliminate duplicate outer lines while preserving sleek pill border geometry.
+  - Removed distorting scale transforms and rapid-fire drop shadow latency in ToggleSwitch template for fluid, lag-free transitions.
+
+### Added
+- **Modern In-App Error Interface (`ErrorDialogWindow`)**:
+  - Replaced Windows system message boxes with an Apple/Hero-UI-inspired dark modal dialog.
+  - One-click log file location copying and collapsible sanitized technical exception details.
+  - Thread-safe Dispatcher invocation, re-entrancy loop protection, and safe fallback.
+  - Fully localized across all 5 supported languages (EN, ES, FR, DE, TR).
+
 ## [2.2] - 2026-10-14
 
 ### Added

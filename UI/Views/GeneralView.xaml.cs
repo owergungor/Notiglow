@@ -80,9 +80,9 @@ namespace NotiGlow.UI.Views
             LocalizationService.Instance.SetLanguage(tag, persist: true);
         }
 
-        private void UpdateListenerStatus(Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
+        private void UpdateListenerStatus(global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
         {
-            if (status == Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Allowed)
+            if (status == global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Allowed)
             {
                 IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
                 IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
@@ -90,7 +90,7 @@ namespace NotiGlow.UI.Views
                 TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
                 BtnFixAccess.Visibility = Visibility.Collapsed;
             }
-            else if (status == Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Denied)
+            else if (status == global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Denied)
             {
                 IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
                 IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));

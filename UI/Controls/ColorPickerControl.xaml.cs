@@ -131,6 +131,8 @@ namespace NotiGlow.UI.Controls
                 PresetPalette.Children.Add(border);
             }
 
+            NotiGlow.UI.Animations.ButtonPressAnimationBehavior.Attach(BtnRgbOption);
+
             BtnRgbOption.PreviewMouseLeftButtonDown += (s, e) =>
             {
                 SelectedColorHex = "RGB";
@@ -143,6 +145,16 @@ namespace NotiGlow.UI.Controls
                 SelectedColorHex = "RGB";
                 UpdateVisuals("RGB");
                 e.Handled = true;
+            };
+
+            BtnRgbOption.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Enter || e.Key == Key.Space)
+                {
+                    SelectedColorHex = "RGB";
+                    UpdateVisuals("RGB");
+                    e.Handled = true;
+                }
             };
         }
 
