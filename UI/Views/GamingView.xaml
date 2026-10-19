@@ -79,7 +79,7 @@
                 </ui:CardControl>
 
                 <!-- Only Important Notifications -->
-                <ui:CardControl x:Name="CardOnlyImportantInGames" Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                <ui:CardControl x:Name="CardOnlyImportantInGames" Padding="18" Margin="0,0,0,20" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                     <ui:CardControl.Header>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="TxtOnlyImportantTitle" Text="{DynamicResource Gaming.OnlyImportant}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -87,6 +87,52 @@
                         </StackPanel>
                     </ui:CardControl.Header>
                     <ui:ToggleSwitch x:Name="ToggleOnlyImportantInGames" Click="ToggleOnlyImportantInGames_Click" VerticalAlignment="Center"/>
+                </ui:CardControl>
+
+                <!-- Common Gaming Glow Settings Section -->
+                <TextBlock Text="{DynamicResource Gaming.CommonSettingsTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,4"/>
+                <TextBlock Text="{DynamicResource Gaming.CommonSettingsDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                <!-- Common Duration Card -->
+                <ui:CardControl Padding="16" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Gaming.CommonDuration}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Gaming.ReduceDurationDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtCommonGamingDurationVal" Text="3000 ms" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                        </Grid>
+                        <Slider x:Name="SldCommonGamingDuration" Minimum="1000" Maximum="10000" Value="3000" SmallChange="100" LargeChange="500" TickFrequency="100" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingDuration_ValueChanged"/>
+                    </StackPanel>
+                </ui:CardControl>
+
+                <!-- Common Glow Intensity Card -->
+                <ui:CardControl Padding="16" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Gaming.CommonIntensity}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Gaming.ReduceIntensityDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtCommonGamingIntensityVal" Text="60%" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                        </Grid>
+                        <Slider x:Name="SldCommonGamingIntensity" Minimum="10" Maximum="100" Value="60" SmallChange="5" LargeChange="10" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingIntensity_ValueChanged"/>
+                    </StackPanel>
+                </ui:CardControl>
+
+                <!-- Common Glow Blur Size Card -->
+                <ui:CardControl Padding="16" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Gaming.CommonBlurSize}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtCommonGamingGlowSizeVal" Text="30 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                        </Grid>
+                        <Slider x:Name="SldCommonGamingGlowSize" Minimum="10" Maximum="80" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingGlowSize_ValueChanged"/>
+                    </StackPanel>
                 </ui:CardControl>
 
                 <!-- Tracked Games Section Header & Controls -->

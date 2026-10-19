@@ -17,10 +17,22 @@ namespace NotiGlow.UI
         public MainWindow()
         {
             InitializeComponent();
+            EnsureNavigationViewItemTemplate();
             UpdateAppTitle();
             InitializeTitleBarIcon();
             ToastNotificationService.Instance.ToastRequested += OnToastRequested;
             Closed += (s, e) => ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
+        }
+
+        private void EnsureNavigationViewItemTemplate()
+        {
+            if (RootNavigationView != null && RootNavigationView.ItemTemplate == null)
+            {
+                if (TryFindResource("NotiGlowNavigationViewItemTemplate") is System.Windows.Controls.ControlTemplate customTemplate)
+                {
+                    RootNavigationView.ItemTemplate = customTemplate;
+                }
+            }
         }
 
         private void OnToastRequested(ToastItem item)
@@ -234,6 +246,11 @@ namespace NotiGlow.UI
 
             ViewGeneral.Initialize(_settingsService, _glowManager, _notificationService);
 
+            if (System.Windows.Application.Current is App app)
+            {
+                app.ApplyCurrentSettingsTheme();
+            }
+
             NavigateToTag("General");
         }
 
@@ -245,6 +262,35 @@ namespace NotiGlow.UI
             ActiveSelectionBox.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
             _activeSelectionBoxScale = new System.Windows.Media.ScaleTransform(1.0, 1.0);
             ActiveSelectionBox.RenderTransform = _activeSelectionBoxScale;
+
+            if (RootNavigationView != null)
+            {
+                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) =>
+                {
+                    if (e.OriginalSource is DependencyObject dep)
+                    {
+                        var navItem = FindVisualParent<NavigationViewItem>(dep);
+                        if (navItem != null && navItem.Tag is string tag && !string.Equals(tag, _currentTag, StringComparison.OrdinalIgnoreCase))
+                        {
+                            NavigateToTag(tag);
+                        }
+                    }
+                    AnimateActiveSelectionBoxPress(true);
+                }), true);
+                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) => AnimateActiveSelectionBoxPress(false)), true);
+                RootNavigationView.MouseLeave += (s, e) => AnimateActiveSelectionBoxPress(false);
+                RootNavigationView.LostMouseCapture += (s, e) => AnimateActiveSelectionBoxPress(false);
+            }
+        }
+
+        private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T parent) return parent;
+                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
 
         private void AnimateActiveSelectionBoxPress(bool pressed)
@@ -273,6 +319,10 @@ namespace NotiGlow.UI
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            if (System.Windows.Application.Current is App app)
+            {
+                app.ApplyCurrentSettingsTheme();
+            }
             InitializeActiveSelectionBoxTransform();
             if (RootNavigationView != null)
             {
@@ -567,11 +617,30 @@ namespace NotiGlow.UI
                         : Math.Max(36, activeItem.ActualWidth - 12);
                     double targetHeight = Math.Max(32, activeItem.ActualHeight);
 
+                    double currentTop = System.Windows.Controls.Canvas.GetTop(ActiveSelectionBox);
+                    bool wasVisible = ActiveSelectionBox.Visibility == Visibility.Visible && !double.IsNaN(currentTop) && currentTop >= 0;
+
                     ActiveSelectionBox.Width = targetWidth;
                     ActiveSelectionBox.Height = targetHeight;
                     System.Windows.Controls.Canvas.SetLeft(ActiveSelectionBox, targetLeft);
-                    System.Windows.Controls.Canvas.SetTop(ActiveSelectionBox, targetTop);
-                    ActiveSelectionBox.Visibility = Visibility.Collapsed;
+
+                    if (wasVisible && !NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion && Math.Abs(currentTop - targetTop) > 1)
+                    {
+                        var anim = new System.Windows.Media.Animation.DoubleAnimation
+                        {
+                            To = targetTop,
+                            Duration = TimeSpan.FromMilliseconds(NotiGlow.UI.Animations.MotionPolicy.GetDurationMs(140)),
+                            EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+                        };
+                        ActiveSelectionBox.BeginAnimation(System.Windows.Controls.Canvas.TopProperty, anim, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
+                    }
+                    else
+                    {
+                        ActiveSelectionBox.BeginAnimation(System.Windows.Controls.Canvas.TopProperty, null);
+                        System.Windows.Controls.Canvas.SetTop(ActiveSelectionBox, targetTop);
+                    }
+
+                    ActiveSelectionBox.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex)
                 {

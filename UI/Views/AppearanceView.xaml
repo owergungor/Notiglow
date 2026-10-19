@@ -231,6 +231,20 @@
                             <Slider x:Name="SldDefGlowSize" Minimum="5" Maximum="100" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
                         </StackPanel>
                     </ui:CardControl>
+
+                    <!-- Corner Rounding Card -->
+                    <ui:CardControl Padding="16" Margin="0,0,0,14" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{DynamicResource Appearance.CornerRounding}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="{DynamicResource Appearance.CornerRoundingDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtCornerRoundingVal" Text="8 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldCornerRounding" Minimum="0" Maximum="18" Value="8" SmallChange="1" LargeChange="2" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCornerRounding_ValueChanged"/>
+                        </StackPanel>
+                    </ui:CardControl>
                 </StackPanel>
 
                 <!-- Right Column: Live Preview & Palette -->

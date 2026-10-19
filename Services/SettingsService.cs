@@ -12,8 +12,20 @@ namespace NotiGlow.Services
 
         public event EventHandler? SettingsChanged;
 
-        public SettingsService()
+        public SettingsService(string? customSettingsPath = null)
         {
+            if (!string.IsNullOrEmpty(customSettingsPath))
+            {
+                _settingsPath = customSettingsPath;
+                string? dir = Path.GetDirectoryName(_settingsPath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                Current = Load();
+                return;
+            }
+
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string folder = Path.Combine(appData, "NotiGlow");
             Directory.CreateDirectory(folder);

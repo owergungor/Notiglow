@@ -9,6 +9,7 @@ using NotiGlow.UI.Animations;
 using UserControl = System.Windows.Controls.UserControl;
 using ThemeMode = NotiGlow.Models.ThemeMode;
 using RadioButton = System.Windows.Controls.RadioButton;
+using Point = System.Windows.Point;
 
 namespace NotiGlow.UI.Views
 {
@@ -21,6 +22,28 @@ namespace NotiGlow.UI.Views
         public GeneralView()
         {
             InitializeComponent();
+            EnsureColorThemeComboBoxStyle();
+            Loaded += (s, e) =>
+            {
+                EnsureColorThemeComboBoxStyle();
+                Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate: true)));
+            };
+            SizeChanged += (s, e) => UpdateThemeIndicator(immediate: true);
+        }
+
+        private void EnsureColorThemeComboBoxStyle()
+        {
+            if (CmbColorTheme != null)
+            {
+                if (TryFindResource("ColorThemeComboBoxStyle") is Style style && CmbColorTheme.Style != style)
+                {
+                    CmbColorTheme.Style = style;
+                }
+                CmbColorTheme.MaxDropDownHeight = 550;
+                ScrollViewer.SetVerticalScrollBarVisibility(CmbColorTheme, ScrollBarVisibility.Disabled);
+                ScrollViewer.SetHorizontalScrollBarVisibility(CmbColorTheme, ScrollBarVisibility.Disabled);
+                ScrollViewer.SetCanContentScroll(CmbColorTheme, false);
+            }
         }
 
         public void Initialize(SettingsService settingsService, GlowManager glowManager, NotificationService? notificationService = null)
@@ -44,6 +67,7 @@ namespace NotiGlow.UI.Views
                         UpdateListenerStatus(_notificationService.CurrentAccessStatus);
                     }
                     UpdateLanguageSelection(e);
+                    UpdateThemeIndicator(immediate: true);
                 });
             };
 
@@ -61,7 +85,7 @@ namespace NotiGlow.UI.Views
                 string norm = LocalizationService.NormalizeLanguageCode(languageCode);
                 foreach (var item in CmbLanguage.Items)
                 {
-                    if (item is ComboBoxItem cbi && cbi.Tag is string tag && string.Equals(tag, norm, StringComparison.OrdinalIgnoreCase))
+                    if (item is ComboBoxItem cbi && cbi.Tag is string tag && string.Equals(LocalizationService.NormalizeLanguageCode(tag), norm, StringComparison.OrdinalIgnoreCase))
                     {
                         CmbLanguage.SelectedItem = cbi;
                         break;
@@ -127,6 +151,7 @@ namespace NotiGlow.UI.Views
             BtnModeSystem.IsChecked = (current.ThemeMode == ThemeMode.System);
             BtnModeLight.IsChecked = (current.ThemeMode == ThemeMode.Light);
             BtnModeDark.IsChecked = (current.ThemeMode == ThemeMode.Dark);
+            Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate: true)));
 
             // Load Color Theme
             UpdateColorThemeSelection(current.ColorTheme);
@@ -181,6 +206,60 @@ namespace NotiGlow.UI.Views
                 settings.ThemeMode = selectedMode;
                 _settingsService.Save(settings);
                 ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+            }
+            UpdateThemeIndicator(immediate: false);
+        }
+
+        private void UpdateThemeIndicator(bool immediate = false)
+        {
+            if (ThemeIndicatorPill == null || ThemeIndicatorTranslate == null || ThemeSegmentedContainer == null) return;
+
+            RadioButton? selectedBtn = null;
+            if (BtnModeSystem?.IsChecked == true) selectedBtn = BtnModeSystem;
+            else if (BtnModeLight?.IsChecked == true) selectedBtn = BtnModeLight;
+            else if (BtnModeDark?.IsChecked == true) selectedBtn = BtnModeDark;
+
+            if (selectedBtn == null || selectedBtn.ActualWidth <= 0)
+            {
+                Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate)), System.Windows.Threading.DispatcherPriority.Loaded);
+                return;
+            }
+
+            try
+            {
+                var transform = selectedBtn.TransformToVisual(ThemeSegmentedContainer);
+                var pt = transform.Transform(new Point(0, 0));
+                double targetX = pt.X;
+                double targetWidth = selectedBtn.ActualWidth;
+
+                bool reduceMotion = _settingsService?.Current.ReduceAnimations == true || MotionPolicy.IsReduceMotion;
+
+                if (immediate || reduceMotion)
+                {
+                    ThemeIndicatorTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, null);
+                    ThemeIndicatorTranslate.X = targetX;
+                    ThemeIndicatorPill.BeginAnimation(FrameworkElement.WidthProperty, null);
+                    ThemeIndicatorPill.Width = targetWidth;
+                    ThemeIndicatorPill.Opacity = 1;
+                }
+                else
+                {
+                    var animX = new System.Windows.Media.Animation.DoubleAnimation(targetX, TimeSpan.FromMilliseconds(180))
+                    {
+                        EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+                    };
+                    var animWidth = new System.Windows.Media.Animation.DoubleAnimation(targetWidth, TimeSpan.FromMilliseconds(180))
+                    {
+                        EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+                    };
+                    ThemeIndicatorTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, animX);
+                    ThemeIndicatorPill.BeginAnimation(FrameworkElement.WidthProperty, animWidth);
+                    ThemeIndicatorPill.Opacity = 1;
+                }
+            }
+            catch
+            {
+                // Visual tree not yet ready
             }
         }
 

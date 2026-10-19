@@ -43,7 +43,7 @@ namespace NotiGlow.UI.Dialogs
                 catch
                 {
                     // Fallback to standard message box if Dispatcher invoke fails
-                    FallbackShowMessageBox(title, message, ex, logFilePath);
+                    FallbackShowDialog(title, message, ex, logFilePath);
                     return false;
                 }
             }
@@ -139,7 +139,7 @@ namespace NotiGlow.UI.Dialogs
                 }
                 catch { }
 
-                FallbackShowMessageBox(title, message, ex, logFilePath);
+                FallbackShowDialog(title, message, ex, logFilePath);
                 return false;
             }
             finally
@@ -148,7 +148,7 @@ namespace NotiGlow.UI.Dialogs
             }
         }
 
-        private static void FallbackShowMessageBox(string title, string message, Exception? ex, string? logFilePath)
+        private static void FallbackShowDialog(string title, string message, Exception? ex, string? logFilePath)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace NotiGlow.UI.Dialogs
                     "startup.log");
 
                 string formattedMsg = $"{message}\n\nError: {ex?.Message}\n\nLog: {logPath}";
-                System.Windows.MessageBox.Show(formattedMsg, title, MessageBoxButton.OK, MessageBoxImage.Error);
+                ConfirmationDialogWindow.ShowError(title, formattedMsg, "OK");
             }
             catch
             {

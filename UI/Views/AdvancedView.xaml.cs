@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using Microsoft.Win32;
 using NotiGlow.Services;
 using UserControl = System.Windows.Controls.UserControl;
-using MessageBox = System.Windows.MessageBox;
 
 namespace NotiGlow.UI.Views
 {
@@ -200,13 +199,9 @@ namespace NotiGlow.UI.Views
 
                 if (info.IsUpdateAvailable)
                 {
-                    var result = MessageBox.Show(
-                        LocalizationService.Instance.GetString("Advanced.UpdateAvailableMsg", info.LatestVersion),
-                        LocalizationService.Instance.GetString("Advanced.UpdateAvailableTitle"),
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+                    bool confirmed = NotiGlow.UI.Dialogs.UpdateConfirmDialogWindow.ShowUpdateConfirm(info, Window.GetWindow(this));
 
-                    if (result == MessageBoxResult.Yes)
+                    if (confirmed)
                     {
                         PbUpdateProgress.Visibility = Visibility.Visible;
                         PbUpdateProgress.Value = 0;
@@ -220,14 +215,20 @@ namespace NotiGlow.UI.Views
 
                         if (!string.IsNullOrEmpty(packagePath) && System.IO.File.Exists(packagePath))
                         {
-                            TxtUpdateStatus.Text = LocalizationService.Instance.GetString("Advanced.UpdateReadyInstalling");
-                            var installPrompt = MessageBox.Show(
-                                LocalizationService.Instance.GetString("Advanced.ReadyToInstallMsg", info.LatestVersion),
-                                LocalizationService.Instance.GetString("Advanced.ReadyToInstallTitle"),
-                                MessageBoxButton.OKCancel,
-                                MessageBoxImage.Information);
+                            string readyTitle = LocalizationService.Instance.GetString("Advanced.ReadyToInstallTitle");
+                            string readyMsg = LocalizationService.Instance.GetString("Advanced.ReadyToInstallMsg", info.LatestVersion);
+                            string installBtn = LocalizationService.Instance.GetString("Advanced.InstallNow");
+                            string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
 
-                            if (installPrompt == MessageBoxResult.OK)
+                            bool installConfirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
+                                string.IsNullOrEmpty(readyTitle) ? "Install Update" : readyTitle,
+                                string.IsNullOrEmpty(readyMsg) ? $"Ready to install NotiGlow {info.LatestVersion}. The application will restart." : readyMsg,
+                                confirmText: string.IsNullOrEmpty(installBtn) ? "Install & Restart" : installBtn,
+                                cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
+                                isDestructive: false,
+                                owner: Window.GetWindow(this));
+
+                            if (installConfirmed)
                             {
                                 UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
                                 {
@@ -368,12 +369,20 @@ namespace NotiGlow.UI.Views
 
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                LocalizationService.Instance.GetString("Advanced.ResetConfirmMsg"),
-                LocalizationService.Instance.GetString("Advanced.ResetConfirmTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-            if (result == MessageBoxResult.Yes)
+            string resetTitle = LocalizationService.Instance.GetString("Advanced.ResetConfirmTitle");
+            string resetMsg = LocalizationService.Instance.GetString("Advanced.ResetConfirmMsg");
+            string resetBtn = LocalizationService.Instance.GetString("Advanced.ResetToDefaults");
+            string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
+
+            bool confirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
+                string.IsNullOrEmpty(resetTitle) ? "Reset Settings" : resetTitle,
+                string.IsNullOrEmpty(resetMsg) ? "Are you sure you want to reset all settings to defaults?" : resetMsg,
+                confirmText: string.IsNullOrEmpty(resetBtn) ? "Reset" : resetBtn,
+                cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
+                isDestructive: true,
+                owner: Window.GetWindow(this));
+
+            if (confirmed)
             {
                 _importExportService.ResetToDefaults();
                 ToastNotificationService.Instance.ShowSuccess(

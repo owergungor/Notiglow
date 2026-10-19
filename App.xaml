@@ -10,35 +10,42 @@
                 <ui:ControlsDictionary />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Centralized Theme Brushes (Dark Theme Defaults) -->
-            <SolidColorBrush x:Key="WindowBackground" Color="#141414" />
-            <SolidColorBrush x:Key="SidebarBackground" Color="#181818" />
-            <SolidColorBrush x:Key="CardBackground" Color="#202020" />
-            <SolidColorBrush x:Key="CardBackgroundSecondary" Color="#1B1B1B" />
-            <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="TextSecondary" Color="#B8B8B8" />
-            <SolidColorBrush x:Key="TextMuted" Color="#808080" />
-            <SolidColorBrush x:Key="BorderColor" Color="#383838" />
-            <SolidColorBrush x:Key="DividerColor" Color="#282828" />
-            <SolidColorBrush x:Key="InputBackground" Color="#1C1C1C" />
-            <SolidColorBrush x:Key="AccentColor" Color="#5865F2" />
-            <SolidColorBrush x:Key="ControlBackground" Color="#262626" />
-            <SolidColorBrush x:Key="ControlHoverBackground" Color="#303030" />
-            <SolidColorBrush x:Key="GlassOverlay" Color="#1CFFFFFF" />
-            <SolidColorBrush x:Key="GlassBorder" Color="#455865F2" />
-            <SolidColorBrush x:Key="TextDisabled" Color="#555555" />
-            <SolidColorBrush x:Key="ControlPressedBackground" Color="#383838" />
-            <SolidColorBrush x:Key="ControlDisabledBackground" Color="#181818" />
-            <SolidColorBrush x:Key="InputBorder" Color="#383838" />
-            <SolidColorBrush x:Key="NavActiveBackground" Color="#2E2E2E" />
-            <SolidColorBrush x:Key="NavActiveHoverBackground" Color="#363636" />
-            <SolidColorBrush x:Key="NavIndicatorColor" Color="#5865F2" />
+            <!-- Centralized Theme Brushes (Dark Theme Defaults - Vercel Standard) -->
+            <SolidColorBrush x:Key="WindowBackground" Color="#0A0A0A" />
+            <SolidColorBrush x:Key="SidebarBackground" Color="#121212" />
+            <SolidColorBrush x:Key="CardBackground" Color="#171717" />
+            <SolidColorBrush x:Key="CardBackgroundSecondary" Color="#1C1C1C" />
+            <SolidColorBrush x:Key="TextPrimary" Color="#EDEDED" />
+            <SolidColorBrush x:Key="TextSecondary" Color="#A1A1A1" />
+            <SolidColorBrush x:Key="TextMuted" Color="#666666" />
+            <SolidColorBrush x:Key="BorderColor" Color="#262626" />
+            <SolidColorBrush x:Key="DividerColor" Color="#202020" />
+            <SolidColorBrush x:Key="InputBackground" Color="#141414" />
+            <SolidColorBrush x:Key="AccentColor" Color="#3B82F6" />
+            <SolidColorBrush x:Key="ControlBackground" Color="#1F1F1F" />
+            <SolidColorBrush x:Key="ControlHoverBackground" Color="#292929" />
+            <SolidColorBrush x:Key="GlassOverlay" Color="#00000000" />
+            <SolidColorBrush x:Key="GlassBorder" Color="#262626" />
+            <SolidColorBrush x:Key="TextDisabled" Color="#444444" />
+            <SolidColorBrush x:Key="ControlPressedBackground" Color="#333333" />
+            <SolidColorBrush x:Key="ControlDisabledBackground" Color="#141414" />
+            <SolidColorBrush x:Key="InputBorder" Color="#262626" />
+            <SolidColorBrush x:Key="NavActiveBackground" Color="#222222" />
+            <SolidColorBrush x:Key="NavActiveHoverBackground" Color="#2C2C2C" />
+            <SolidColorBrush x:Key="NavIndicatorColor" Color="#3B82F6" />
+
+            <!-- Built-in NavigationView Selection & Hover Overrides (Eliminates sharp rectangular selection/hover boxes from Wpf.Ui built-in template) -->
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelected" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedLeftFluent" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundSelectedPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewItemBackgroundPointerOver" Color="Transparent" />
+            <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="Transparent" />
 
             <!-- Slider Brushes (Theme Adaptable) -->
-            <SolidColorBrush x:Key="SliderTrackBackground" Color="#404552" />
-            <SolidColorBrush x:Key="SliderTrackHoverBackground" Color="#505668" />
+            <SolidColorBrush x:Key="SliderTrackBackground" Color="#333333" />
+            <SolidColorBrush x:Key="SliderTrackHoverBackground" Color="#444444" />
             <SolidColorBrush x:Key="SliderThumbBackground" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="SliderThumbBorder" Color="#5865F2" />
+            <SolidColorBrush x:Key="SliderThumbBorder" Color="#3B82F6" />
 
             <!-- Global Style Overrides for Readability & Windows 11 Fluent Aesthetic -->
             <Style TargetType="{x:Type TextBlock}">
@@ -486,6 +493,45 @@
                 </Setter>
             </Style>
 
+            <!-- Modern Sliding Theme Switcher RadioButton Style (Used with sliding pill background) -->
+            <Style x:Key="SlidingThemeRadioButtonStyle" TargetType="{x:Type RadioButton}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Padding" Value="14,6"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type RadioButton}">
+                            <Border x:Name="Bd"
+                                    CornerRadius="6"
+                                    Background="Transparent"
+                                    BorderThickness="1"
+                                    BorderBrush="Transparent"
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextTertiary}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Color Theme Chip RadioButton Style (13 Color Themes) -->
             <Style x:Key="ColorThemeChipRadioButtonStyle" TargetType="{x:Type RadioButton}">
                 <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
@@ -734,6 +780,113 @@
                 </Setter>
             </Style>
 
+            <!-- Fluent Windows 11 Task Manager Style NavigationViewItem Template -->
+            <ControlTemplate x:Key="NotiGlowNavigationViewItemTemplate" TargetType="{x:Type ui:NavigationViewItem}">
+                <Grid x:Name="ItemGrid" Height="40" Background="Transparent" ClipToBounds="True">
+                    <!-- Windows 11 Task Manager Style Item Surface (No Border / No Glow) -->
+                    <Border x:Name="ItemBorder"
+                            CornerRadius="16"
+                            Margin="0,0,12,0"
+                            Background="{TemplateBinding Background}"
+                            IsHitTestVisible="False"
+                            SnapsToDevicePixels="True">
+                        <Grid IsHitTestVisible="False">
+                            <!-- Windows 11 Task Manager Left Slim Vertical Indicator Bar (3x24px) -->
+                            <Border x:Name="ActiveIndicator"
+                                    Width="3"
+                                    Height="24"
+                                    CornerRadius="1.5"
+                                    Margin="2,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Background="{DynamicResource NavIndicatorColor}"
+                                    Opacity="0"
+                                    Visibility="Collapsed"/>
+
+                            <!-- Icon Presenter (Centered in collapsed mode, aligned left in expanded mode) -->
+                            <ContentPresenter x:Name="IconPresenter"
+                                              Content="{TemplateBinding Icon}"
+                                              Width="24"
+                                              Height="24"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="10,0,0,0"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                            <!-- Content Presenter (Label) -->
+                            <ContentPresenter x:Name="ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Margin="46,0,8,0"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"
+                                              TextElement.FontSize="13"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <ControlTemplate.Triggers>
+                    <!-- Collapsed Sidebar (Compact Mode): Perfectly Centered Icons & Tooltip -->
+                    <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}" Value="False">
+                        <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
+                        <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
+                        <Setter TargetName="ItemBorder" Property="Margin" Value="0"/>
+                        <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                        <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
+                        <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
+                        <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
+                    </DataTrigger>
+                    <Trigger Property="IsPaneOpen" Value="False">
+                        <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
+                        <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
+                        <Setter TargetName="ItemBorder" Property="Margin" Value="0"/>
+                        <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
+                        <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
+                        <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
+                        <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
+                    </Trigger>
+
+                    <!-- Inactive Items: Muted Text & Normal Weight -->
+                    <Trigger Property="IsActive" Value="False">
+                        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                        <Setter Property="FontWeight" Value="Normal"/>
+                    </Trigger>
+
+                    <!-- Mouse Over Trigger (Inactive Items: Subtle Rounded Hover Highlight) -->
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsActive" Value="False"/>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                    </MultiTrigger>
+
+                    <!-- Active (Selected) Navigation Item Trigger: Single Selection Overlay in MainWindow renders background and indicator -->
+                    <Trigger Property="IsActive" Value="True">
+                        <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Collapsed"/>
+                        <Setter TargetName="ActiveIndicator" Property="Opacity" Value="0"/>
+                        <Setter TargetName="ItemBorder" Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Trigger>
+
+                    <!-- Active + Mouse Over Trigger: Maintain single overlay visual without duplicate layers -->
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsActive" Value="True"/>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Collapsed"/>
+                        <Setter TargetName="ActiveIndicator" Property="Opacity" Value="0"/>
+                        <Setter TargetName="ItemBorder" Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                    </MultiTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
             <!-- Fluent Windows 11 Task Manager Style NavigationViewItem Style -->
             <Style TargetType="{x:Type ui:NavigationViewItem}">
                 <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
@@ -743,112 +896,7 @@
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
                 <Setter Property="IsPaneOpen" Value="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ui:NavigationViewItem}">
-                            <Grid x:Name="ItemGrid" Height="40" Background="Transparent" ClipToBounds="True">
-                                <!-- Windows 11 Task Manager Style Item Surface (No Border / No Glow) -->
-                                <Border x:Name="ItemBorder"
-                                        CornerRadius="5"
-                                        Background="{TemplateBinding Background}"
-                                        IsHitTestVisible="False"
-                                        SnapsToDevicePixels="True">
-                                    <Grid IsHitTestVisible="False">
-                                        <!-- Windows 11 Task Manager Left Slim Vertical Indicator Bar (3x24px) -->
-                                        <Border x:Name="ActiveIndicator"
-                                                Width="3"
-                                                Height="24"
-                                                CornerRadius="1.5"
-                                                Margin="2,0,0,0"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Center"
-                                                Background="{DynamicResource NavIndicatorColor}"
-                                                Opacity="0"
-                                                Visibility="Collapsed"/>
-
-                                        <!-- Icon Presenter (Centered in collapsed mode, aligned left in expanded mode) -->
-                                        <ContentPresenter x:Name="IconPresenter"
-                                                          Content="{TemplateBinding Icon}"
-                                                          Width="24"
-                                                          Height="24"
-                                                          HorizontalAlignment="Left"
-                                                          VerticalAlignment="Center"
-                                                          Margin="10,0,0,0"
-                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
-
-                                        <!-- Content Presenter (Label) -->
-                                        <ContentPresenter x:Name="ContentPresenter"
-                                                          Content="{TemplateBinding Content}"
-                                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                          HorizontalAlignment="Left"
-                                                          VerticalAlignment="Center"
-                                                          Margin="46,0,8,0"
-                                                          TextElement.Foreground="{TemplateBinding Foreground}"
-                                                          TextElement.FontSize="13"/>
-                                    </Grid>
-                                </Border>
-                            </Grid>
-
-                            <ControlTemplate.Triggers>
-                                <!-- Collapsed Sidebar (Compact Mode): Perfectly Centered Icons & Tooltip -->
-                                <DataTrigger Binding="{Binding IsPaneOpen, RelativeSource={RelativeSource AncestorType={x:Type ui:NavigationView}}}" Value="False">
-                                    <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
-                                    <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
-                                    <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
-                                </DataTrigger>
-                                <Trigger Property="IsPaneOpen" Value="False">
-                                    <Setter TargetName="ItemGrid" Property="Width" Value="40"/>
-                                    <Setter TargetName="ItemGrid" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="ContentPresenter" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="IconPresenter" Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter TargetName="IconPresenter" Property="Margin" Value="0"/>
-                                    <Setter Property="ToolTip" Value="{Binding Content, RelativeSource={RelativeSource Self}}"/>
-                                </Trigger>
-
-                                <!-- Inactive Items: Muted Text & Normal Weight -->
-                                <Trigger Property="IsActive" Value="False">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                                    <Setter Property="FontWeight" Value="Normal"/>
-                                </Trigger>
-
-                                <!-- Mouse Over Trigger (Inactive Items: Subtle Hover Highlight) -->
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsActive" Value="False"/>
-                                        <Condition Property="IsMouseOver" Value="True"/>
-                                    </MultiTrigger.Conditions>
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </MultiTrigger>
-
-                                <!-- Active (Selected) Navigation Item Trigger: Clean Elevated Gray Surface + Left Neutral Indicator -->
-                                <Trigger Property="IsActive" Value="True">
-                                    <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="ActiveIndicator" Property="Opacity" Value="1"/>
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource NavActiveBackground}"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                </Trigger>
-
-                                <!-- Active + Mouse Over Trigger (Slightly elevated hover over active background) -->
-                                <MultiTrigger>
-                                    <MultiTrigger.Conditions>
-                                        <Condition Property="IsActive" Value="True"/>
-                                        <Condition Property="IsMouseOver" Value="True"/>
-                                    </MultiTrigger.Conditions>
-                                    <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="ActiveIndicator" Property="Opacity" Value="1"/>
-                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource NavActiveHoverBackground}"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource AccentColor}"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                </MultiTrigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
+                <Setter Property="Template" Value="{StaticResource NotiGlowNavigationViewItemTemplate}"/>
                 <Style.Triggers>
                     <Trigger Property="IsPaneOpen" Value="False">
                         <Setter Property="Width" Value="40"/>
@@ -1159,6 +1207,156 @@
                                         <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
                                             <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                         </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                </Trigger>
+                                <Trigger Property="IsDropDownOpen" Value="True">
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="ChevronIcon" Property="Foreground" Value="{DynamicResource AccentColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="MinHeight" Value="32"/>
+                            <Setter Property="Height" Value="32"/>
+                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                                        <Border x:Name="ItemBorder"
+                                                Background="Transparent"
+                                                CornerRadius="6"
+                                                Margin="1"
+                                                Padding="{TemplateBinding Padding}"
+                                                SnapsToDevicePixels="True">
+                                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource CardBackgroundSecondary}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="1"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Specialized ComboBox Style for General > Appearance ColorTheme (Expanded full-list popup without vertical scrollbar) -->
+            <Style x:Key="ColorThemeComboBoxStyle" TargetType="{x:Type ComboBox}">
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="MinHeight" Value="36"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="12,0,10,0"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="MaxDropDownHeight" Value="550"/>
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+                <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ComboBox}">
+                            <Grid Height="{TemplateBinding Height}" VerticalAlignment="Center">
+                                <Border x:Name="ContentBorder"
+                                        Height="{TemplateBinding Height}"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="8"
+                                        SnapsToDevicePixels="True">
+                                    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                                          Grid.Column="0"
+                                                          Margin="{TemplateBinding Padding}"
+                                                          Content="{TemplateBinding SelectionBoxItem}"
+                                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                          HorizontalAlignment="Left"
+                                                          VerticalAlignment="Center"
+                                                          IsHitTestVisible="False"
+                                                          TextElement.Foreground="{TemplateBinding Foreground}"/>
+
+                                        <ui:SymbolIcon x:Name="ChevronIcon"
+                                                       Grid.Column="1"
+                                                       Margin="6,0,12,0"
+                                                       Symbol="ChevronDown24"
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextSecondary}"
+                                                       VerticalAlignment="Center"/>
+
+                                        <ToggleButton x:Name="ToggleButton"
+                                                      Grid.Column="0"
+                                                      Grid.ColumnSpan="2"
+                                                      Focusable="False"
+                                                      ClickMode="Press"
+                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      HorizontalAlignment="Stretch"
+                                                      VerticalAlignment="Stretch"
+                                                      Background="Transparent"
+                                                      BorderThickness="0">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                                    <Border Background="Transparent" BorderThickness="0"/>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                    </Grid>
+                                </Border>
+
+                                <Popup x:Name="Popup"
+                                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       Placement="Bottom"
+                                       PlacementTarget="{Binding ElementName=ContentBorder}"
+                                       AllowsTransparency="True"
+                                       Focusable="False"
+                                       PopupAnimation="Fade"
+                                       VerticalOffset="4">
+                                    <Border x:Name="DropDownBorder"
+                                            MinWidth="{Binding ActualWidth, ElementName=ContentBorder}"
+                                            MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                            Background="{DynamicResource CardBackground}"
+                                            BorderBrush="{DynamicResource BorderColor}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="4"
+                                            SnapsToDevicePixels="True">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.30" Color="#000000"/>
+                                        </Border.Effect>
+                                        <!-- Full item list host without vertical scrollbar so all themes are visible simultaneously -->
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
                                     </Border>
                                 </Popup>
                             </Grid>

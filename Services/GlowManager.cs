@@ -189,33 +189,51 @@ namespace NotiGlow.Services
             GlowStyle style = original.Style;
 
             // Gaming mode scaling & per-game overrides
-            bool isGamingActive = _gameDetectionService.IsGameRunning() && (settings.GamingModeEnabled || isTest);
+            bool isGamingActive = isTest || (_gameDetectionService.IsGameRunning() && settings.GamingModeEnabled);
             if (isGamingActive)
             {
-                var gameOverride = settings.GetGameOverride(_gameDetectionService.ActiveGameIdentifier)
-                                ?? settings.GetGameOverride(_gameDetectionService.ActiveGameName);
-
-                if (gameOverride != null)
+                // PRIORITY AND PRECEDENCE POLICY (v2.4 Shared Gaming Settings):
+                // 1. The three common gaming settings (CommonGamingDurationMs, CommonGamingIntensity, CommonGamingGlowSize)
+                //    define the global baseline for all tracked games during gaming sessions.
+                // 2. Precedence rule:
+                //    - When HasCustomCommonGamingSettings is true, the global common gaming settings take precedence across
+                //      all games, ensuring consistent gaming glow behavior.
+                //    - When HasCustomCommonGamingSettings is false:
+                //      * If a per-game override specifies a parameter (DurationMs, Intensity, or GlowSize), that game's override is used.
+                //      * If an individual parameter is omitted in the per-game override, original profile values are preserved.
+                // 3. In-game reductions (ReduceDurationInGames, ReduceIntensityInGames) apply only when an explicit override is not configured.
+                string activeId = _gameDetectionService.ActiveGameIdentifier ?? _gameDetectionService.ActiveGameName ?? string.Empty;
+                GameGlowOverride? gameOverride = null;
+                if (!string.IsNullOrEmpty(activeId) && settings.GameOverrides != null)
                 {
-                    if (gameOverride.DurationMs.HasValue)
-                    {
-                        duration = GameGlowOverride.ClampDuration(gameOverride.DurationMs.Value);
-                    }
-                    if (gameOverride.Intensity.HasValue)
-                    {
-                        intensity = GameGlowOverride.ClampIntensity(gameOverride.Intensity.Value);
-                    }
-                    if (gameOverride.GlowSize.HasValue)
-                    {
-                        glowSize = GameGlowOverride.ClampGlowSize(gameOverride.GlowSize.Value);
-                    }
+                    string normId = AppSettings.NormalizeGameIdentifier(activeId);
+                    settings.GameOverrides.TryGetValue(normId, out gameOverride);
                 }
 
-                if ((gameOverride == null || !gameOverride.DurationMs.HasValue) && settings.ReduceDurationInGames)
+                if (settings.HasCustomCommonGamingSettings)
+                {
+                    if (settings.CommonGamingDurationMs.HasValue)
+                        duration = GameGlowOverride.ClampDuration(settings.CommonGamingDurationMs.Value);
+                    if (settings.CommonGamingIntensity.HasValue)
+                        intensity = GameGlowOverride.ClampIntensity(settings.CommonGamingIntensity.Value);
+                    if (settings.CommonGamingGlowSize.HasValue)
+                        glowSize = GameGlowOverride.ClampGlowSize(settings.CommonGamingGlowSize.Value);
+                }
+                else if (gameOverride != null)
+                {
+                    if (gameOverride.DurationMs.HasValue)
+                        duration = GameGlowOverride.ClampDuration(gameOverride.DurationMs.Value);
+                    if (gameOverride.Intensity.HasValue)
+                        intensity = GameGlowOverride.ClampIntensity(gameOverride.Intensity.Value);
+                    if (gameOverride.GlowSize.HasValue)
+                        glowSize = GameGlowOverride.ClampGlowSize(gameOverride.GlowSize.Value);
+                }
+
+                if ((gameOverride == null || !gameOverride.DurationMs.HasValue) && !settings.HasCustomCommonGamingSettings && settings.ReduceDurationInGames)
                 {
                     duration = (int)(duration * Math.Clamp(settings.GamingDurationMultiplier, 0.2, 1.0));
                 }
-                if ((gameOverride == null || !gameOverride.Intensity.HasValue) && settings.ReduceIntensityInGames)
+                if ((gameOverride == null || !gameOverride.Intensity.HasValue) && !settings.HasCustomCommonGamingSettings && settings.ReduceIntensityInGames)
                 {
                     intensity *= Math.Clamp(settings.GamingIntensityMultiplier, 0.2, 1.0);
                 }

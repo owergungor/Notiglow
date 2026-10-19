@@ -325,7 +325,75 @@ namespace NotiGlow.Core.Helpers
                 catch { }
             }
 
+            // 4. Registry Uninstall Keys lookup (InstallLocation & DisplayIcon)
+            string? uninstallPath = TryLookupUninstallPath(definition.Name, definition.RegistryAppPathKeys);
+            if (!string.IsNullOrEmpty(uninstallPath) && _fileExists(uninstallPath))
+            {
+                detectedPath = Path.GetFullPath(uninstallPath);
+                return true;
+            }
+
             return false;
+        }
+
+        private string? TryLookupUninstallPath(string appName, IEnumerable<string> exeNames)
+        {
+            string[] uninstallSubKeys = new[]
+            {
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+            };
+
+            foreach (var root in new[] { Registry.CurrentUser, Registry.LocalMachine })
+            {
+                foreach (var subKeyPath in uninstallSubKeys)
+                {
+                    try
+                    {
+                        using var key = root.OpenSubKey(subKeyPath);
+                        if (key == null) continue;
+
+                        foreach (var subKeyName in key.GetSubKeyNames())
+                        {
+                            try
+                            {
+                                using var appKey = key.OpenSubKey(subKeyName);
+                                if (appKey == null) continue;
+
+                                string? displayName = appKey.GetValue("DisplayName") as string;
+                                if (string.IsNullOrWhiteSpace(displayName) ||
+                                    displayName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) < 0)
+                                {
+                                    continue;
+                                }
+
+                                string? displayIcon = appKey.GetValue("DisplayIcon") as string;
+                                if (!string.IsNullOrWhiteSpace(displayIcon))
+                                {
+                                    string cleanIcon = displayIcon.Split(',')[0].Trim('\"').Trim();
+                                    if (cleanIcon.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && _fileExists(cleanIcon))
+                                    {
+                                        return cleanIcon;
+                                    }
+                                }
+
+                                string? installLocation = appKey.GetValue("InstallLocation") as string;
+                                if (!string.IsNullOrWhiteSpace(installLocation) && _directoryExists(installLocation))
+                                {
+                                    foreach (var exe in exeNames)
+                                    {
+                                        string candidate = Path.Combine(installLocation, exe);
+                                        if (_fileExists(candidate)) return candidate;
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            return null;
         }
 
         public IReadOnlyList<AppProfile> GetInstalledProfiles()

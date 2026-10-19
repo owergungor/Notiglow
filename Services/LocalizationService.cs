@@ -544,9 +544,31 @@ namespace NotiGlow.Services
                 ["Tray.GlowEnabled"] = "✓ Glow Enabled",
                 ["Tray.GamingMode"] = "🎮 Gaming Mode",
                 ["Tray.TestAnimation"] = "✨ Test Animation",
-                ["Tray.OpenSettings"] = "⚙️ Open Settings",
-                ["Tray.Exit"] = "❌ Exit",
-                ["Tray.Tooltip"] = "NotiGlow - Ambient Notification Utility"
+                ["Tray.Tooltip"] = "NotiGlow - Ambient Notification Utility",
+
+                // Update Dialog
+                ["UpdateDialog.Title"] = "Update Available",
+                ["UpdateDialog.AvailableTitle"] = "Update Available",
+                ["UpdateDialog.CurrentVersionLabel"] = "CURRENT VERSION",
+                ["UpdateDialog.NewVersionLabel"] = "NEW VERSION",
+                ["UpdateDialog.Description"] = "A new version of NotiGlow is available. Would you like to download and install this update now?",
+                ["UpdateDialog.ReleaseNotes"] = "Release Notes",
+                ["UpdateDialog.UpdateNow"] = "Update Now",
+                ["UpdateDialog.BtnUpdate"] = "Update Now",
+                ["UpdateDialog.Cancel"] = "Cancel",
+                ["UpdateDialog.BtnCancel"] = "Cancel",
+
+                // v2.4 Features
+                ["Appearance.CornerRounding"] = "Corner Rounding",
+                ["Appearance.CornerRoundingDesc"] = "Adjust the corner curvature radius for UI cards, inputs, and controls.",
+                ["Applications.ScanApps"] = "Scan Installed Apps",
+                ["Applications.ScanAppsToolTip"] = "Scan and detect installed applications on this PC",
+                ["Applications.ScanComplete"] = "Application scan complete. Found {0} installed apps.",
+                ["Gaming.CommonSettingsTitle"] = "Common Gaming Glow Settings",
+                ["Gaming.CommonSettingsDesc"] = "Unified duration, glow intensity, and blur size applied across all tracked games.",
+                ["Gaming.CommonDuration"] = "Duration",
+                ["Gaming.CommonIntensity"] = "Glow Intensity",
+                ["Gaming.CommonBlurSize"] = "Glow Blur Size"
             },
 
             ["es-ES"] = new(StringComparer.Ordinal)
@@ -852,9 +874,31 @@ namespace NotiGlow.Services
                 ["Tray.GlowEnabled"] = "✓ Brillo Habilitado",
                 ["Tray.GamingMode"] = "🎮 Modo Juego",
                 ["Tray.TestAnimation"] = "✨ Probar Animación",
-                ["Tray.OpenSettings"] = "⚙️ Abrir Configuración",
-                ["Tray.Exit"] = "❌ Salir",
-                ["Tray.Tooltip"] = "NotiGlow - Utilidad de Notificación Ambiental"
+                ["Tray.Tooltip"] = "NotiGlow - Utilidad de Notificación Ambiental",
+
+                // Update Dialog
+                ["UpdateDialog.Title"] = "Actualización disponible",
+                ["UpdateDialog.AvailableTitle"] = "Actualización disponible",
+                ["UpdateDialog.CurrentVersionLabel"] = "VERSIÓN ACTUAL",
+                ["UpdateDialog.NewVersionLabel"] = "NUEVA VERSIÓN",
+                ["UpdateDialog.Description"] = "Una nueva versión de NotiGlow está disponible. ¿Desea descargar e instalar esta actualización ahora?",
+                ["UpdateDialog.ReleaseNotes"] = "Notas de la versión",
+                ["UpdateDialog.UpdateNow"] = "Actualizar ahora",
+                ["UpdateDialog.BtnUpdate"] = "Actualizar ahora",
+                ["UpdateDialog.Cancel"] = "Cancelar",
+                ["UpdateDialog.BtnCancel"] = "Cancelar",
+
+                // v2.4 Features
+                ["Appearance.CornerRounding"] = "Redondeo de esquinas",
+                ["Appearance.CornerRoundingDesc"] = "Ajuste el radio de curvatura de esquinas para tarjetas, entradas y controles.",
+                ["Applications.ScanApps"] = "Escanear aplicaciones",
+                ["Applications.ScanAppsToolTip"] = "Escanear y detectar aplicaciones instaladas en esta PC",
+                ["Applications.ScanComplete"] = "Escaneo completado. Se encontraron {0} aplicaciones instaladas.",
+                ["Gaming.CommonSettingsTitle"] = "Configuración global de brillo para juegos",
+                ["Gaming.CommonSettingsDesc"] = "Duración unificada, intensidad de brillo y desenfoque aplicados a todos los juegos.",
+                ["Gaming.CommonDuration"] = "Duración",
+                ["Gaming.CommonIntensity"] = "Intensidad de brillo",
+                ["Gaming.CommonBlurSize"] = "Tamaño de desenfoque de brillo"
             },
 
             ["fr-FR"] = new(StringComparer.Ordinal)
@@ -1160,9 +1204,31 @@ namespace NotiGlow.Services
                 ["Tray.GlowEnabled"] = "✓ Effet Lumineux Activé",
                 ["Tray.GamingMode"] = "🎮 Mode Jeu",
                 ["Tray.TestAnimation"] = "✨ Tester l'Animation",
-                ["Tray.OpenSettings"] = "⚙️ Ouvrir les Paramètres",
-                ["Tray.Exit"] = "❌ Quitter",
-                ["Tray.Tooltip"] = "NotiGlow - Utilitaire de Notification Ambiante"
+                ["Tray.Tooltip"] = "NotiGlow - Utilitaire de Notification Ambiante",
+
+                // Update Dialog
+                ["UpdateDialog.Title"] = "Mise à jour disponible",
+                ["UpdateDialog.AvailableTitle"] = "Mise à jour disponible",
+                ["UpdateDialog.CurrentVersionLabel"] = "VERSION ACTUELLE",
+                ["UpdateDialog.NewVersionLabel"] = "NOUVELLE VERSION",
+                ["UpdateDialog.Description"] = "Une nouvelle version de NotiGlow est disponible. Souhaitez-vous télécharger et installer cette mise à jour maintenant ?",
+                ["UpdateDialog.ReleaseNotes"] = "Notes de version",
+                ["UpdateDialog.UpdateNow"] = "Mettre à jour",
+                ["UpdateDialog.BtnUpdate"] = "Mettre à jour",
+                ["UpdateDialog.Cancel"] = "Annuler",
+                ["UpdateDialog.BtnCancel"] = "Annuler",
+
+                // v2.4 Features
+                ["Appearance.CornerRounding"] = "Arrondi des angles",
+                ["Appearance.CornerRoundingDesc"] = "Ajustez le rayon de courbure des cartes, champs et contrôles.",
+                ["Applications.ScanApps"] = "Scanner les applications",
+                ["Applications.ScanAppsToolTip"] = "Scanner et détecter les applications installées sur ce PC",
+                ["Applications.ScanComplete"] = "Scan terminé. {0} applications installées trouvées.",
+                ["Gaming.CommonSettingsTitle"] = "Paramètres globaux de lueur pour les jeux",
+                ["Gaming.CommonSettingsDesc"] = "Durée, intensité de lueur et taille de flou unifiées appliquées à tous les jeux suivis.",
+                ["Gaming.CommonDuration"] = "Durée",
+                ["Gaming.CommonIntensity"] = "Intensité de lueur",
+                ["Gaming.CommonBlurSize"] = "Taille du flou de lueur"
             },
 
                         ["de-DE"] = new(StringComparer.Ordinal)
@@ -1442,9 +1508,31 @@ namespace NotiGlow.Services
                 ["Tray.GlowEnabled"] = "✓ Leuchten aktiviert",
                 ["Tray.GamingMode"] = "🎮 Spielmodus",
                 ["Tray.TestAnimation"] = "✨ Animation testen",
-                ["Tray.OpenSettings"] = "⚙️ Einstellungen öffnen",
-                ["Tray.Exit"] = "❌ Beenden",
                 ["Tray.Tooltip"] = "NotiGlow - Ambient-Benachrichtigungs-Dienstprogramm",
+
+                // Update Dialog
+                ["UpdateDialog.Title"] = "Update verfügbar",
+                ["UpdateDialog.AvailableTitle"] = "Update verfügbar",
+                ["UpdateDialog.CurrentVersionLabel"] = "AKTUELLE VERSION",
+                ["UpdateDialog.NewVersionLabel"] = "NEUE VERSION",
+                ["UpdateDialog.Description"] = "Eine neue Version von NotiGlow ist verfügbar. Möchten Sie dieses Update jetzt herunterladen und installieren?",
+                ["UpdateDialog.ReleaseNotes"] = "Versionshinweise",
+                ["UpdateDialog.UpdateNow"] = "Jetzt aktualisieren",
+                ["UpdateDialog.BtnUpdate"] = "Jetzt aktualisieren",
+                ["UpdateDialog.Cancel"] = "Abbrechen",
+                ["UpdateDialog.BtnCancel"] = "Abbrechen",
+
+                // v2.4 Features
+                ["Appearance.CornerRounding"] = "Eckenabrundung",
+                ["Appearance.CornerRoundingDesc"] = "Passen Sie den Eckenradius für Karten, Eingabefelder und Steuerelemente an.",
+                ["Applications.ScanApps"] = "Apps scannen",
+                ["Applications.ScanAppsToolTip"] = "Installierte Anwendungen auf diesem PC scannen und erkennen",
+                ["Applications.ScanComplete"] = "Scan abgeschlossen. {0} installierte Apps gefunden.",
+                ["Gaming.CommonSettingsTitle"] = "Gemeinsame Leuchteinstellungen für Spiele",
+                ["Gaming.CommonSettingsDesc"] = "Einheitliche Dauer, Leuchtintensität und Weichzeichnung für alle erfassten Spiele.",
+                ["Gaming.CommonDuration"] = "Dauer",
+                ["Gaming.CommonIntensity"] = "Leuchtintensität",
+                ["Gaming.CommonBlurSize"] = "Leucht-Weichzeichnungsgröße"
             },
 
 ["tr-TR"] = new(StringComparer.Ordinal)
@@ -1748,9 +1836,31 @@ namespace NotiGlow.Services
                 ["Tray.GlowEnabled"] = "✓ Kenar Işığı Açık",
                 ["Tray.GamingMode"] = "🎮 Oyun Modu",
                 ["Tray.TestAnimation"] = "✨ Animasyonu Test Et",
-                ["Tray.OpenSettings"] = "⚙️ Ayarları Aç",
-                ["Tray.Exit"] = "❌ Çıkış",
-                ["Tray.Tooltip"] = "NotiGlow - Ortam Bildirim Yardımcısı"
+                ["Tray.Tooltip"] = "NotiGlow - Ortam Bildirim Yardımcısı",
+
+                // Update Dialog
+                ["UpdateDialog.Title"] = "Güncelleme Mevcut",
+                ["UpdateDialog.AvailableTitle"] = "Güncelleme Mevcut",
+                ["UpdateDialog.CurrentVersionLabel"] = "MEVCUT SÜRÜM",
+                ["UpdateDialog.NewVersionLabel"] = "YENİ SÜRÜM",
+                ["UpdateDialog.Description"] = "NotiGlow'un yeni bir sürümü mevcut. Bu güncellemeyi şimdi indirip kurmak istiyor musunuz?",
+                ["UpdateDialog.ReleaseNotes"] = "Sürüm Notları",
+                ["UpdateDialog.UpdateNow"] = "Şimdi Güncelle",
+                ["UpdateDialog.BtnUpdate"] = "Şimdi Güncelle",
+                ["UpdateDialog.Cancel"] = "İptal",
+                ["UpdateDialog.BtnCancel"] = "İptal",
+
+                // v2.4 Features
+                ["Appearance.CornerRounding"] = "Köşe Yuvarlaklığı",
+                ["Appearance.CornerRoundingDesc"] = "Kartlar, giriş alanları ve kontroller için köşe yuvarlaklığı yarıçapını ayarlayın.",
+                ["Applications.ScanApps"] = "Yüklü Uygulamaları Tara",
+                ["Applications.ScanAppsToolTip"] = "Bu bilgisayardaki kurulu uygulamaları otomatik olarak tespit et",
+                ["Applications.ScanComplete"] = "Uygulama taraması tamamlandı. {0} kurulu uygulama tespit edildi.",
+                ["Gaming.CommonSettingsTitle"] = "Ortak Oyun Parlama Ayarları",
+                ["Gaming.CommonSettingsDesc"] = "İzlenen tüm oyunlarda ortak geçerli olan süre, parıltı yoğunluğu ve bulanıklık boyutu.",
+                ["Gaming.CommonDuration"] = "Süre",
+                ["Gaming.CommonIntensity"] = "Parıltı Yoğunluğu",
+                ["Gaming.CommonBlurSize"] = "Bulanıklık Boyutu"
             }
         };
 

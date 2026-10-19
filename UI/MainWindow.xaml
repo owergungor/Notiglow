@@ -82,21 +82,33 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Active Selection Box Overlay (Retained for visual tree compatibility without duplicate rendering) -->
+                <!-- Active Selection Box Overlay (v2.2 Architecture: Dedicated Animated Selection Overlay) -->
                 <Canvas Grid.Row="0" x:Name="SidebarOverlayCanvas" IsHitTestVisible="False" ClipToBounds="True">
+                    <Canvas.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">16</CornerRadius>
+                    </Canvas.Resources>
                     <Border x:Name="ActiveSelectionBox"
-                            CornerRadius="8"
+                            CornerRadius="{DynamicResource ControlCornerRadius}"
                             Height="40"
-                            Background="Transparent"
+                            Background="{DynamicResource NavActiveBackground}"
                             BorderThickness="0"
                             IsHitTestVisible="False"
                             Visibility="Collapsed"
-                            SnapsToDevicePixels="True"/>
+                            SnapsToDevicePixels="True">
+                        <!-- Sol Aktif Indicator (3px x 24px, CornerRadius 1.5px) -->
+                        <Border Width="3"
+                                Height="24"
+                                CornerRadius="1.5"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource NavIndicatorColor}"/>
+                    </Border>
                 </Canvas>
 
                 <!-- Navigation View Sidebar Pane (Base Layer) -->
                 <ui:NavigationView Grid.Row="0" x:Name="RootNavigationView"
                                    PaneDisplayMode="Left"
+                                   ItemTemplate="{DynamicResource NotiGlowNavigationViewItemTemplate}"
                                    OpenPaneLength="230"
                                    CompactPaneLength="52"
                                    IsPaneOpen="True"

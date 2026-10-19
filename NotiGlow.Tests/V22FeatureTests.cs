@@ -456,21 +456,21 @@ namespace NotiGlow.Tests
             var issPath = Path.Combine(solutionDir, "NotiGlow-Setup.iss");
 
             var csproj = File.ReadAllText(csprojPath);
-            Assert.IsTrue(csproj.Contains("<Version>2.2</Version>") || csproj.Contains("<Version>2.3</Version>"));
-            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.2.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>"));
-            Assert.IsTrue(csproj.Contains("<FileVersion>2.2.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.3.0.0</FileVersion>"));
-            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.2</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.3</InformationalVersion>"));
+            Assert.IsTrue(csproj.Contains("<Version>2.2</Version>") || csproj.Contains("<Version>2.3</Version>") || csproj.Contains("<Version>2.4</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.2.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.4.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.2.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.3.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.4.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.2</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.3</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.4</InformationalVersion>"));
 
             var iss = File.ReadAllText(issPath);
-            Assert.IsTrue(iss.Contains("AppVersion=2.2") || iss.Contains("AppVersion=2.3"));
-            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.2.0.0") || iss.Contains("VersionInfoVersion=2.3.0.0"));
-            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3"));
+            Assert.IsTrue(iss.Contains("AppVersion=2.2") || iss.Contains("AppVersion=2.3") || iss.Contains("AppVersion=2.4"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.2.0.0") || iss.Contains("VersionInfoVersion=2.3.0.0") || iss.Contains("VersionInfoVersion=2.4.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.4"));
         }
 
         [TestMethod]
         public void Version_UpdateService_Reports22AsFallback()
         {
-            Assert.IsTrue(UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3" || UpdateService.CurrentVersionString == "2.4");
         }
 
         [TestMethod]
