@@ -10,37 +10,37 @@ namespace NotiGlow.Services
 {
     public class ThemePalette
     {
-        public string WindowBackground { get; init; } = "#141414";
-        public string SidebarBackground { get; init; } = "#181818";
-        public string CardBackground { get; init; } = "#202020";
-        public string CardBackgroundSecondary { get; init; } = "#1B1B1B";
-        public string TextPrimary { get; init; } = "#FFFFFF";
-        public string TextSecondary { get; init; } = "#B8B8B8";
-        public string TextMuted { get; init; } = "#808080";
-        public string TextDisabled { get; init; } = "#555555";
-        public string BorderColor { get; init; } = "#383838";
-        public string AccentColor { get; init; } = "#5865F2";
-        public string ControlBackground { get; init; } = "#262626";
-        public string ControlHoverBackground { get; init; } = "#303030";
-        public string ControlPressedBackground { get; init; } = "#383838";
-        public string ControlDisabledBackground { get; init; } = "#181818";
-        public string InputBackground { get; init; } = "#1C1C1C";
-        public string InputBorder { get; init; } = "#383838";
-        public string DividerColor { get; init; } = "#282828";
-        public string NavActiveBackground { get; init; } = "#2E2E2E";
-        public string NavActiveHoverBackground { get; init; } = "#363636";
-        public string NavIndicatorColor { get; init; } = "#5865F2";
-        public string SliderTrackBackground { get; init; } = "#404552";
-        public string SliderTrackHoverBackground { get; init; } = "#505668";
+        public string WindowBackground { get; init; } = "#0A0A0A";
+        public string SidebarBackground { get; init; } = "#121212";
+        public string CardBackground { get; init; } = "#171717";
+        public string CardBackgroundSecondary { get; init; } = "#1C1C1C";
+        public string TextPrimary { get; init; } = "#EDEDED";
+        public string TextSecondary { get; init; } = "#A1A1A1";
+        public string TextMuted { get; init; } = "#666666";
+        public string TextDisabled { get; init; } = "#444444";
+        public string BorderColor { get; init; } = "#262626";
+        public string AccentColor { get; init; } = "#3B82F6";
+        public string ControlBackground { get; init; } = "#1F1F1F";
+        public string ControlHoverBackground { get; init; } = "#292929";
+        public string ControlPressedBackground { get; init; } = "#333333";
+        public string ControlDisabledBackground { get; init; } = "#141414";
+        public string InputBackground { get; init; } = "#141414";
+        public string InputBorder { get; init; } = "#262626";
+        public string DividerColor { get; init; } = "#202020";
+        public string NavActiveBackground { get; init; } = "#222222";
+        public string NavActiveHoverBackground { get; init; } = "#2C2C2C";
+        public string NavIndicatorColor { get; init; } = "#3B82F6";
+        public string SliderTrackBackground { get; init; } = "#333333";
+        public string SliderTrackHoverBackground { get; init; } = "#444444";
         public string SliderThumbBackground { get; init; } = "#FFFFFF";
-        public string SliderThumbBorder { get; init; } = "#5865F2";
-        public string SliderActiveTrackBackground { get; init; } = "#5865F2";
-        public string DropdownHoverBackground { get; init; } = "#303030";
-        public string DropdownSelectedBackground { get; init; } = "#5865F2";
-        public string SkeletonShimmerBase { get; init; } = "#2A2A2A";
-        public string SkeletonShimmerHighlight { get; init; } = "#3D3D3D";
+        public string SliderThumbBorder { get; init; } = "#3B82F6";
+        public string SliderActiveTrackBackground { get; init; } = "#3B82F6";
+        public string DropdownHoverBackground { get; init; } = "#262626";
+        public string DropdownSelectedBackground { get; init; } = "#3B82F6";
+        public string SkeletonShimmerBase { get; init; } = "#1F1F1F";
+        public string SkeletonShimmerHighlight { get; init; } = "#2F2F2F";
         public string GlassOverlay { get; init; } = "#00000000";
-        public string GlassBorder { get; init; } = "#383838";
+        public string GlassBorder { get; init; } = "#262626";
     }
 
     public static class ThemeService
@@ -897,7 +897,8 @@ namespace NotiGlow.Services
                 catch { }
 
                 var palette = GetPalette(colorTheme, isDark);
-                var res = System.Windows.Application.Current.Resources;
+                var res = System.Windows.Application.Current?.Resources;
+                if (res == null) return;
 
                 SetFrozenBrush(res, "WindowBackground", palette.WindowBackground);
                 SetFrozenBrush(res, "SidebarBackground", palette.SidebarBackground);
@@ -937,10 +938,37 @@ namespace NotiGlow.Services
                 SetFrozenBrush(res, "ComboBoxBorderBrush", palette.BorderColor);
                 SetFrozenBrush(res, "ComboBoxDropDownBackground", palette.CardBackground);
                 SetFrozenBrush(res, "ComboBoxDropDownBorderBrush", palette.BorderColor);
+
+                // Eliminate built-in sharp rectangular selection/hover background & duplicate indicator from Wpf.Ui NavigationViewItem template
+                SetFrozenBrush(res, "NavigationViewItemBackgroundSelected", "#00000000");
+                SetFrozenBrush(res, "NavigationViewItemBackgroundSelectedLeftFluent", "#00000000");
+                SetFrozenBrush(res, "NavigationViewItemBackgroundSelectedPointerOver", "#00000000");
+                SetFrozenBrush(res, "NavigationViewItemBackgroundPointerOver", "#00000000");
+                SetFrozenBrush(res, "NavigationViewSelectionIndicatorForeground", "#00000000");
             }
             catch (Exception ex)
             {
                 LoggerService.LogError("Failed applying theme in ThemeService", ex);
+            }
+        }
+
+        public static void ApplyCornerRadius(double radius)
+        {
+            try
+            {
+                double clamped = Math.Clamp(radius, 0.0, 20.0);
+                var cornerRadius = new System.Windows.CornerRadius(clamped);
+                var res = System.Windows.Application.Current?.Resources;
+                if (res != null)
+                {
+                    res["ControlCornerRadius"] = cornerRadius;
+                    res["CardCornerRadius"] = cornerRadius;
+                    res["PopupCornerRadius"] = new System.Windows.CornerRadius(Math.Min(12.0, clamped + 2.0));
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Failed to apply CornerRadius in ThemeService", ex);
             }
         }
 

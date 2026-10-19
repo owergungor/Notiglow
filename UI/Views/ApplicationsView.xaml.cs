@@ -6,7 +6,6 @@ using NotiGlow.Models;
 using NotiGlow.Services;
 using NotiGlow.UI.Controls;
 using UserControl = System.Windows.Controls.UserControl;
-using MessageBox = System.Windows.MessageBox;
 
 namespace NotiGlow.UI.Views
 {
@@ -22,7 +21,18 @@ namespace NotiGlow.UI.Views
         {
             InitializeComponent();
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-            Loaded += (s, e) => RefreshAppCards();
+            Loaded += async (s, e) =>
+            {
+                RefreshAppCards();
+                if (_profileService != null)
+                {
+                    int newlyAdded = await _profileService.ScanAndSyncInstalledAppsAsync();
+                    if (newlyAdded > 0)
+                    {
+                        RefreshAppCards();
+                    }
+                }
+            };
         }
 
         private void OnLanguageChanged(object? sender, string lang)
@@ -149,7 +159,8 @@ namespace NotiGlow.UI.Views
                 GlowSize = profile.GlowSize,
                 Style = profile.Style,
                 Priority = profile.Priority,
-                Category = profile.Category
+                Category = profile.Category,
+                IsCustom = profile.IsCustom
             };
             _isNewProfile = isNew;
 
@@ -327,18 +338,53 @@ namespace NotiGlow.UI.Views
                 _editingProfile.Priority = prio;
             }
 
+            if (_isNewProfile)
+            {
+                _editingProfile.IsCustom = true;
+            }
+
             _profileService.AddOrUpdateProfile(_editingProfile);
             PnlEditProfile.Visibility = Visibility.Collapsed;
         }
 
+        private async void BtnScanApplications_Click(object sender, RoutedEventArgs e)
+        {
+            if (_profileService == null) return;
+            BtnScanApplications.IsEnabled = false;
+            try
+            {
+                int newlyFound = await _profileService.ScanAndSyncInstalledAppsAsync();
+                RefreshAppCards();
+                string msg = LocalizationService.Instance.GetString("Applications.ScanComplete", _profileService.Profiles.Count);
+                ToastNotificationService.Instance.ShowSuccess(msg, LocalizationService.Instance.GetString("Applications.ScanApps"));
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Application scan error", ex);
+                ToastNotificationService.Instance.ShowError("Scanning failed. Existing profiles were preserved.", "Scan Error");
+            }
+            finally
+            {
+                BtnScanApplications.IsEnabled = true;
+            }
+        }
+
         private void DeleteProfile(AppProfile profile)
         {
-            var result = MessageBox.Show(
-                LocalizationService.Instance.GetString("Applications.ConfirmDeleteMsg", profile.Name),
-                LocalizationService.Instance.GetString("Applications.ConfirmDeleteTitle"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
+            string confirmTitle = LocalizationService.Instance.GetString("Applications.ConfirmDeleteTitle");
+            string confirmMsg = LocalizationService.Instance.GetString("Applications.ConfirmDeleteMsg", profile.Name);
+            string deleteBtn = LocalizationService.Instance.GetString("Applications.Delete");
+            string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
+
+            bool confirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
+                string.IsNullOrEmpty(confirmTitle) ? "Delete Profile" : confirmTitle,
+                string.IsNullOrEmpty(confirmMsg) ? $"Are you sure you want to delete profile '{profile.Name}'?" : confirmMsg,
+                confirmText: string.IsNullOrEmpty(deleteBtn) ? "Delete" : deleteBtn,
+                cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
+                isDestructive: true,
+                owner: Window.GetWindow(this));
+
+            if (confirmed)
             {
                 _profileService?.RemoveProfile(profile.AppId);
             }

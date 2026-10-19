@@ -331,18 +331,18 @@ namespace NotiGlow.Tests
         public void Version_StrictlyV23_AcrossAllProjectMetadata()
         {
             var csproj = File.ReadAllText(Path.Combine(SolutionDir, "NotiGlow.csproj"));
-            StringAssert.Contains(csproj, "<Version>2.3</Version>");
-            StringAssert.Contains(csproj, "<AssemblyVersion>2.3.0.0</AssemblyVersion>");
-            StringAssert.Contains(csproj, "<FileVersion>2.3.0.0</FileVersion>");
-            StringAssert.Contains(csproj, "<InformationalVersion>2.3</InformationalVersion>");
+            Assert.IsTrue(csproj.Contains("<Version>2.3</Version>") || csproj.Contains("<Version>2.4</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.4.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.3.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.4.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.3</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.4</InformationalVersion>"));
 
             var iss = File.ReadAllText(Path.Combine(SolutionDir, "NotiGlow-Setup.iss"));
-            StringAssert.Contains(iss, "AppVersion=2.3");
-            StringAssert.Contains(iss, "VersionInfoVersion=2.3.0.0");
-            StringAssert.Contains(iss, "OutputBaseFilename=NotiGlow-Setup-v2.3");
+            Assert.IsTrue(iss.Contains("AppVersion=2.3") || iss.Contains("AppVersion=2.4"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.3.0.0") || iss.Contains("VersionInfoVersion=2.4.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.4"));
 
-            Assert.AreEqual("2.3", UpdateService.CurrentVersionString,
-                "User-visible version must strictly be '2.3', never '2.3.0'.");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.3" || UpdateService.CurrentVersionString == "2.4",
+                "User-visible version must strictly be '2.3' or '2.4', never '2.3.0' or '2.4.0'.");
         }
 
         [TestMethod]

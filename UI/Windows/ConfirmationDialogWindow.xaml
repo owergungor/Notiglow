@@ -1,0 +1,118 @@
+<Window x:Class="NotiGlow.UI.Dialogs.ConfirmationDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="NotiGlow"
+        Width="460"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        KeyDown="Window_KeyDown">
+    <Border Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource BorderColor}"
+            BorderThickness="1"
+            CornerRadius="{DynamicResource ControlCornerRadius}"
+            Margin="16"
+            SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Opacity="0.45" Color="#000000"/>
+        </Border.Effect>
+
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Message Content -->
+                <RowDefinition Height="Auto"/> <!-- Actions -->
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Header with Icon and Title -->
+            <Grid Grid.Row="0" x:Name="HeaderGrid" Margin="0,0,0,16" Background="Transparent">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Icon Badge -->
+                <Border x:Name="IconBadge"
+                        Grid.Column="0"
+                        Width="38"
+                        Height="38"
+                        CornerRadius="10"
+                        Background="#203B82F6"
+                        BorderBrush="#403B82F6"
+                        BorderThickness="1"
+                        Margin="0,0,14,0"
+                        VerticalAlignment="Center">
+                    <ui:SymbolIcon x:Name="HeaderIcon"
+                                   Symbol="QuestionCircle24"
+                                   FontSize="20"
+                                   Foreground="{DynamicResource AccentColor}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Title -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtTitle"
+                               Text="Confirm Action"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="NotiGlow"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Close Button -->
+                <Button Grid.Column="2"
+                        x:Name="BtnTopClose"
+                        Style="{DynamicResource HeroCloseButtonStyle}"
+                        Click="BtnCancel_Click"
+                        VerticalAlignment="Top"
+                        ToolTip="Close"/>
+            </Grid>
+
+            <!-- Row 1: Message Content -->
+            <TextBlock Grid.Row="1"
+                       x:Name="TxtMessage"
+                       Text="Are you sure you want to proceed?"
+                       FontSize="13"
+                       LineHeight="20"
+                       Foreground="{DynamicResource TextSecondary}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,22"/>
+
+            <!-- Row 2: Action Buttons -->
+            <Grid Grid.Row="2" x:Name="ButtonGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="ColCancel" Width="*"/>
+                    <ColumnDefinition x:Name="ColGap" Width="10"/>
+                    <ColumnDefinition x:Name="ColConfirm" Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        x:Name="BtnCancel"
+                        Content="Cancel"
+                        Style="{DynamicResource HeroSecondaryButtonStyle}"
+                        Height="38"
+                        Click="BtnCancel_Click"
+                        IsCancel="True"/>
+
+                <Button Grid.Column="2"
+                        x:Name="BtnConfirm"
+                        Content="Confirm"
+                        Style="{DynamicResource HeroPrimaryButtonStyle}"
+                        Height="38"
+                        Click="BtnConfirm_Click"
+                        IsDefault="True"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

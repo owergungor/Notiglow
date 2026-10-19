@@ -54,9 +54,9 @@ namespace NotiGlow
             {
                 Microsoft.Win32.SystemEvents.UserPreferenceChanged += (s, e) =>
                 {
-                    if (_settingsService?.Current?.Theme == AppTheme.System)
+                    if (_settingsService?.Current?.ThemeMode == NotiGlow.Models.ThemeMode.System)
                     {
-                        Dispatcher?.Invoke(() => ApplyTheme(AppTheme.System));
+                        Dispatcher?.Invoke(() => ApplyCurrentSettingsTheme());
                     }
                 };
             }
@@ -156,10 +156,10 @@ namespace NotiGlow
                 NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
 
                 // Apply Theme
-                ApplyTheme(_settingsService.Current.Theme);
+                ApplyCurrentSettingsTheme();
                 _settingsService.SettingsChanged += (s, ev) =>
                 {
-                    ApplyTheme(_settingsService.Current.Theme);
+                    ApplyCurrentSettingsTheme();
                     LocalizationService.Instance.SetLanguage(_settingsService.Current.AppLanguage, persist: false);
                     NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
                 };
@@ -333,7 +333,7 @@ namespace NotiGlow
                     string logPath = Path.Combine(localAppData, "NotiGlow", "startup.log");
                     string shortMsg = ex.Message;
                     string message = $"NotiGlow could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
-                    System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowError(title, message, "OK");
                 }
                 catch
                 {
@@ -344,20 +344,7 @@ namespace NotiGlow
 
         private void ApplyTheme(AppTheme theme)
         {
-            var settings = _settingsService?.Current;
-            ColorTheme colorTheme = settings?.ColorTheme ?? ColorTheme.Standard;
-            NotiGlow.Models.ThemeMode mode = theme switch
-            {
-                AppTheme.Light => NotiGlow.Models.ThemeMode.Light,
-                AppTheme.System => NotiGlow.Models.ThemeMode.System,
-                AppTheme.LiquidGlass => NotiGlow.Models.ThemeMode.Dark,
-                _ => NotiGlow.Models.ThemeMode.Dark
-            };
-            if (theme == AppTheme.LiquidGlass)
-            {
-                colorTheme = ColorTheme.Indigo;
-            }
-            ThemeService.ApplyTheme(colorTheme, mode);
+            ApplyCurrentSettingsTheme();
         }
 
         public void ApplyCurrentSettingsTheme()
@@ -365,6 +352,7 @@ namespace NotiGlow
             if (_settingsService?.Current == null) return;
             var settings = _settingsService.Current;
             ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+            ThemeService.ApplyCornerRadius(settings.CornerRadius);
         }
 
         private static bool GetWindowsSystemThemeIsDark()

@@ -1,0 +1,183 @@
+<Window x:Class="NotiGlow.UI.Dialogs.UpdateConfirmDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="NotiGlow Update"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        KeyDown="Window_KeyDown">
+    <Border Background="{DynamicResource WindowBackground}"
+            BorderBrush="{DynamicResource BorderColor}"
+            BorderThickness="1"
+            CornerRadius="{DynamicResource ControlCornerRadius}"
+            Margin="16"
+            SnapsToDevicePixels="True">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="6" Direction="270" Opacity="0.5" Color="#000000"/>
+        </Border.Effect>
+
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Versions Badge -->
+                <RowDefinition Height="Auto"/> <!-- Description / Notes -->
+                <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+            </Grid.RowDefinitions>
+
+            <!-- Row 0: Header with Icon, Title, and Close Button -->
+            <Grid Grid.Row="0" Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Icon Badge -->
+                <Border Grid.Column="0"
+                        Width="40"
+                        Height="40"
+                        CornerRadius="10"
+                        Background="#205865F2"
+                        BorderBrush="#455865F2"
+                        BorderThickness="1"
+                        Margin="0,0,14,0"
+                        VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="ArrowDownload24"
+                                   FontSize="20"
+                                   Foreground="{DynamicResource AccentColor}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Title & App Label -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtTitle"
+                               Text="{DynamicResource UpdateDialog.Title}"
+                               FontSize="17"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="NotiGlow"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextMuted}"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Top Right Close Button -->
+                <Button Grid.Column="2"
+                        x:Name="BtnTopClose"
+                        Style="{DynamicResource HeroCloseButtonStyle}"
+                        Click="BtnCancel_Click"
+                        VerticalAlignment="Top"
+                        ToolTip="{DynamicResource UpdateDialog.Cancel}"/>
+            </Grid>
+
+            <!-- Row 1: Versions Card (Current -> New) -->
+            <Border Grid.Row="1"
+                    Background="{DynamicResource CardBackgroundSecondary}"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="14,12"
+                    Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Current Version -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource UpdateDialog.CurrentVersionLabel}"
+                                   FontSize="11"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource TextMuted}"/>
+                        <TextBlock x:Name="TxtCurrentVersion"
+                                   Text="v2.3"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextSecondary}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+
+                    <!-- Direction Arrow -->
+                    <ui:SymbolIcon Grid.Column="1"
+                                   Symbol="ArrowRight24"
+                                   FontSize="16"
+                                   Foreground="{DynamicResource AccentColor}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0"/>
+
+                    <!-- New Version -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource UpdateDialog.NewVersionLabel}"
+                                   FontSize="11"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource AccentColor}"/>
+                        <TextBlock x:Name="TxtNewVersion"
+                                   Text="v2.4"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource AccentColor}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Row 2: Friendly Description / Release Notes -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,22">
+                <TextBlock x:Name="TxtDescription"
+                           Text="{DynamicResource UpdateDialog.Description}"
+                           FontSize="13"
+                           Foreground="{DynamicResource TextSecondary}"
+                           TextWrapping="Wrap"
+                           LineHeight="20"/>
+
+                <ScrollViewer x:Name="ScrollReleaseNotes"
+                              MaxHeight="120"
+                              Margin="0,10,0,0"
+                              VerticalScrollBarVisibility="Auto"
+                              Visibility="Collapsed">
+                    <Border Background="{DynamicResource InputBackground}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10,8">
+                        <TextBlock x:Name="TxtReleaseNotes"
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextMuted}"
+                                   TextWrapping="Wrap"
+                                   LineHeight="18"/>
+                    </Border>
+                </ScrollViewer>
+            </StackPanel>
+
+            <!-- Row 3: Action Buttons (Cancel and Update Now) -->
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <ui:Button x:Name="BtnCancel"
+                           Content="{DynamicResource UpdateDialog.Cancel}"
+                           Appearance="Secondary"
+                           Click="BtnCancel_Click"
+                           Margin="0,0,10,0"
+                           Padding="18,7"
+                           Foreground="{DynamicResource TextPrimary}"/>
+
+                <ui:Button x:Name="BtnUpdate"
+                           Content="{DynamicResource UpdateDialog.UpdateNow}"
+                           Appearance="Primary"
+                           Click="BtnUpdate_Click"
+                           IsDefault="True"
+                           Padding="20,7"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

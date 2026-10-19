@@ -37,18 +37,11 @@ namespace NotiGlow
 
                 try
                 {
-                    System.Windows.MessageBox.Show(message, "NotiGlow Startup Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowError("NotiGlow Startup Error", message, "Close");
                 }
                 catch
                 {
-                    try
-                    {
-                        System.Windows.Forms.MessageBox.Show(message, "NotiGlow Startup Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                    }
-                    catch
-                    {
-                        // Fallback ignored
-                    }
+                    // Fallback ignored
                 }
             }
         }

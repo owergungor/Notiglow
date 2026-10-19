@@ -16,6 +16,7 @@ namespace NotiGlow.Models
         public GlowStyle Style { get; set; } = GlowStyle.Pulse;
         public NotificationPriority Priority { get; set; } = NotificationPriority.Normal;
         public string Category { get; set; } = "General";
+        public bool IsCustom { get; set; } = false;
 
         // Advanced tuning parameters
         public double Speed { get; set; } = 1.0; // 0.5 to 2.0 multiplier
@@ -44,6 +45,7 @@ namespace NotiGlow.Models
                 Style = Style,
                 Priority = Priority,
                 Category = Category,
+                IsCustom = true,
                 Speed = Speed,
                 CoreBrightness = CoreBrightness,
                 TrailLength = TrailLength
