@@ -228,7 +228,7 @@
                                 <TextBlock Text="{DynamicResource Appearance.DefaultGlowSize}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock x:Name="TxtDefGlowSizeVal" Text="30 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
-                            <Slider x:Name="SldDefGlowSize" Minimum="5" Maximum="100" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
+                            <Slider x:Name="SldDefGlowSize" Minimum="0" Maximum="256" Value="32" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
                         </StackPanel>
                     </ui:CardControl>
 
@@ -242,7 +242,7 @@
                                 </StackPanel>
                                 <TextBlock x:Name="TxtCornerRoundingVal" Text="8 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
-                            <Slider x:Name="SldCornerRounding" Minimum="0" Maximum="18" Value="8" SmallChange="1" LargeChange="2" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCornerRounding_ValueChanged"/>
+                            <Slider x:Name="SldCornerRounding" Minimum="0" Maximum="48" Value="0" SmallChange="1" LargeChange="2" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCornerRounding_ValueChanged"/>
                         </StackPanel>
                     </ui:CardControl>
                 </StackPanel>

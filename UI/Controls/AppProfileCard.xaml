@@ -20,7 +20,7 @@
 
             <!-- Column 0: Application Name & Details -->
             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                <TextBlock x:Name="TxtAppName" Text="Discord" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue='Application'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
                 <TextBlock x:Name="TxtDetails" Text="4000 ms • 80% • Pulse" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
             </StackPanel>
 

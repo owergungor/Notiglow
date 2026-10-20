@@ -89,12 +89,42 @@
         <Grid Grid.Row="2">
             <!-- App Profile List ScrollViewer -->
             <ScrollViewer x:Name="ListScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel x:Name="PnlAppCards" HorizontalAlignment="Stretch"/>
+                <StackPanel HorizontalAlignment="Stretch">
+                    <!-- Normal Tracked Apps -->
+                    <StackPanel x:Name="PnlAppCards" HorizontalAlignment="Stretch"/>
+
+                    <!-- Gaming Apps Section (Bottom of Tracked Apps) -->
+                    <Border x:Name="SectionGamingHeader" Margin="0,18,0,10" Padding="0,8,0,4">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="18" Foreground="{DynamicResource AccentColor}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Gaming.GamingAppsSectionTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource Gaming.GamingAppsSectionDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="26,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <StackPanel x:Name="PnlGamingCards" HorizontalAlignment="Stretch"/>
+                </StackPanel>
             </ScrollViewer>
 
             <!-- App Profile Grid ScrollViewer -->
             <ScrollViewer x:Name="GridScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
-                <WrapPanel x:Name="PnlAppGridCards" HorizontalAlignment="Stretch"/>
+                <StackPanel HorizontalAlignment="Stretch">
+                    <!-- Normal Tracked Apps Grid -->
+                    <WrapPanel x:Name="PnlAppGridCards" HorizontalAlignment="Stretch"/>
+
+                    <!-- Gaming Apps Grid Section (Bottom of Tracked Apps) -->
+                    <Border x:Name="SectionGamingGridHeader" Margin="0,18,0,10" Padding="0,8,0,4">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="18" Foreground="{DynamicResource AccentColor}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Gaming.GamingAppsSectionTitle}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource Gaming.GamingAppsSectionDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="26,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <WrapPanel x:Name="PnlGamingGridCards" HorizontalAlignment="Stretch"/>
+                </StackPanel>
             </ScrollViewer>
 
             <!-- Edit / Add Profile Dialog Drawer Overlay -->
@@ -115,15 +145,16 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" VerticalAlignment="Top">
-                                <!-- App Name & ID -->
-                                <StackPanel Margin="0,0,0,14">
+                            <StackPanel Grid.Column="0">
+                                <!-- Application Name Input -->
+                                <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.AppName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ui:TextBox x:Name="TxtEditAppName" MinHeight="36" Padding="10,6" PlaceholderText="{DynamicResource Applications.AppNamePlaceholder}"/>
                                 </StackPanel>
 
-                                <StackPanel Margin="0,0,0,14">
-                                    <TextBlock Text="{DynamicResource Applications.AppId}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <!-- Executable / App ID Input & Browse Button -->
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="{DynamicResource Applications.ExecutableOrAppId}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -145,16 +176,16 @@
                                     <ComboBox x:Name="CmbEditStyle" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
                                         <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,7"/>
                                         <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,7"/>
                                         <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet" Padding="12,7"/>
                                         <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,7"/>
                                     </ComboBox>
                                 </StackPanel>
 
-                                <!-- Notification Priority (Compact Apple select combobox style: 36px) -->
+                                <!-- Priority Selector -->
                                 <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                                    <ComboBox x:Name="CmbEditPriority" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" HorizontalAlignment="Stretch">
+                                    <ComboBox x:Name="CmbEditPriority" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,7"/>
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,7"/>
                                         <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,7"/>
@@ -170,7 +201,7 @@
                                     <Slider x:Name="SldDuration" Minimum="500" Maximum="15000" Value="4000" SmallChange="500" LargeChange="1000" TickFrequency="500" IsSnapToTickEnabled="True" ValueChanged="SldDuration_ValueChanged"/>
                                 </StackPanel>
 
-                                 <!-- Intensity Slider -->
+                                <!-- Intensity Slider -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
                                         <TextBlock Text="{DynamicResource Applications.Intensity}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
@@ -179,13 +210,22 @@
                                     <Slider x:Name="SldIntensity" Minimum="10" Maximum="100" Value="80" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldIntensity_ValueChanged"/>
                                 </StackPanel>
 
-                                 <!-- Glow Size -->
+                                <!-- Glow Size -->
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
                                         <TextBlock Text="{DynamicResource Applications.GlowSize}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock x:Name="TxtGlowSizeVal" Text="30 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock x:Name="TxtGlowSizeVal" Text="32 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                                     </Grid>
-                                    <Slider x:Name="SldGlowSize" Minimum="5" Maximum="100" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldGlowSize_ValueChanged"/>
+                                    <Slider x:Name="SldGlowSize" Minimum="0" Maximum="256" Value="32" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldGlowSize_ValueChanged"/>
+                                </StackPanel>
+
+                                <!-- Corner Rounding -->
+                                <StackPanel Margin="0,0,0,16">
+                                    <Grid Margin="0,0,0,6">
+                                        <TextBlock Text="{DynamicResource Appearance.CornerRounding}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                        <TextBlock x:Name="TxtAppCornerVal" Text="0 px" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
+                                    </Grid>
+                                    <Slider x:Name="SldAppCorner" Minimum="0" Maximum="48" Value="0" SmallChange="1" LargeChange="2" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldAppCorner_ValueChanged"/>
                                 </StackPanel>
                             </StackPanel>
 

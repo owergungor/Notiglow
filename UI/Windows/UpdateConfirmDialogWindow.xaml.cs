@@ -73,7 +73,7 @@ namespace NotiGlow.UI.Dialogs
 
             string latestVer = !string.IsNullOrWhiteSpace(info.LatestVersion)
                 ? info.LatestVersion.TrimStart('v', 'V')
-                : "2.4";
+                : "2.5";
             dialog.TxtNewVersion.Text = $"v{latestVer}";
 
             // Optional Release Notes

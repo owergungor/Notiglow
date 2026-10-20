@@ -157,10 +157,15 @@ namespace NotiGlow
 
                 // Apply Theme
                 ApplyCurrentSettingsTheme();
+                string lastKnownLanguage = _settingsService.Current.AppLanguage;
                 _settingsService.SettingsChanged += (s, ev) =>
                 {
                     ApplyCurrentSettingsTheme();
-                    LocalizationService.Instance.SetLanguage(_settingsService.Current.AppLanguage, persist: false);
+                    if (_settingsService.Current.AppLanguage != lastKnownLanguage)
+                    {
+                        lastKnownLanguage = _settingsService.Current.AppLanguage;
+                        LocalizationService.Instance.SetLanguage(lastKnownLanguage, persist: false);
+                    }
                     NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
                 };
 

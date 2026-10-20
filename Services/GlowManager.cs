@@ -109,6 +109,7 @@ namespace NotiGlow.Services
                     Style = settings.DefaultStyle,
                     Thickness = settings.DefaultThickness,
                     GlowSize = settings.DefaultGlowSize,
+                    CornerRadius = settings.CornerRadius,
                     Priority = NotificationPriority.Normal
                 };
             }
@@ -186,22 +187,18 @@ namespace NotiGlow.Services
             double intensity = original.Intensity;
             int duration = original.DurationMs;
             double glowSize = original.GlowSize;
+            double cornerRadius = original.CornerRadius > 0 ? original.CornerRadius : settings.CornerRadius;
+            string colorHex = original.ColorHex;
             GlowStyle style = original.Style;
 
             // Gaming mode scaling & per-game overrides
             bool isGamingActive = isTest || (_gameDetectionService.IsGameRunning() && settings.GamingModeEnabled);
             if (isGamingActive)
             {
-                // PRIORITY AND PRECEDENCE POLICY (v2.4 Shared Gaming Settings):
-                // 1. The three common gaming settings (CommonGamingDurationMs, CommonGamingIntensity, CommonGamingGlowSize)
-                //    define the global baseline for all tracked games during gaming sessions.
-                // 2. Precedence rule:
-                //    - When HasCustomCommonGamingSettings is true, the global common gaming settings take precedence across
-                //      all games, ensuring consistent gaming glow behavior.
-                //    - When HasCustomCommonGamingSettings is false:
-                //      * If a per-game override specifies a parameter (DurationMs, Intensity, or GlowSize), that game's override is used.
-                //      * If an individual parameter is omitted in the per-game override, original profile values are preserved.
-                // 3. In-game reductions (ReduceDurationInGames, ReduceIntensityInGames) apply only when an explicit override is not configured.
+                // PRIORITY HIERARCHY (v2.5):
+                // 1. Per-game Custom Glow ON -> Game-specific Glow settings (Duration, Intensity, Glow Blur Size, Corner Rounding, ColorHex)
+                // 2. Per-game Custom Glow OFF (when game running / gaming test) -> Global Gaming settings (CommonGamingDurationMs, CommonGamingIntensity, CommonGamingGlowSize, CommonGamingCornerRadius)
+                // 3. In-game reductions (ReduceDurationInGames, ReduceIntensityInGames) apply only if not explicitly overridden
                 string activeId = _gameDetectionService.ActiveGameIdentifier ?? _gameDetectionService.ActiveGameName ?? string.Empty;
                 GameGlowOverride? gameOverride = null;
                 if (!string.IsNullOrEmpty(activeId) && settings.GameOverrides != null)
@@ -210,7 +207,26 @@ namespace NotiGlow.Services
                     settings.GameOverrides.TryGetValue(normId, out gameOverride);
                 }
 
-                if (settings.HasCustomCommonGamingSettings)
+                // Priority 1: Per-game Custom Glow ON
+                if (gameOverride != null && gameOverride.CustomGlowEnabled)
+                {
+                    if (gameOverride.DurationMs.HasValue)
+                        duration = GameGlowOverride.ClampDuration(gameOverride.DurationMs.Value);
+
+                    if (gameOverride.Intensity.HasValue)
+                        intensity = GameGlowOverride.ClampIntensity(gameOverride.Intensity.Value);
+
+                    if (gameOverride.GlowSize.HasValue)
+                        glowSize = GameGlowOverride.ClampGlowSize(gameOverride.GlowSize.Value);
+
+                    if (gameOverride.CornerRadius.HasValue)
+                        cornerRadius = GameGlowOverride.ClampCornerRadius(gameOverride.CornerRadius.Value);
+
+                    if (!string.IsNullOrWhiteSpace(gameOverride.ColorHex))
+                        colorHex = gameOverride.ColorHex;
+                }
+                // Priority 2: Per-game Custom Glow OFF -> Global Gaming Settings
+                else
                 {
                     if (settings.CommonGamingDurationMs.HasValue)
                         duration = GameGlowOverride.ClampDuration(settings.CommonGamingDurationMs.Value);
@@ -218,24 +234,17 @@ namespace NotiGlow.Services
                         intensity = GameGlowOverride.ClampIntensity(settings.CommonGamingIntensity.Value);
                     if (settings.CommonGamingGlowSize.HasValue)
                         glowSize = GameGlowOverride.ClampGlowSize(settings.CommonGamingGlowSize.Value);
-                }
-                else if (gameOverride != null)
-                {
-                    if (gameOverride.DurationMs.HasValue)
-                        duration = GameGlowOverride.ClampDuration(gameOverride.DurationMs.Value);
-                    if (gameOverride.Intensity.HasValue)
-                        intensity = GameGlowOverride.ClampIntensity(gameOverride.Intensity.Value);
-                    if (gameOverride.GlowSize.HasValue)
-                        glowSize = GameGlowOverride.ClampGlowSize(gameOverride.GlowSize.Value);
-                }
+                    if (settings.CommonGamingCornerRadius.HasValue)
+                        cornerRadius = GameGlowOverride.ClampCornerRadius(settings.CommonGamingCornerRadius.Value);
 
-                if ((gameOverride == null || !gameOverride.DurationMs.HasValue) && !settings.HasCustomCommonGamingSettings && settings.ReduceDurationInGames)
-                {
-                    duration = (int)(duration * Math.Clamp(settings.GamingDurationMultiplier, 0.2, 1.0));
-                }
-                if ((gameOverride == null || !gameOverride.Intensity.HasValue) && !settings.HasCustomCommonGamingSettings && settings.ReduceIntensityInGames)
-                {
-                    intensity *= Math.Clamp(settings.GamingIntensityMultiplier, 0.2, 1.0);
+                    if (!settings.HasCustomCommonGamingSettings && settings.ReduceDurationInGames)
+                    {
+                        duration = (int)(duration * Math.Clamp(settings.GamingDurationMultiplier, 0.2, 1.0));
+                    }
+                    if (!settings.HasCustomCommonGamingSettings && settings.ReduceIntensityInGames)
+                    {
+                        intensity *= Math.Clamp(settings.GamingIntensityMultiplier, 0.2, 1.0);
+                    }
                 }
             }
 
@@ -264,11 +273,12 @@ namespace NotiGlow.Services
                 AppId = original.AppId,
                 Name = original.Name,
                 Enabled = original.Enabled,
-                ColorHex = original.ColorHex,
+                ColorHex = colorHex,
                 DurationMs = Math.Max(500, duration),
                 Intensity = Math.Clamp(intensity, 0.05, 1.0),
                 Thickness = original.Thickness,
                 GlowSize = glowSize,
+                CornerRadius = cornerRadius,
                 Style = style,
                 Priority = original.Priority,
                 Speed = original.Speed,

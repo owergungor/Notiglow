@@ -884,17 +884,30 @@ namespace NotiGlow.Services
             return Palettes[(ColorTheme.Standard, isDark)];
         }
 
+        private static bool? _lastAppliedIsDark = null;
+        private static ColorTheme? _lastAppliedColorTheme = null;
+
         public static void ApplyTheme(ColorTheme colorTheme, ThemeMode mode)
         {
             try
             {
                 bool isDark = GetIsDark(mode);
 
-                try
+                if (_lastAppliedIsDark != isDark)
                 {
-                    ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light);
+                    try
+                    {
+                        ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light);
+                        _lastAppliedIsDark = isDark;
+                    }
+                    catch { }
                 }
-                catch { }
+
+                if (_lastAppliedColorTheme == colorTheme && _lastAppliedIsDark == isDark)
+                {
+                    return;
+                }
+                _lastAppliedColorTheme = colorTheme;
 
                 var palette = GetPalette(colorTheme, isDark);
                 var res = System.Windows.Application.Current?.Resources;

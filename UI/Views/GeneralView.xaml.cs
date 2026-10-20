@@ -200,14 +200,14 @@ namespace NotiGlow.UI.Views
             else if (BtnModeSystem.IsChecked == true)
                 selectedMode = ThemeMode.System;
 
+            UpdateThemeIndicator(immediate: false);
+
             var settings = _settingsService.Current;
             if (settings.ThemeMode != selectedMode)
             {
                 settings.ThemeMode = selectedMode;
                 _settingsService.Save(settings);
-                ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
             }
-            UpdateThemeIndicator(immediate: false);
         }
 
         private void UpdateThemeIndicator(bool immediate = false)

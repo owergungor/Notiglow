@@ -526,7 +526,8 @@ namespace NotiGlow.Services
                 DurationMs = def.DurationMs,
                 Intensity = def.Intensity,
                 Thickness = 4.0,
-                GlowSize = 30.0,
+                GlowSize = 32.0,
+                CornerRadius = 0.0,
                 Style = def.Style
             }).ToList();
         }

@@ -400,6 +400,10 @@ namespace NotiGlow.Services
                 ["Gaming.InheritsGlobal"] = "Global",
                 ["Gaming.ResetToDefault"] = "Reset to Default",
                 ["Gaming.CustomBadge"] = "Custom",
+                ["Gaming.GamingAppsSectionTitle"] = "Gaming Apps",
+                ["Gaming.GamingAppsSectionDesc"] = "Detected and tracked games configured in the Gaming tab",
+                ["Gaming.CustomGlow"] = "Custom Glow",
+                ["Gaming.CustomGlowToolTip"] = "Toggle between per-game custom glow and global gaming settings",
 
                 // Applications View
                 ["Applications.Title"] = "Tracked Applications",
@@ -730,6 +734,10 @@ namespace NotiGlow.Services
                 ["Gaming.InheritsGlobal"] = "Global",
                 ["Gaming.ResetToDefault"] = "Restablecer a valores predeterminados",
                 ["Gaming.CustomBadge"] = "Personalizado",
+                ["Gaming.GamingAppsSectionTitle"] = "Aplicaciones de Juegos",
+                ["Gaming.GamingAppsSectionDesc"] = "Juegos detectados y rastreados configurados en la pestaña Juegos",
+                ["Gaming.CustomGlow"] = "Brillo personalizado",
+                ["Gaming.CustomGlowToolTip"] = "Alternar entre brillo personalizado del juego y configuración global",
 
                 // Applications View
                 ["Applications.Title"] = "Aplicaciones Rastreadas",
@@ -1060,6 +1068,10 @@ namespace NotiGlow.Services
                 ["Gaming.InheritsGlobal"] = "Global",
                 ["Gaming.ResetToDefault"] = "Rétablir les valeurs par défaut",
                 ["Gaming.CustomBadge"] = "Personnalisé",
+                ["Gaming.GamingAppsSectionTitle"] = "Applications de Jeu",
+                ["Gaming.GamingAppsSectionDesc"] = "Jeux détectés et suivis configurés dans l'onglet Jeux",
+                ["Gaming.CustomGlow"] = "Effet personnalisé",
+                ["Gaming.CustomGlowToolTip"] = "Basculer entre effet personnalisé et paramètres globaux",
 
                 // Applications View
                 ["Applications.Title"] = "Applications Suivies",
@@ -1373,6 +1385,10 @@ namespace NotiGlow.Services
                 ["Gaming.InheritsGlobal"] = "Global",
                 ["Gaming.ResetToDefault"] = "Auf Standard zurücksetzen",
                 ["Gaming.CustomBadge"] = "Benutzerdefiniert",
+                ["Gaming.GamingAppsSectionTitle"] = "Spiele-Apps",
+                ["Gaming.GamingAppsSectionDesc"] = "Im Spiele-Tab konfigurierte oder erkannte Spiele",
+                ["Gaming.CustomGlow"] = "Benutzerdefinierter Leuchteffekt",
+                ["Gaming.CustomGlowToolTip"] = "Zwischen spielspezifischem und globalem Effekt wechseln",
                 ["Applications.Title"] = "Verfolgte Anwendungen",
                 ["Applications.Subtitle"] = "Benutzerdefinierte Leuchtfarben, Dauern, Prioritäten und Animationsstile pro Anwendung verwalten",
                 ["Applications.ListView"] = "Listenansicht",
@@ -1694,6 +1710,10 @@ namespace NotiGlow.Services
                 ["Gaming.InheritsGlobal"] = "Genel",
                 ["Gaming.ResetToDefault"] = "Varsayılana Sıfırla",
                 ["Gaming.CustomBadge"] = "Özel",
+                ["Gaming.GamingAppsSectionTitle"] = "Oyun Uygulamaları",
+                ["Gaming.GamingAppsSectionDesc"] = "Oyun sekmesinde algılanan veya eklenen oyunlar",
+                ["Gaming.CustomGlow"] = "Özel Glow",
+                ["Gaming.CustomGlowToolTip"] = "Özel glow ve genel oyun ayarları arasında geçiş yap",
 
                 // Applications View
                 ["Applications.Title"] = "Takip Edilen Uygulamalar",

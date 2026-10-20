@@ -15,7 +15,7 @@
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource BorderColor}"
             BorderThickness="1"
-            CornerRadius="{DynamicResource ControlCornerRadius}"
+            CornerRadius="14"
             Margin="16"
             SnapsToDevicePixels="True">
         <Border.Effect>
