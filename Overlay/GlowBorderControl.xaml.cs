@@ -37,6 +37,15 @@ namespace NotiGlow.Overlay
             RightEdge.Width = profile.GlowSize;
             InnerBorder.BorderThickness = new Thickness(profile.Thickness);
 
+            double cornerRadius = Math.Clamp(profile.CornerRadius, 0.0, 48.0);
+            var cr = new System.Windows.CornerRadius(cornerRadius);
+            InnerBorder.CornerRadius = cr;
+            AmbientSpillBorder.CornerRadius = cr;
+            SweepBloomBorder.CornerRadius = cr;
+            SweepOverlay.CornerRadius = cr;
+            CometBloomBorder.CornerRadius = cr;
+            CometOverlay.CornerRadius = cr;
+
             double screenW = ActualWidth > 0 ? ActualWidth : SystemParameters.PrimaryScreenWidth;
             double screenH = ActualHeight > 0 ? ActualHeight : SystemParameters.PrimaryScreenHeight;
             if (screenW <= 0) screenW = 1920;

@@ -43,7 +43,7 @@
 
                 <!-- Name & Category -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtAppName" Text="Discord" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue='Application'}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
                     <TextBlock x:Name="TxtCategory" Text="Communication" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
 

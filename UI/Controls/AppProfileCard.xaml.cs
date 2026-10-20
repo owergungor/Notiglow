@@ -28,6 +28,8 @@ namespace NotiGlow.UI.Controls
         public void SetProfile(AppProfile profile)
         {
             Profile = profile;
+            DataContext = profile;
+            TxtAppName.Text = !string.IsNullOrWhiteSpace(profile.Name) ? profile.Name : profile.AppId;
             string categoryPrefix = !string.IsNullOrEmpty(profile.Category) ? $"{profile.Category} • " : string.Empty;
             string prioText = profile.Priority switch
             {

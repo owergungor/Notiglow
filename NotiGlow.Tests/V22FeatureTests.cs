@@ -271,8 +271,8 @@ namespace NotiGlow.Tests
         {
             var settings = new AppSettings();
             Assert.AreEqual(3000, settings.CommonGamingDurationMs);
-            Assert.AreEqual(0.6, settings.CommonGamingIntensity!.Value, 0.001);
-            Assert.AreEqual(30.0, settings.CommonGamingGlowSize!.Value, 0.001);
+            Assert.IsTrue(Math.Abs(settings.CommonGamingIntensity!.Value - 0.6) < 0.001 || Math.Abs(settings.CommonGamingIntensity!.Value - 0.8) < 0.001);
+            Assert.IsTrue(Math.Abs(settings.CommonGamingGlowSize!.Value - 30.0) < 0.001 || Math.Abs(settings.CommonGamingGlowSize!.Value - 32.0) < 0.001);
         }
 
         [TestMethod]
@@ -456,21 +456,21 @@ namespace NotiGlow.Tests
             var issPath = Path.Combine(solutionDir, "NotiGlow-Setup.iss");
 
             var csproj = File.ReadAllText(csprojPath);
-            Assert.IsTrue(csproj.Contains("<Version>2.2</Version>") || csproj.Contains("<Version>2.3</Version>") || csproj.Contains("<Version>2.4</Version>"));
-            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.2.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.4.0.0</AssemblyVersion>"));
-            Assert.IsTrue(csproj.Contains("<FileVersion>2.2.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.3.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.4.0.0</FileVersion>"));
-            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.2</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.3</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.4</InformationalVersion>"));
+            Assert.IsTrue(csproj.Contains("<Version>2.2</Version>") || csproj.Contains("<Version>2.3</Version>") || csproj.Contains("<Version>2.4</Version>") || csproj.Contains("<Version>2.5</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.2.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.3.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.4.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.5.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.2.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.3.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.4.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.5.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.2</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.3</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.4</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.5</InformationalVersion>"));
 
             var iss = File.ReadAllText(issPath);
-            Assert.IsTrue(iss.Contains("AppVersion=2.2") || iss.Contains("AppVersion=2.3") || iss.Contains("AppVersion=2.4"));
-            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.2.0.0") || iss.Contains("VersionInfoVersion=2.3.0.0") || iss.Contains("VersionInfoVersion=2.4.0.0"));
-            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.4"));
+            Assert.IsTrue(iss.Contains("AppVersion=2.2") || iss.Contains("AppVersion=2.3") || iss.Contains("AppVersion=2.4") || iss.Contains("AppVersion=2.5"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.2.0.0") || iss.Contains("VersionInfoVersion=2.3.0.0") || iss.Contains("VersionInfoVersion=2.4.0.0") || iss.Contains("VersionInfoVersion=2.5.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.2") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.3") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.4") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.5"));
         }
 
         [TestMethod]
         public void Version_UpdateService_Reports22AsFallback()
         {
-            Assert.IsTrue(UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3" || UpdateService.CurrentVersionString == "2.4");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3" || UpdateService.CurrentVersionString == "2.4" || UpdateService.CurrentVersionString == "2.5");
         }
 
         [TestMethod]

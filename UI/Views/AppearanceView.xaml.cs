@@ -119,8 +119,8 @@ namespace NotiGlow.UI.Views
             var current = _settingsService.Current;
             SldDefDuration.Value = current.DefaultDurationMs;
             SldDefIntensity.Value = Math.Round(current.DefaultIntensity * 100);
-            SldDefGlowSize.Value = Math.Round(current.DefaultGlowSize);
-            SldCornerRounding.Value = current.CornerRadius > 0 ? current.CornerRadius : 8.0;
+            SldDefGlowSize.Value = Math.Clamp(Math.Round(current.DefaultGlowSize), 0.0, 256.0);
+            SldCornerRounding.Value = Math.Clamp(Math.Round(current.CornerRadius), 0.0, 48.0);
             TxtCornerRoundingVal.Text = $"{SldCornerRounding.Value:0} px";
             DefColorPicker.SelectedColorHex = current.DefaultColorHex;
             RefreshStyleComboBox();
@@ -160,7 +160,7 @@ namespace NotiGlow.UI.Views
 
             ScheduleSettingsSave();
 
-            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle);
+            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle, settings.CornerRadius);
         }
 
         private void Default_Changed(object sender, SelectionChangedEventArgs e) => UpdatePreview();
@@ -176,8 +176,9 @@ namespace NotiGlow.UI.Views
             if (_settingsService == null || _isLoading) return;
 
             var settings = _settingsService.Current;
-            settings.CornerRadius = Math.Round(e.NewValue);
+            settings.CornerRadius = Math.Clamp(Math.Round(e.NewValue), 0.0, 48.0);
             ThemeService.ApplyCornerRadius(settings.CornerRadius);
+            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle, settings.CornerRadius);
             ScheduleSettingsSave();
         }
 

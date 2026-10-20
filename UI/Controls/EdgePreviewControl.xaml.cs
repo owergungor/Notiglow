@@ -56,16 +56,16 @@ namespace NotiGlow.UI.Controls
 
         public void UpdatePreview(AppProfile profile)
         {
-            UpdatePreview(profile.ColorHex, profile.Thickness, profile.GlowSize, profile.Intensity, profile.Style);
+            UpdatePreview(profile.ColorHex, profile.Thickness, profile.GlowSize, profile.Intensity, profile.Style, profile.CornerRadius);
         }
 
-        public void UpdatePreview(string colorHex, double thickness, double glowSize, double intensity, GlowStyle style = GlowStyle.Pulse)
+        public void UpdatePreview(string colorHex, double thickness, double glowSize, double intensity, GlowStyle style = GlowStyle.Pulse, double cornerRadius = 0.0)
         {
             bool isRgb = NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(colorHex);
             Color mainColor = isRgb ? Color.FromRgb(255, 0, 77) : NotiGlow.Core.Helpers.ColorHelper.ParseColor(colorHex);
 
             // Scale parameters for mini preview box
-            double scaledGlow = Math.Clamp(glowSize / 4.0, 5, 30);
+            double scaledGlow = Math.Clamp(glowSize / 4.0, 0, 30);
             double scaledThickness = Math.Clamp(thickness / 2.0, 1, 6);
             double opacityVal = Math.Clamp(intensity, 0.1, 1.0);
 
@@ -78,6 +78,12 @@ namespace NotiGlow.UI.Controls
             PrevRightEdge.Width = scaledGlow;
 
             PrevInnerBorder.BorderThickness = new Thickness(scaledThickness);
+            double scaledCorner = Math.Clamp(cornerRadius / 3.0, 0.0, 16.0);
+            var cr = new System.Windows.CornerRadius(scaledCorner);
+            PrevInnerBorder.CornerRadius = cr;
+            PrevSweepOverlay.CornerRadius = cr;
+            PrevCometOverlay.CornerRadius = cr;
+            PrevRippleOverlay.CornerRadius = cr;
 
             if (isRgb)
             {

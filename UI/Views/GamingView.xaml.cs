@@ -98,8 +98,9 @@ namespace NotiGlow.UI.Views
             try
             {
                 int dur = settings.CommonGamingDurationMs ?? 3000;
-                double intens = settings.CommonGamingIntensity ?? 0.6;
-                double glow = settings.CommonGamingGlowSize ?? 30.0;
+                double intens = settings.CommonGamingIntensity ?? 0.8;
+                double glow = settings.CommonGamingGlowSize ?? 32.0;
+                double corner = settings.CommonGamingCornerRadius ?? 0.0;
 
                 SldCommonGamingDuration.Value = dur;
                 TxtCommonGamingDurationVal.Text = $"{dur} ms";
@@ -109,6 +110,15 @@ namespace NotiGlow.UI.Views
 
                 SldCommonGamingGlowSize.Value = glow;
                 TxtCommonGamingGlowSizeVal.Text = $"{(int)glow} px";
+
+                if (SldCommonGamingCornerRadius != null)
+                {
+                    SldCommonGamingCornerRadius.Value = corner;
+                }
+                if (TxtCommonGamingCornerRadiusVal != null)
+                {
+                    TxtCommonGamingCornerRadiusVal.Text = $"{(int)corner} px";
+                }
             }
             finally
             {
@@ -156,6 +166,17 @@ namespace NotiGlow.UI.Views
             SaveCommonGamingSettings();
         }
 
+        private void SldCommonGamingCornerRadius_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtCommonGamingCornerRadiusVal != null)
+            {
+                TxtCommonGamingCornerRadiusVal.Text = $"{(int)e.NewValue} px";
+            }
+
+            if (_isLoadingCommonGamingSettings || _isInitializing || _settingsService == null) return;
+            SaveCommonGamingSettings();
+        }
+
         private void SaveCommonGamingSettings()
         {
             if (_settingsService == null) return;
@@ -163,8 +184,9 @@ namespace NotiGlow.UI.Views
             int dur = (int)SldCommonGamingDuration.Value;
             double intens = Math.Round(SldCommonGamingIntensity.Value) / 100.0;
             double glow = Math.Round(SldCommonGamingGlowSize.Value);
+            double corner = SldCommonGamingCornerRadius != null ? Math.Round(SldCommonGamingCornerRadius.Value) : 0.0;
 
-            settings.SetCommonGamingSettings(dur, intens, glow);
+            settings.SetCommonGamingSettings(dur, intens, glow, corner);
             _settingsService.Save(settings);
             RenderTrackedGameCards();
         }
@@ -213,7 +235,12 @@ namespace NotiGlow.UI.Views
 
         private void OnSettingsChanged(object? sender, EventArgs e)
         {
-            Dispatcher.Invoke(LoadSettings);
+            if (!IsVisible || _isLoadingCommonGamingSettings || _isInitializing) return;
+            try
+            {
+                Dispatcher.Invoke(LoadSettings);
+            }
+            catch { }
         }
 
         #region View Switching & Game Card Rendering
@@ -354,7 +381,7 @@ namespace NotiGlow.UI.Views
             Grid.SetColumn(textStack, 1);
             grid.Children.Add(textStack);
 
-            // 2: Badge & Overrides Status
+            // 2: Badge, Custom Glow Switch & Overrides Status
             var badgeStack = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -362,29 +389,57 @@ namespace NotiGlow.UI.Views
                 Margin = new Thickness(0, 0, 16, 0)
             };
 
+            bool isCustomGlow = gameOverride != null && gameOverride.CustomGlowEnabled;
+            var toggleCustomGlow = new Wpf.Ui.Controls.ToggleSwitch
+            {
+                IsChecked = isCustomGlow,
+                Content = LocalizationService.Instance.GetString("Gaming.CustomGlow"),
+                ToolTip = LocalizationService.Instance.GetString("Gaming.CustomGlowToolTip"),
+                Margin = new Thickness(0, 0, 14, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            toggleCustomGlow.Click += (s, e) =>
+            {
+                if (_settingsService == null) return;
+                bool enabled = toggleCustomGlow.IsChecked ?? false;
+                var ov = _settingsService.Current.GetGameOverride(gameEntry) ?? new GameGlowOverride();
+                ov.CustomGlowEnabled = enabled;
+                if (enabled)
+                {
+                    ov.DurationMs ??= _settingsService.Current.CommonGamingDurationMs ?? 3000;
+                    ov.Intensity ??= _settingsService.Current.CommonGamingIntensity ?? 0.8;
+                    ov.GlowSize ??= _settingsService.Current.CommonGamingGlowSize ?? 32.0;
+                    ov.CornerRadius ??= _settingsService.Current.CommonGamingCornerRadius ?? 0.0;
+                }
+                _settingsService.Current.SetGameOverride(gameEntry, ov);
+                _settingsService.Save(_settingsService.Current);
+                RenderTrackedGameCards();
+            };
+            badgeStack.Children.Add(toggleCustomGlow);
+
             var badgeBorder = new Border
             {
                 CornerRadius = new CornerRadius(5),
                 Padding = new Thickness(7, 3, 7, 3),
-                Background = hasOverrides ? (TryFindResource("GlassOverlay") as Brush) : (TryFindResource("CardBackgroundSecondary") as Brush),
-                BorderBrush = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("BorderColor") as Brush),
+                Background = isCustomGlow ? (TryFindResource("GlassOverlay") as Brush) : (TryFindResource("CardBackgroundSecondary") as Brush),
+                BorderBrush = isCustomGlow ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("BorderColor") as Brush),
                 BorderThickness = new Thickness(1),
                 VerticalAlignment = VerticalAlignment.Center,
                 Child = new TextBlock
                 {
-                    Text = hasOverrides
-                        ? LocalizationService.Instance.GetString("Gaming.CustomBadge")
+                    Text = isCustomGlow
+                        ? LocalizationService.Instance.GetString("Gaming.CustomGlow")
                         : LocalizationService.Instance.GetString("Gaming.InheritsGlobal"),
                     FontSize = 11,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextMuted") as Brush)
+                    Foreground = isCustomGlow ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextMuted") as Brush)
                 }
             };
             badgeStack.Children.Add(badgeBorder);
 
-            string summaryText = hasOverrides && gameOverride != null
-                ? $"{(gameOverride.DurationMs ?? settings.CommonGamingDurationMs ?? 3000)}ms • {(int)((gameOverride.Intensity ?? settings.CommonGamingIntensity ?? 0.6) * 100)}% • {(gameOverride.GlowSize ?? settings.CommonGamingGlowSize ?? 30.0):0}px"
-                : $"{(settings.CommonGamingDurationMs ?? 3000)}ms • {(int)((settings.CommonGamingIntensity ?? 0.6) * 100)}% • {(settings.CommonGamingGlowSize ?? 30.0):0}px";
+            string summaryText = isCustomGlow && gameOverride != null
+                ? $"{(gameOverride.DurationMs ?? settings.CommonGamingDurationMs ?? 3000)}ms • {(int)((gameOverride.Intensity ?? settings.CommonGamingIntensity ?? 0.8) * 100)}% • {(gameOverride.GlowSize ?? settings.CommonGamingGlowSize ?? 32.0):0}px • {(int)(gameOverride.CornerRadius ?? settings.CommonGamingCornerRadius ?? 0.0)}px"
+                : $"{(settings.CommonGamingDurationMs ?? 3000)}ms • {(int)((settings.CommonGamingIntensity ?? 0.8) * 100)}% • {(settings.CommonGamingGlowSize ?? 32.0):0}px • {(int)(settings.CommonGamingCornerRadius ?? 0.0)}px";
 
             badgeStack.Children.Add(new TextBlock
             {
@@ -510,22 +565,23 @@ namespace NotiGlow.UI.Views
             Grid.SetColumn(titleBlock, 1);
             topGrid.Children.Add(titleBlock);
 
+            bool isCustomGlowGrid = gameOverride != null && gameOverride.CustomGlowEnabled;
             var badge = new Border
             {
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(6, 2, 6, 2),
-                Background = hasOverrides ? (TryFindResource("GlassOverlay") as Brush) : (TryFindResource("CardBackgroundSecondary") as Brush),
-                BorderBrush = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("BorderColor") as Brush),
+                Background = isCustomGlowGrid ? (TryFindResource("GlassOverlay") as Brush) : (TryFindResource("CardBackgroundSecondary") as Brush),
+                BorderBrush = isCustomGlowGrid ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("BorderColor") as Brush),
                 BorderThickness = new Thickness(1),
                 VerticalAlignment = VerticalAlignment.Center,
                 Child = new TextBlock
                 {
-                    Text = hasOverrides
-                        ? LocalizationService.Instance.GetString("Gaming.CustomBadge")
+                    Text = isCustomGlowGrid
+                        ? LocalizationService.Instance.GetString("Gaming.CustomGlow")
                         : LocalizationService.Instance.GetString("Gaming.InheritsGlobal"),
                     FontSize = 10,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = hasOverrides ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextMuted") as Brush)
+                    Foreground = isCustomGlowGrid ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextMuted") as Brush)
                 }
             };
             Grid.SetColumn(badge, 2);
@@ -582,6 +638,47 @@ namespace NotiGlow.UI.Views
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Right
             });
             specsStack.Children.Add(blurGrid);
+
+            // Corner Rounding
+            var crGrid = new Grid { Margin = new Thickness(0, 3, 0, 0) };
+            crGrid.Children.Add(new TextBlock { Text = LocalizationService.Instance.GetString("Appearance.CornerRounding") ?? "Corner Rounding", FontSize = 11, Foreground = TryFindResource("TextMuted") as Brush });
+            crGrid.Children.Add(new TextBlock
+            {
+                Text = isCustomGlowGrid && gameOverride?.CornerRadius != null ? $"{gameOverride.CornerRadius.Value:0} px" : $"{settings.CommonGamingCornerRadius ?? 0.0:0} px",
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = isCustomGlowGrid && gameOverride?.CornerRadius != null ? (TryFindResource("AccentColor") as Brush) : (TryFindResource("TextSecondary") as Brush),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Right
+            });
+            specsStack.Children.Add(crGrid);
+
+            // Custom Glow Switch inside Grid Card
+            var toggleCustomGlowGrid = new Wpf.Ui.Controls.ToggleSwitch
+            {
+                IsChecked = isCustomGlowGrid,
+                Content = LocalizationService.Instance.GetString("Gaming.CustomGlow"),
+                ToolTip = LocalizationService.Instance.GetString("Gaming.CustomGlowToolTip"),
+                Margin = new Thickness(0, 6, 0, 0),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left
+            };
+            toggleCustomGlowGrid.Click += (s, e) =>
+            {
+                if (_settingsService == null) return;
+                bool enabled = toggleCustomGlowGrid.IsChecked ?? false;
+                var ov = _settingsService.Current.GetGameOverride(gameEntry) ?? new GameGlowOverride();
+                ov.CustomGlowEnabled = enabled;
+                if (enabled)
+                {
+                    ov.DurationMs ??= _settingsService.Current.CommonGamingDurationMs ?? 3000;
+                    ov.Intensity ??= _settingsService.Current.CommonGamingIntensity ?? 0.8;
+                    ov.GlowSize ??= _settingsService.Current.CommonGamingGlowSize ?? 32.0;
+                    ov.CornerRadius ??= _settingsService.Current.CommonGamingCornerRadius ?? 0.0;
+                }
+                _settingsService.Current.SetGameOverride(gameEntry, ov);
+                _settingsService.Save(_settingsService.Current);
+                RenderTrackedGameCards();
+            };
+            specsStack.Children.Add(toggleCustomGlowGrid);
 
             specsBorder.Child = specsStack;
             Grid.SetRow(specsBorder, 1);
@@ -701,6 +798,30 @@ namespace NotiGlow.UI.Views
             TxtGlowSizeInheritHint.Foreground = (hasGlow ? TryFindResource("AccentColor") : TryFindResource("TextMuted")) as Brush;
             TxtEditGlowSizeVal.Text = $"{(int)SldGameGlowSize.Value} px";
 
+            // Corner Rounding
+            double commonCorner = settings.CommonGamingCornerRadius ?? 0.0;
+            bool hasCorner = gameOv != null && gameOv.CornerRadius.HasValue;
+            if (ChkOverrideCornerRadius != null)
+            {
+                ChkOverrideCornerRadius.IsChecked = hasCorner;
+            }
+            if (SldGameCornerRadius != null)
+            {
+                SldGameCornerRadius.Value = hasCorner ? gameOv!.CornerRadius!.Value : commonCorner;
+                SldGameCornerRadius.IsEnabled = hasCorner;
+            }
+            if (TxtCornerRadiusInheritHint != null)
+            {
+                TxtCornerRadiusInheritHint.Text = hasCorner
+                    ? LocalizationService.Instance.GetString("Gaming.CustomOverrides")
+                    : LocalizationService.Instance.GetString("Gaming.InheritsGlobalDefault", $"{(int)commonCorner} px");
+                TxtCornerRadiusInheritHint.Foreground = (hasCorner ? TryFindResource("AccentColor") : TryFindResource("TextMuted")) as Brush;
+            }
+            if (TxtEditCornerRadiusVal != null && SldGameCornerRadius != null)
+            {
+                TxtEditCornerRadiusVal.Text = $"{(int)SldGameCornerRadius.Value} px";
+            }
+
             PnlEditGameOverride.Visibility = Visibility.Visible;
         }
 
@@ -734,6 +855,29 @@ namespace NotiGlow.UI.Views
             TxtGlowSizeInheritHint.Foreground = (ChkOverrideGlowSize.IsChecked ?? false)
                 ? (TryFindResource("AccentColor") as Brush)
                 : (TryFindResource("TextMuted") as Brush);
+
+            double commonCorner = settings.CommonGamingCornerRadius ?? 0.0;
+            if (SldGameCornerRadius != null && ChkOverrideCornerRadius != null)
+            {
+                SldGameCornerRadius.IsEnabled = ChkOverrideCornerRadius.IsChecked ?? false;
+            }
+            if (TxtCornerRadiusInheritHint != null && ChkOverrideCornerRadius != null)
+            {
+                TxtCornerRadiusInheritHint.Text = (ChkOverrideCornerRadius.IsChecked ?? false)
+                    ? LocalizationService.Instance.GetString("Gaming.CustomOverrides")
+                    : LocalizationService.Instance.GetString("Gaming.InheritsGlobalDefault", $"{(int)commonCorner} px");
+                TxtCornerRadiusInheritHint.Foreground = (ChkOverrideCornerRadius.IsChecked ?? false)
+                    ? (TryFindResource("AccentColor") as Brush)
+                    : (TryFindResource("TextMuted") as Brush);
+            }
+        }
+
+        private void SldGameCornerRadius_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (TxtEditCornerRadiusVal != null)
+            {
+                TxtEditCornerRadiusVal.Text = $"{(int)e.NewValue} px";
+            }
         }
 
         private void SldGameDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -768,16 +912,19 @@ namespace NotiGlow.UI.Views
             int? dur = (ChkOverrideDuration.IsChecked ?? false) ? (int)SldGameDuration.Value : null;
             double? intens = (ChkOverrideIntensity.IsChecked ?? false) ? Math.Round(SldGameIntensity.Value) / 100.0 : null;
             double? glow = (ChkOverrideGlowSize.IsChecked ?? false) ? Math.Round(SldGameGlowSize.Value) : null;
+            double? corner = (ChkOverrideCornerRadius?.IsChecked ?? false) && SldGameCornerRadius != null ? Math.Round(SldGameCornerRadius.Value) : null;
 
             string id = AppSettings.NormalizeGameIdentifier(_editingGameEntry);
-            if (dur.HasValue || intens.HasValue || glow.HasValue)
+            if (dur.HasValue || intens.HasValue || glow.HasValue || corner.HasValue)
             {
                 var ov = new GameGlowOverride
                 {
                     GameIdentifier = id,
                     DurationMs = dur,
                     Intensity = intens,
-                    GlowSize = glow
+                    GlowSize = glow,
+                    CornerRadius = corner,
+                    CustomGlowEnabled = true
                 };
                 settings.GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
                 settings.GameOverrides[id] = ov;

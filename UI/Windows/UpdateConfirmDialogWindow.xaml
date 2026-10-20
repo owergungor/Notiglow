@@ -15,7 +15,7 @@
     <Border Background="{DynamicResource WindowBackground}"
             BorderBrush="{DynamicResource BorderColor}"
             BorderThickness="1"
-            CornerRadius="{DynamicResource ControlCornerRadius}"
+            CornerRadius="14"
             Margin="16"
             SnapsToDevicePixels="True">
         <Border.Effect>
@@ -122,7 +122,7 @@
                                    FontWeight="Medium"
                                    Foreground="{DynamicResource AccentColor}"/>
                         <TextBlock x:Name="TxtNewVersion"
-                                   Text="v2.4"
+                                   Text="v2.5"
                                    FontSize="14"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource AccentColor}"

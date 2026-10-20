@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using NotiGlow.Core.Helpers;
@@ -81,7 +84,7 @@ namespace NotiGlow.UI.Views
             }
         }
 
-        private void ApplyViewMode(ApplicationViewMode mode)
+        public void ApplyViewMode(ApplicationViewMode mode)
         {
             if (mode == ApplicationViewMode.Grid)
             {
@@ -105,32 +108,141 @@ namespace NotiGlow.UI.Views
 
             PnlAppCards.Children.Clear();
             PnlAppGridCards.Children.Clear();
+            PnlGamingCards.Children.Clear();
+            PnlGamingGridCards.Children.Clear();
 
+            var settings = _settingsService?.Current ?? new AppSettings();
+            var trackedGames = settings.TrackedGames ?? new List<string>();
+
+            // Build normalized set of game identifiers for robust de-duplication
+            var gameIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var g in trackedGames)
+            {
+                string norm = AppSettings.NormalizeGameIdentifier(g);
+                if (!string.IsNullOrEmpty(norm)) gameIds.Add(norm);
+                string exeName = Path.GetFileName(g);
+                if (!string.IsNullOrEmpty(exeName)) gameIds.Add(exeName);
+            }
+
+            // 1. Populate Normal Tracked Apps (excluding any game that belongs to Gaming Apps)
             foreach (var profile in _profileService.Profiles)
             {
+                string profId = AppSettings.NormalizeGameIdentifier(profile.AppId);
+                string profExe = !string.IsNullOrEmpty(profile.ExecutablePath) ? AppSettings.NormalizeGameIdentifier(profile.ExecutablePath) : string.Empty;
+
+                if ((!string.IsNullOrEmpty(profId) && gameIds.Contains(profId)) ||
+                    (!string.IsNullOrEmpty(profExe) && gameIds.Contains(profExe)))
+                {
+                    // Belongs in the Gaming Apps section below to prevent duplicate
+                    continue;
+                }
+
                 // List Mode Card
                 var listCard = new AppProfileCard();
                 listCard.SetProfile(profile);
-
                 listCard.EditRequested += (s, p) => OpenEditor(p, false);
                 listCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
                 listCard.DeleteRequested += (s, p) => DeleteProfile(p);
                 listCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
                 listCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
-
                 PnlAppCards.Children.Add(listCard);
 
                 // Grid Mode Card
                 var gridCard = new AppProfileGridCard();
                 gridCard.SetProfile(profile);
-
                 gridCard.EditRequested += (s, p) => OpenEditor(p, false);
                 gridCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
                 gridCard.DeleteRequested += (s, p) => DeleteProfile(p);
                 gridCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
                 gridCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
-
                 PnlAppGridCards.Children.Add(gridCard);
+            }
+
+            // 2. Populate Gaming Apps Section at the bottom of Tracked Apps
+            bool hasGames = trackedGames.Count > 0;
+            SectionGamingHeader.Visibility = hasGames ? Visibility.Visible : Visibility.Collapsed;
+            SectionGamingGridHeader.Visibility = hasGames ? Visibility.Visible : Visibility.Collapsed;
+            PnlGamingCards.Visibility = hasGames ? Visibility.Visible : Visibility.Collapsed;
+            PnlGamingGridCards.Visibility = hasGames ? Visibility.Visible : Visibility.Collapsed;
+
+            if (hasGames)
+            {
+                foreach (var gamePath in trackedGames)
+                {
+                    if (string.IsNullOrWhiteSpace(gamePath)) continue;
+
+                    string normId = AppSettings.NormalizeGameIdentifier(gamePath);
+                    string gameName = Path.GetFileNameWithoutExtension(gamePath);
+                    if (string.IsNullOrWhiteSpace(gameName)) gameName = gamePath;
+
+                    // Get or create representative profile for this tracked game
+                    var gameProfile = _profileService.GetProfile(gamePath, gameName);
+                    if (gameProfile == null)
+                    {
+                        GameGlowOverride? ov = null;
+                        if (settings.GameOverrides != null) settings.GameOverrides.TryGetValue(normId, out ov);
+
+                        bool customOn = ov != null && ov.CustomGlowEnabled;
+                        int dur = customOn && ov?.DurationMs.HasValue == true ? ov.DurationMs.Value : (settings.CommonGamingDurationMs ?? 3000);
+                        double intens = customOn && ov?.Intensity.HasValue == true ? ov.Intensity.Value : (settings.CommonGamingIntensity ?? 0.8);
+                        double gSize = customOn && ov?.GlowSize.HasValue == true ? ov.GlowSize.Value : (settings.CommonGamingGlowSize ?? 32.0);
+                        double cr = customOn && ov?.CornerRadius.HasValue == true ? ov.CornerRadius.Value : (settings.CommonGamingCornerRadius ?? 0.0);
+                        string col = customOn && !string.IsNullOrWhiteSpace(ov?.ColorHex) ? ov.ColorHex : settings.DefaultColorHex;
+
+                        gameProfile = new AppProfile
+                        {
+                            AppId = gamePath,
+                            Name = gameName,
+                            ExecutablePath = gamePath,
+                            Category = "Gaming",
+                            DurationMs = dur,
+                            Intensity = intens,
+                            GlowSize = gSize,
+                            CornerRadius = cr,
+                            ColorHex = col,
+                            Enabled = true,
+                            Style = GlowStyle.Pulse
+                        };
+                    }
+
+                    // Gaming List Card
+                    var gameListCard = new AppProfileCard();
+                    gameListCard.SetProfile(gameProfile);
+                    gameListCard.PreviewRequested += (s, p) => _glowManager?.TriggerGameAnimationTest(gamePath);
+                    gameListCard.EditRequested += (s, p) => OpenEditor(p, false);
+                    gameListCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
+                    gameListCard.DeleteRequested += (s, p) =>
+                    {
+                        settings.TrackedGames?.Remove(gamePath);
+                        settings.GameOverrides?.Remove(normId);
+                        _settingsService?.Save(settings);
+                        RefreshAppCards();
+                    };
+                    gameListCard.ToggleChanged += (s, p) =>
+                    {
+                        if (!p.Enabled)
+                        {
+                            settings.TrackedGames?.Remove(gamePath);
+                            _settingsService?.Save(settings);
+                        }
+                    };
+                    PnlGamingCards.Children.Add(gameListCard);
+
+                    // Gaming Grid Card
+                    var gameGridCard = new AppProfileGridCard();
+                    gameGridCard.SetProfile(gameProfile);
+                    gameGridCard.PreviewRequested += (s, p) => _glowManager?.TriggerGameAnimationTest(gamePath);
+                    gameGridCard.EditRequested += (s, p) => OpenEditor(p, false);
+                    gameGridCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
+                    gameGridCard.DeleteRequested += (s, p) =>
+                    {
+                        settings.TrackedGames?.Remove(gamePath);
+                        settings.GameOverrides?.Remove(normId);
+                        _settingsService?.Save(settings);
+                        RefreshAppCards();
+                    };
+                    PnlGamingGridCards.Children.Add(gameGridCard);
+                }
             }
         }
 
@@ -157,6 +269,7 @@ namespace NotiGlow.UI.Views
                 Intensity = profile.Intensity,
                 Thickness = profile.Thickness,
                 GlowSize = profile.GlowSize,
+                CornerRadius = profile.CornerRadius,
                 Style = profile.Style,
                 Priority = profile.Priority,
                 Category = profile.Category,
@@ -172,7 +285,9 @@ namespace NotiGlow.UI.Views
 
             SldDuration.Value = _editingProfile.DurationMs;
             SldIntensity.Value = Math.Round(_editingProfile.Intensity * 100);
-            SldGlowSize.Value = Math.Round(_editingProfile.GlowSize);
+            SldGlowSize.Value = Math.Clamp(Math.Round(_editingProfile.GlowSize), 0.0, 256.0);
+            SldAppCorner.Value = Math.Clamp(Math.Round(_editingProfile.CornerRadius), 0.0, 48.0);
+            TxtAppCornerVal.Text = $"{SldAppCorner.Value:0} px";
 
             EditColorPicker.SelectedColorHex = _editingProfile.ColorHex;
 
@@ -206,9 +321,14 @@ namespace NotiGlow.UI.Views
             TxtDurationVal.Text = (sec % 1 == 0) ? $"{sec:0}s ({SldDuration.Value} ms)" : $"{sec:0.0}s ({SldDuration.Value} ms)";
             TxtIntensityVal.Text = $"{Math.Round(SldIntensity.Value):0}%";
             TxtGlowSizeVal.Text = $"{Math.Round(SldGlowSize.Value):0} px";
+            if (TxtAppCornerVal != null)
+            {
+                TxtAppCornerVal.Text = $"{Math.Round(SldAppCorner.Value):0} px";
+            }
 
             _editingProfile.ColorHex = EditColorPicker.SelectedColorHex;
-            _editingProfile.GlowSize = Math.Round(SldGlowSize.Value);
+            _editingProfile.GlowSize = Math.Clamp(Math.Round(SldGlowSize.Value), 0.0, 256.0);
+            _editingProfile.CornerRadius = Math.Clamp(Math.Round(SldAppCorner.Value), 0.0, 48.0);
             _editingProfile.Intensity = Math.Round(SldIntensity.Value) / 100.0;
             _editingProfile.DurationMs = (int)SldDuration.Value;
 
@@ -232,11 +352,12 @@ namespace NotiGlow.UI.Views
                 AppId = "custom_app",
                 Name = "New Application",
                 Enabled = true,
-                ColorHex = "#5865F2",
+                ColorHex = "#FFFFFF",
                 DurationMs = 4000,
                 Intensity = 0.8,
                 Thickness = 4,
-                GlowSize = 30,
+                GlowSize = 32,
+                CornerRadius = 0.0,
                 Style = GlowStyle.Pulse
             };
             OpenEditor(newProfile, true);
@@ -325,7 +446,8 @@ namespace NotiGlow.UI.Views
 
             _editingProfile.DurationMs = (int)SldDuration.Value;
             _editingProfile.Intensity = Math.Round(SldIntensity.Value) / 100.0;
-            _editingProfile.GlowSize = Math.Round(SldGlowSize.Value);
+            _editingProfile.GlowSize = Math.Clamp(Math.Round(SldGlowSize.Value), 0.0, 256.0);
+            _editingProfile.CornerRadius = Math.Clamp(Math.Round(SldAppCorner.Value), 0.0, 48.0);
             _editingProfile.ColorHex = EditColorPicker.SelectedColorHex;
 
             if (CmbEditStyle.SelectedItem is ComboBoxItem styleItem && Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
@@ -394,6 +516,7 @@ namespace NotiGlow.UI.Views
         private void SldDuration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void SldIntensity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void SldGlowSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
+        private void SldAppCorner_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdateEditorPreview();
         private void EditColorPicker_ColorChanged(object? sender, string e) => UpdateEditorPreview();
         private void EditControl_Changed(object sender, SelectionChangedEventArgs e) => UpdateEditorPreview();
 
@@ -412,12 +535,13 @@ namespace NotiGlow.UI.Views
             {
                 AppId = "TestApp",
                 Name = "NotiGlow Test",
-                ColorHex = "#5865F2",
+                ColorHex = "#FFFFFF",
                 DurationMs = 4000,
                 Intensity = 0.8,
                 Style = GlowStyle.Pulse,
                 Thickness = 4,
-                GlowSize = 30
+                GlowSize = 32,
+                CornerRadius = 0.0
             };
             _glowManager.TriggerProfile(profile);
         }

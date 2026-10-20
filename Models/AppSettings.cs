@@ -12,7 +12,7 @@ namespace NotiGlow.Models
         public bool OledMode { get; set; } = false;
         public ThemeMode ThemeMode { get; set; } = ThemeMode.Dark;
         public ColorTheme ColorTheme { get; set; } = ColorTheme.Standard;
-        public double CornerRadius { get; set; } = 8.0;
+        public double CornerRadius { get; set; } = 0.0;
         public string AppLanguage { get; set; } = "en-US";
         public AppTheme Theme
         {
@@ -66,8 +66,9 @@ namespace NotiGlow.Models
 
         // Shared Gaming Glow Settings (v2.2: Duration, Intensity, Blur Size unified across all games)
         public int? CommonGamingDurationMs { get; set; } = 3000;
-        public double? CommonGamingIntensity { get; set; } = 0.6;
-        public double? CommonGamingGlowSize { get; set; } = 30.0;
+        public double? CommonGamingIntensity { get; set; } = 0.8;
+        public double? CommonGamingGlowSize { get; set; } = 32.0;
+        public double? CommonGamingCornerRadius { get; set; } = 0.0;
         public bool HasCustomCommonGamingSettings { get; set; } = false;
 
         public Dictionary<string, GameGlowOverride> GameOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -103,26 +104,32 @@ namespace NotiGlow.Models
             }
         }
 
-        public void SetCommonGamingSettings(int? durationMs, double? intensity, double? glowSize)
+        public void SetCommonGamingSettings(int? durationMs, double? intensity, double? glowSize, double? cornerRadius = null)
         {
             CommonGamingDurationMs = durationMs.HasValue ? GameGlowOverride.ClampDuration(durationMs.Value) : null;
             CommonGamingIntensity = intensity.HasValue ? GameGlowOverride.ClampIntensity(intensity.Value) : null;
             CommonGamingGlowSize = glowSize.HasValue ? GameGlowOverride.ClampGlowSize(glowSize.Value) : null;
-            HasCustomCommonGamingSettings = durationMs.HasValue || intensity.HasValue || glowSize.HasValue;
+            CommonGamingCornerRadius = cornerRadius.HasValue ? GameGlowOverride.ClampCornerRadius(cornerRadius.Value) : null;
+            HasCustomCommonGamingSettings = durationMs.HasValue || intensity.HasValue || glowSize.HasValue || cornerRadius.HasValue;
 
             GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
             var sharedOverride = new GameGlowOverride
             {
                 DurationMs = CommonGamingDurationMs,
                 Intensity = CommonGamingIntensity,
-                GlowSize = CommonGamingGlowSize
+                GlowSize = CommonGamingGlowSize,
+                CornerRadius = CommonGamingCornerRadius,
+                CustomGlowEnabled = false
             };
             foreach (var game in TrackedGames)
             {
                 string id = NormalizeGameIdentifier(game);
                 if (!string.IsNullOrEmpty(id))
                 {
-                    GameOverrides[id] = sharedOverride;
+                    if (!GameOverrides.TryGetValue(id, out var existing) || !existing.CustomGlowEnabled)
+                    {
+                        GameOverrides[id] = sharedOverride;
+                    }
                 }
             }
         }
@@ -139,6 +146,12 @@ namespace NotiGlow.Models
         {
             MigrateLegacyGameOverridesIfNeeded();
 
+            string id = NormalizeGameIdentifier(gamePathOrName);
+            if (!string.IsNullOrEmpty(id) && GameOverrides != null && GameOverrides.TryGetValue(id, out var ov))
+            {
+                return ov;
+            }
+
             if (!HasCustomCommonGamingSettings && (GameOverrides == null || GameOverrides.Count == 0))
             {
                 return null;
@@ -146,44 +159,45 @@ namespace NotiGlow.Models
 
             return new GameGlowOverride
             {
-                GameIdentifier = NormalizeGameIdentifier(gamePathOrName),
+                GameIdentifier = id,
                 DurationMs = CommonGamingDurationMs,
                 Intensity = CommonGamingIntensity,
-                GlowSize = CommonGamingGlowSize
+                GlowSize = CommonGamingGlowSize,
+                CornerRadius = CommonGamingCornerRadius,
+                CustomGlowEnabled = false
             };
         }
 
-        public bool HasGameOverride(string? gamePathOrName) => GetGameOverride(gamePathOrName)?.HasOverrides == true;
+        public bool HasGameOverride(string? gamePathOrName)
+        {
+            string id = NormalizeGameIdentifier(gamePathOrName);
+            if (string.IsNullOrEmpty(id) || GameOverrides == null) return false;
+            return GameOverrides.TryGetValue(id, out var ov) && ov != null && ov.HasOverrides;
+        }
 
         public void RemoveGameOverride(string? gamePathOrName) => SetGameOverride(gamePathOrName, null);
 
         public void SetGameOverride(string? gamePathOrName, GameGlowOverride? overrideSettings)
         {
-            if (overrideSettings == null || !overrideSettings.HasOverrides)
+            string id = NormalizeGameIdentifier(gamePathOrName);
+            if (string.IsNullOrEmpty(id)) return;
+
+            GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
+            if (overrideSettings == null)
             {
-                HasCustomCommonGamingSettings = false;
-                CommonGamingDurationMs = null;
-                CommonGamingIntensity = null;
-                CommonGamingGlowSize = null;
-                GameOverrides?.Clear();
+                GameOverrides.Remove(id);
                 return;
             }
 
-            SetCommonGamingSettings(overrideSettings.DurationMs, overrideSettings.Intensity, overrideSettings.GlowSize);
-            string id = NormalizeGameIdentifier(gamePathOrName);
-            if (!string.IsNullOrEmpty(id))
-            {
-                GameOverrides ??= new Dictionary<string, GameGlowOverride>(StringComparer.OrdinalIgnoreCase);
-                GameOverrides[id] = overrideSettings;
-            }
+            GameOverrides[id] = overrideSettings;
         }
 
         // Global defaults for new app profiles
-        public string DefaultColorHex { get; set; } = "#5865F2";
+        public string DefaultColorHex { get; set; } = "#FFFFFF";
         public int DefaultDurationMs { get; set; } = 4000;
         public double DefaultIntensity { get; set; } = 0.8;
         public double DefaultThickness { get; set; } = 4.0;
-        public double DefaultGlowSize { get; set; } = 30.0;
+        public double DefaultGlowSize { get; set; } = 32.0;
         public GlowStyle DefaultStyle { get; set; } = GlowStyle.Pulse;
 
         // View preferences

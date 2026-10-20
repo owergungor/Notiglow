@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="700" d:DesignWidth="800">
+             d:DesignHeight="950" d:DesignWidth="800">
     <Grid>
         <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="24">
@@ -43,20 +43,20 @@
                     <ui:ToggleSwitch x:Name="ToggleGamingMode" Click="ToggleGamingMode_Click" VerticalAlignment="Center"/>
                 </ui:CardControl>
 
-                <TextBlock Text="{DynamicResource Gaming.BehaviorRules}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+                <TextBlock Text="{DynamicResource Gaming.BehaviorRules}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,8,0,12"/>
 
                 <!-- Glow During Games -->
-                <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                <ui:CardControl x:Name="CardGlowDuringGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                     <ui:CardControl.Header>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource Gaming.GlowDuringGames}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtGlowDuringGamesTitle" Text="{DynamicResource Gaming.GlowDuringGames}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtGlowDuringGamesDesc" Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
                     </ui:CardControl.Header>
                     <ui:ToggleSwitch x:Name="ToggleGlowDuringGames" Click="ToggleGlowDuringGames_Click" VerticalAlignment="Center"/>
                 </ui:CardControl>
 
-                <!-- Reduce Intensity -->
+                <!-- Reduce Intensity In Games -->
                 <ui:CardControl x:Name="CardReduceIntensityInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                     <ui:CardControl.Header>
                         <StackPanel VerticalAlignment="Center">
@@ -67,7 +67,7 @@
                     <ui:ToggleSwitch x:Name="ToggleReduceIntensityInGames" Click="ToggleReduceIntensityInGames_Click" VerticalAlignment="Center"/>
                 </ui:CardControl>
 
-                <!-- Reduce Duration -->
+                <!-- Reduce Duration In Games -->
                 <ui:CardControl x:Name="CardReduceDurationInGames" Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                     <ui:CardControl.Header>
                         <StackPanel VerticalAlignment="Center">
@@ -115,23 +115,37 @@
                                 <TextBlock Text="{DynamicResource Gaming.CommonIntensity}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="{DynamicResource Gaming.ReduceIntensityDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <TextBlock x:Name="TxtCommonGamingIntensityVal" Text="60%" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtCommonGamingIntensityVal" Text="80%" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
                         </Grid>
-                        <Slider x:Name="SldCommonGamingIntensity" Minimum="10" Maximum="100" Value="60" SmallChange="5" LargeChange="10" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingIntensity_ValueChanged"/>
+                        <Slider x:Name="SldCommonGamingIntensity" Minimum="10" Maximum="100" Value="80" SmallChange="5" LargeChange="10" TickFrequency="5" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingIntensity_ValueChanged"/>
                     </StackPanel>
                 </ui:CardControl>
 
                 <!-- Common Glow Blur Size Card -->
-                <ui:CardControl Padding="16" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                <ui:CardControl Padding="16" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
                     <StackPanel>
                         <Grid Margin="0,0,0,8">
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{DynamicResource Gaming.CommonBlurSize}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="{DynamicResource Gaming.GlowDuringGamesDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <TextBlock x:Name="TxtCommonGamingGlowSizeVal" Text="30 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtCommonGamingGlowSizeVal" Text="32 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
                         </Grid>
-                        <Slider x:Name="SldCommonGamingGlowSize" Minimum="10" Maximum="80" Value="30" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingGlowSize_ValueChanged"/>
+                        <Slider x:Name="SldCommonGamingGlowSize" Minimum="0" Maximum="256" Value="32" SmallChange="1" LargeChange="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingGlowSize_ValueChanged"/>
+                    </StackPanel>
+                </ui:CardControl>
+
+                <!-- Common Glow Corner Rounding Card -->
+                <ui:CardControl Padding="16" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,8">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{DynamicResource Appearance.CornerRounding}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="{DynamicResource Appearance.CornerRoundingDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtCommonGamingCornerRadiusVal" Text="0 px" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                        </Grid>
+                        <Slider x:Name="SldCommonGamingCornerRadius" Minimum="0" Maximum="48" Value="0" SmallChange="1" LargeChange="2" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingCornerRadius_ValueChanged"/>
                     </StackPanel>
                 </ui:CardControl>
 
@@ -279,7 +293,7 @@
                                               VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <TextBlock x:Name="TxtEditDurationVal"
-                                           Text="4000 ms"
+                                           Text="3000 ms"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
                                            Foreground="{DynamicResource TextSecondary}"/>
@@ -287,7 +301,7 @@
                             <Slider x:Name="SldGameDuration"
                                     Minimum="500"
                                     Maximum="15000"
-                                    Value="4000"
+                                    Value="3000"
                                     SmallChange="500"
                                     LargeChange="1000"
                                     TickFrequency="500"
@@ -347,7 +361,7 @@
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="16,14"
-                            Margin="0,0,0,20">
+                            Margin="0,0,0,14">
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -359,21 +373,61 @@
                                               VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <TextBlock x:Name="TxtEditGlowSizeVal"
-                                           Text="30 px"
+                                           Text="32 px"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
                                            Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
                             <Slider x:Name="SldGameGlowSize"
-                                    Minimum="5"
-                                    Maximum="100"
-                                    Value="30"
+                                    Minimum="0"
+                                    Maximum="256"
+                                    Value="32"
                                     SmallChange="1"
                                     LargeChange="5"
                                     TickFrequency="1"
                                     IsSnapToTickEnabled="True"
                                     ValueChanged="SldGameGlowSize_ValueChanged"/>
                             <TextBlock x:Name="TxtGlowSizeInheritHint"
+                                       Text="{DynamicResource Gaming.InheritGlobal}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Corner Rounding Override Section -->
+                    <Border Background="{DynamicResource CardBackgroundSecondary}"
+                            BorderBrush="{DynamicResource BorderColor}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,14"
+                            Margin="0,0,0,20">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ChkOverrideCornerRadius"
+                                              Content="{DynamicResource Appearance.CornerRounding}"
+                                              FontWeight="SemiBold"
+                                              FontSize="13"
+                                              Click="ChkOverride_Click"
+                                              VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock x:Name="TxtEditCornerRadiusVal"
+                                           Text="0 px"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldGameCornerRadius"
+                                    Minimum="0"
+                                    Maximum="48"
+                                    Value="0"
+                                    SmallChange="1"
+                                    LargeChange="2"
+                                    TickFrequency="1"
+                                    IsSnapToTickEnabled="True"
+                                    ValueChanged="SldGameCornerRadius_ValueChanged"/>
+                            <TextBlock x:Name="TxtCornerRadiusInheritHint"
                                        Text="{DynamicResource Gaming.InheritGlobal}"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextMuted}"
