@@ -53,6 +53,8 @@
             </Style>
 
             <CornerRadius x:Key="ControlCornerRadius">8</CornerRadius>
+            <CornerRadius x:Key="CardCornerRadius">10</CornerRadius>
+            <CornerRadius x:Key="GlowCornerRadius">0</CornerRadius>
 
             <Style TargetType="{x:Type ui:TextBox}">
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>

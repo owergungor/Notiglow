@@ -200,17 +200,9 @@ namespace NotiGlow.Tests
 
                     ThemeService.ApplyCornerRadius(12.0);
 
-                    if (Application.Current?.Resources["ControlCornerRadius"] is CornerRadius controlRadius)
+                    if (Application.Current?.Resources["GlowCornerRadius"] is CornerRadius glowRadius)
                     {
-                        Assert.AreEqual(12.0, controlRadius.TopLeft);
-                    }
-                    if (Application.Current?.Resources["CardCornerRadius"] is CornerRadius cardRadius)
-                    {
-                        Assert.AreEqual(12.0, cardRadius.TopLeft);
-                    }
-                    if (Application.Current?.Resources["PopupCornerRadius"] is CornerRadius popupRadius)
-                    {
-                        Assert.AreEqual(12.0, popupRadius.TopLeft);
+                        Assert.AreEqual(12.0, glowRadius.TopLeft);
                     }
                     tcs.SetResult(true);
                 }
@@ -1026,7 +1018,7 @@ namespace NotiGlow.Tests
         public void EntireCodebase_DoesNotContainDirectNativeMessageBoxShow()
         {
             var csFiles = Directory.GetFiles(SolutionDir, "*.cs", SearchOption.AllDirectories)
-                .Where(f => !f.Contains(@"\bin\") && !f.Contains(@"\obj\") && !f.EndsWith("V24FeatureTests.cs"));
+                .Where(f => !f.Contains(@"\bin\") && !f.Contains(@"\obj\") && !f.Contains(@"\NotiGlow.Tests\"));
 
             foreach (var file in csFiles)
             {

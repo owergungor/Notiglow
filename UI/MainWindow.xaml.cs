@@ -545,7 +545,7 @@ namespace NotiGlow.UI
 
             if (isApps)
             {
-                ViewApplications.RefreshAppCards();
+                ViewApplications.EnsureLoaded();
             }
         }
 

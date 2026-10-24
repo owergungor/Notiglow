@@ -83,7 +83,7 @@ namespace NotiGlow.Services
                 // Fallback
             }
 
-            _cachedVersion = "2.5";
+            _cachedVersion = "2.6";
             return _cachedVersion;
         }
         private const string GitHubOwner = "owergungor";

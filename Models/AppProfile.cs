@@ -25,7 +25,7 @@ namespace NotiGlow.Models
         public double TrailLength { get; set; } = 40.0; // 10 to 100 px
 
         [JsonIgnore]
-        public string FormattedDuration => $"{DurationMs / 1000.0:0.#}s";
+        public string FormattedDuration => $"{(DurationMs / 1000.0).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} s";
 
         [JsonIgnore]
         public string FormattedIntensity => $"{(int)(Intensity * 100)}%";

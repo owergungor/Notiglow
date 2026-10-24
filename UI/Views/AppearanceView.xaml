@@ -206,7 +206,7 @@
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
                                 <TextBlock Text="{DynamicResource Appearance.DefaultDuration}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock x:Name="TxtDefDurationVal" Text="4s (4000 ms)" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
+                                <TextBlock x:Name="TxtDefDurationVal" Text="4 s" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                             </Grid>
                             <Slider x:Name="SldDefDuration" Minimum="500" Maximum="15000" Value="4000" SmallChange="500" LargeChange="1000" TickFrequency="500" IsSnapToTickEnabled="True" ValueChanged="Default_Changed"/>
                         </StackPanel>

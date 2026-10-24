@@ -143,7 +143,7 @@ namespace NotiGlow.UI.Views
             if (_settingsService == null || _isLoading) return;
 
             double sec = SldDefDuration.Value / 1000.0;
-            TxtDefDurationVal.Text = (sec % 1 == 0) ? $"{sec:0}s ({SldDefDuration.Value} ms)" : $"{sec:0.0}s ({SldDefDuration.Value} ms)";
+            TxtDefDurationVal.Text = $"{sec:0.#} s";
             TxtDefIntensityVal.Text = $"{Math.Round(SldDefIntensity.Value):0}%";
             TxtDefGlowSizeVal.Text = $"{Math.Round(SldDefGlowSize.Value):0} px";
 

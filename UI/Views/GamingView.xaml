@@ -101,7 +101,7 @@
                                 <TextBlock Text="{DynamicResource Gaming.CommonDuration}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                 <TextBlock Text="{DynamicResource Gaming.ReduceDurationDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <TextBlock x:Name="TxtCommonGamingDurationVal" Text="3000 ms" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtCommonGamingDurationVal" Text="3 s" HorizontalAlignment="Right" VerticalAlignment="Top" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
                         </Grid>
                         <Slider x:Name="SldCommonGamingDuration" Minimum="1000" Maximum="10000" Value="3000" SmallChange="100" LargeChange="500" TickFrequency="100" IsSnapToTickEnabled="True" ValueChanged="SldCommonGamingDuration_ValueChanged"/>
                     </StackPanel>
@@ -293,7 +293,7 @@
                                               VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <TextBlock x:Name="TxtEditDurationVal"
-                                           Text="3000 ms"
+                                           Text="3 s"
                                            HorizontalAlignment="Right"
                                            VerticalAlignment="Center"
                                            Foreground="{DynamicResource TextSecondary}"/>

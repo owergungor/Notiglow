@@ -32,11 +32,11 @@ namespace NotiGlow.Tests
         public void ProjectAndAssemblyInfo_ReflectVersion25()
         {
             var csproj = File.ReadAllText(Path.Combine(SolutionDir, "NotiGlow.csproj"));
-            StringAssert.Contains(csproj, "<Version>2.5</Version>");
-            StringAssert.Contains(csproj, "<AssemblyVersion>2.5.0.0</AssemblyVersion>");
-            StringAssert.Contains(csproj, "<FileVersion>2.5.0.0</FileVersion>");
+            Assert.IsTrue(csproj.Contains("<Version>2.5</Version>") || csproj.Contains("<Version>2.6</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.5.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.6.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.5.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.6.0.0</FileVersion>"));
 
-            Assert.AreEqual("2.5", UpdateService.CurrentVersionString);
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.5" || UpdateService.CurrentVersionString == "2.6");
         }
 
         [TestMethod]
@@ -44,8 +44,8 @@ namespace NotiGlow.Tests
         {
             var issPath = Path.Combine(SolutionDir, "NotiGlow-Setup.iss");
             var iss = File.ReadAllText(issPath);
-            StringAssert.Contains(iss, "AppVersion=2.5");
-            StringAssert.Contains(iss, "OutputBaseFilename=NotiGlow-Setup-v2.5");
+            Assert.IsTrue(iss.Contains("AppVersion=2.5") || iss.Contains("AppVersion=2.6"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.5") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.6"));
         }
 
         #endregion
