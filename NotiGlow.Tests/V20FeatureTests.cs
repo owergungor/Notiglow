@@ -227,7 +227,8 @@ namespace NotiGlow.Tests
             string missingKey = "NonExistent.Key.ForTesting123";
             string result = service.GetString(missingKey);
 
-            Assert.AreEqual(missingKey, result, "Missing key should safely return the key itself without throwing.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result), "Missing key should safely return non-empty fallback text without throwing.");
+            Assert.IsFalse(result.Contains("."), "Missing key should not leak raw dotted technical namespace path to users.");
         }
 
         #endregion

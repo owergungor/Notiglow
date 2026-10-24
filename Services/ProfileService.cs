@@ -182,16 +182,6 @@ namespace NotiGlow.Services
             return result;
         }
 
-        private List<AppProfile> GetInitialStarterProfiles()
-        {
-            if (IsTestEnvironment)
-            {
-                return GetDefaultProfiles();
-            }
-
-            return Core.Helpers.BuiltInAppDetector.Default.GetInstalledProfiles().ToList();
-        }
-
         private void PruneOrResolveProfiles()
         {
             if (IsTestEnvironment) return;

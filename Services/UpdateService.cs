@@ -83,7 +83,7 @@ namespace NotiGlow.Services
                 // Fallback
             }
 
-            _cachedVersion = "2.6";
+            _cachedVersion = "2.7";
             return _cachedVersion;
         }
         private const string GitHubOwner = "owergungor";
@@ -420,30 +420,66 @@ namespace NotiGlow.Services
         {
             try
             {
-                if (!File.Exists(packagePath))
+                if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
                 {
-                    LoggerService.LogError($"Package path does not exist: {packagePath}");
+                    LoggerService.LogError($"Package path does not exist or is empty: {packagePath}");
+                    return false;
+                }
+
+                var packageInfo = new FileInfo(packagePath);
+                if (packageInfo.Length == 0)
+                {
+                    LoggerService.LogError($"Package file is empty (0 bytes): {packagePath}");
                     return false;
                 }
 
                 int currentPid = Process.GetCurrentProcess().Id;
                 string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (string.IsNullOrWhiteSpace(currentExe) || !File.Exists(currentExe))
+                {
+                    currentExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "NotiGlow.exe");
+                }
                 string targetDir = Path.GetDirectoryName(currentExe) ?? "";
+
+                if (string.IsNullOrWhiteSpace(targetDir) || !Directory.Exists(targetDir))
+                {
+                    LoggerService.LogError($"Target installation directory is invalid: {targetDir}");
+                    return false;
+                }
+
+                string updaterScriptPath = Path.Combine(GetUpdatesDirectory(), "apply_update.vbs");
 
                 if (packagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Inno Setup installer workflow:
-                    // Runs external installer process which waits for current PID to exit,
-                    // silently installs to targetDir, and relaunches NotiGlow.exe
+                    bool isInstaller = Path.GetFileName(packagePath).Contains("Setup", StringComparison.OrdinalIgnoreCase) ||
+                                       Path.GetFileName(packagePath).Contains("Installer", StringComparison.OrdinalIgnoreCase);
+
+                    try
+                    {
+                        var verInfo = FileVersionInfo.GetVersionInfo(packagePath);
+                        LoggerService.LogInfo($"Update package validated: {Path.GetFileName(packagePath)}, Version={verInfo.FileVersion ?? verInfo.ProductVersion ?? "unknown"}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerService.LogWarning($"Could not inspect package FileVersionInfo: {ex.Message}");
+                    }
+
+                    string scriptCode = isInstaller
+                        ? GenerateInstallerUpdaterScript(currentPid, currentExe, targetDir, packagePath)
+                        : GenerateDirectExeUpdaterScript(currentPid, currentExe, targetDir, packagePath);
+
+                    File.WriteAllText(updaterScriptPath, scriptCode);
+
                     var psi = new ProcessStartInfo
                     {
-                        FileName = packagePath,
-                        Arguments = $"/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /DIR=\"{targetDir}\"",
-                        UseShellExecute = true
+                        FileName = "wscript.exe",
+                        Arguments = $"\"{updaterScriptPath}\"",
+                        UseShellExecute = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
                     };
 
                     Process.Start(psi);
-                    LoggerService.LogInfo($"Launched Inno Setup updater: {packagePath}. Requesting app close.");
+                    LoggerService.LogInfo($"Launched updater script ({(isInstaller ? "Installer" : "DirectExe")}): {updaterScriptPath}. Requesting app close.");
                     onAppCloseRequested();
                     return true;
                 }
@@ -455,16 +491,8 @@ namespace NotiGlow.Services
                     Directory.CreateDirectory(stagedDir);
                     ZipFile.ExtractToDirectory(packagePath, stagedDir, true);
 
-                    string updaterScriptPath = Path.Combine(GetUpdatesDirectory(), "apply_update.vbs");
                     string backupDir = Path.Combine(GetUpdatesDirectory(), "backup_" + CurrentVersionString);
 
-                    // Write a fail-safe VBScript updater:
-                    // 1. Waits for PID to terminate
-                    // 2. Copies current directory to backupDir
-                    // 3. Atomically replaces files from stagedDir to targetDir
-                    // 4. If copy errors occur, rolls back from backupDir
-                    // 5. Launches currentExe
-                    // 6. Cleans up stagedDir and updater script
                     string vbsCode = GenerateVbsUpdaterScript(currentPid, currentExe, targetDir, stagedDir, backupDir);
                     File.WriteAllText(updaterScriptPath, vbsCode);
 
@@ -481,19 +509,120 @@ namespace NotiGlow.Services
                     onAppCloseRequested();
                     return true;
                 }
+                else
+                {
+                    LoggerService.LogError($"Unsupported package extension: {packagePath}");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
                 LoggerService.LogError("Failed to launch updater", ex);
+                return false;
             }
+        }
 
-            return false;
+        public static string GenerateInstallerUpdaterScript(int targetPid, string targetExe, string targetDir, string installerPath)
+        {
+            return $@"Option Explicit
+Dim fso, shell, pid, targetExe, targetDir, installerPath
+Set fso = CreateObject(""Scripting.FileSystemObject"")
+Set shell = CreateObject(""WScript.Shell"")
+
+pid = {targetPid}
+targetExe = ""{targetExe.Replace("\\", "\\\\")}""
+targetDir = ""{targetDir.Replace("\\", "\\\\")}""
+installerPath = ""{installerPath.Replace("\\", "\\\\")}""
+
+' Step 1: Wait up to 20 seconds for the existing NotiGlow process to exit
+Dim i, running
+For i = 1 To 40
+    running = False
+    Dim procs, p
+    On Error Resume Next
+    Set procs = GetObject(""winmgmts:"").ExecQuery(""Select * from Win32_Process Where ProcessId = "" & pid)
+    For Each p in procs
+        running = True
+    Next
+    On Error GoTo 0
+    If Not running Then Exit For
+    WScript.Sleep 500
+Next
+
+' Step 2: Extra safety pause ensuring file locks and mutexes are cleared
+WScript.Sleep 500
+
+' Step 3: Run Inno Setup installer silently and wait synchronously for it to finish
+Dim exitCode
+exitCode = shell.Run(Chr(34) & installerPath & Chr(34) & "" /SILENT /SUPPRESSMSGBOXES /NORESTART /DIR="" & Chr(34) & targetDir & Chr(34), 0, True)
+
+' Step 4: Verify targetExe exists, set working directory, and launch with --updated
+If fso.FileExists(targetExe) Then
+    shell.CurrentDirectory = targetDir
+    shell.Run Chr(34) & targetExe & Chr(34) & "" --updated"", 1, False
+End If
+";
+        }
+
+        public static string GenerateDirectExeUpdaterScript(int targetPid, string targetExe, string targetDir, string newExePath)
+        {
+            return $@"Option Explicit
+Dim fso, shell, pid, targetExe, targetDir, newExePath, backupExe
+Set fso = CreateObject(""Scripting.FileSystemObject"")
+Set shell = CreateObject(""WScript.Shell"")
+
+pid = {targetPid}
+targetExe = ""{targetExe.Replace("\\", "\\\\")}""
+targetDir = ""{targetDir.Replace("\\", "\\\\")}""
+newExePath = ""{newExePath.Replace("\\", "\\\\")}""
+backupExe = targetExe & "".bak""
+
+' Step 1: Wait up to 20 seconds for running NotiGlow process to exit
+Dim i, running
+For i = 1 To 40
+    running = False
+    Dim procs, p
+    On Error Resume Next
+    Set procs = GetObject(""winmgmts:"").ExecQuery(""Select * from Win32_Process Where ProcessId = "" & pid)
+    For Each p in procs
+        running = True
+    Next
+    On Error GoTo 0
+    If Not running Then Exit For
+    WScript.Sleep 500
+Next
+
+' Step 2: Extra safety pause
+WScript.Sleep 500
+
+' Step 3: Backup current targetExe
+On Error Resume Next
+If fso.FileExists(backupExe) Then fso.DeleteFile backupExe, True
+If fso.FileExists(targetExe) Then fso.MoveFile targetExe, backupExe
+
+' Step 4: Copy new executable over targetExe
+Err.Clear
+fso.CopyFile newExePath, targetExe, True
+
+If Err.Number <> 0 Then
+    ' Rollback on failure
+    If fso.FileExists(backupExe) Then fso.MoveFile backupExe, targetExe
+Else
+    If fso.FileExists(backupExe) Then fso.DeleteFile backupExe, True
+End If
+On Error GoTo 0
+
+' Step 5: Relaunch application with --updated
+If fso.FileExists(targetExe) Then
+    shell.CurrentDirectory = targetDir
+    shell.Run Chr(34) & targetExe & Chr(34) & "" --updated"", 1, False
+End If
+";
         }
 
         public static string GenerateVbsUpdaterScript(int targetPid, string targetExe, string targetDir, string stagedDir, string backupDir)
         {
-            return $@"
-Option Explicit
+            return $@"Option Explicit
 Dim fso, shell, pid, targetExe, targetDir, stagedDir, backupDir
 Set fso = CreateObject(""Scripting.FileSystemObject"")
 Set shell = CreateObject(""WScript.Shell"")
@@ -504,18 +633,23 @@ targetDir = ""{targetDir.Replace("\\", "\\\\")}""
 stagedDir = ""{stagedDir.Replace("\\", "\\\\")}""
 backupDir = ""{backupDir.Replace("\\", "\\\\")}""
 
-' Step 1: Wait up to 15 seconds for running NotiGlow process to exit
+' Step 1: Wait up to 20 seconds for running NotiGlow process to exit
 Dim i, running
-For i = 1 To 30
+For i = 1 To 40
     running = False
     Dim procs, p
+    On Error Resume Next
     Set procs = GetObject(""winmgmts:"").ExecQuery(""Select * from Win32_Process Where ProcessId = "" & pid)
     For Each p in procs
         running = True
     Next
+    On Error GoTo 0
     If Not running Then Exit For
     WScript.Sleep 500
 Next
+
+' Extra small pause to ensure file handles and mutexes are completely released by OS
+WScript.Sleep 500
 
 ' Step 2: Backup current targetDir
 On Error Resume Next
@@ -526,17 +660,19 @@ fso.CopyFolder targetDir & ""\*"", backupDir, True
 ' Step 3: Atomic copy from stagedDir to targetDir
 Err.Clear
 fso.CopyFolder stagedDir & ""\*"", targetDir, True
-fso.CopyFile stagedDir & ""\*"", targetDir & ""\"", True
+fso.CopyFile stagedDir & ""\*"", targetDir & ""\\"", True
 
 If Err.Number <> 0 Then
     ' Rollback on failure
     fso.CopyFolder backupDir & ""\*"", targetDir, True
-    fso.CopyFile backupDir & ""\*"", targetDir & ""\"", True
+    fso.CopyFile backupDir & ""\*"", targetDir & ""\\"", True
 End If
+On Error GoTo 0
 
-' Step 4: Relaunch application
+' Step 4: Relaunch application with --updated
 If fso.FileExists(targetExe) Then
-    shell.Run """" & targetExe & """", 1, False
+    shell.CurrentDirectory = targetDir
+    shell.Run Chr(34) & targetExe & Chr(34) & "" --updated"", 1, False
 End If
 
 ' Step 5: Clean up staging folder

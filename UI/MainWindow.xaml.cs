@@ -547,6 +547,10 @@ namespace NotiGlow.UI
             {
                 ViewApplications.EnsureLoaded();
             }
+            if (isGaming)
+            {
+                ViewGaming.EnsureLoaded();
+            }
         }
 
         public void UpdateNavSelectionVisuals(string tag)

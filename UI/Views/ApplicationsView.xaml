@@ -174,11 +174,11 @@
                                 <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.AnimationEffect}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ComboBox x:Name="CmbEditStyle" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.PulseDetailed}" Tag="Pulse"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.SweepDetailed}" Tag="Sweep"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.CometDetailed}" Tag="Comet"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.RippleDetailed}" Tag="Ripple"/>
+                                        <ComboBoxItem Content="{DynamicResource Style.AmbientDetailed}" Tag="Ambient"/>
                                     </ComboBox>
                                 </StackPanel>
 
@@ -186,8 +186,8 @@
                                 <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.Category}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ComboBox x:Name="CmbEditCategory" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGeneral}" Tag="General" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGaming}" Tag="Gaming" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGeneral}" Tag="General"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGaming}" Tag="Gaming"/>
                                     </ComboBox>
                                 </StackPanel>
 
@@ -195,9 +195,9 @@
                                 <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                     <ComboBox x:Name="CmbEditPriority" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal" Padding="12,7"/>
-                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityLow}" Tag="Low"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityNormal}" Tag="Normal"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.PriorityHigh}" Tag="High"/>
                                     </ComboBox>
                                 </StackPanel>
 

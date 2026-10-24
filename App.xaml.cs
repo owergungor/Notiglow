@@ -199,6 +199,7 @@ namespace NotiGlow
                 }
 
                 bool isAutoStart = e.Args.Contains("--autostart");
+                bool isUpdatedRestart = e.Args.Contains("--updated");
 
                 // Initialize Main Window
                 _mainWindow = new MainWindow();
@@ -217,11 +218,17 @@ namespace NotiGlow
                     LoggerService.LogInfo("Started in background mode (--autostart)");
                 }
 
+                if (isUpdatedRestart)
+                {
+                    _hasCheckedUpdatesThisSession = true;
+                    LoggerService.LogInfo($"NotiGlow started successfully after update to version {UpdateService.CurrentVersionString} (--updated).");
+                }
+
                 // Start notification listener asynchronously (non-blocking for app startup)
                 _ = InitializeNotificationServiceAsync();
 
                 // Check for updates asynchronously in background if enabled according to frequency
-                if (UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow))
+                if (UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow) && !isUpdatedRestart)
                 {
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
@@ -358,20 +365,6 @@ namespace NotiGlow
             var settings = _settingsService.Current;
             ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
             ThemeService.ApplyCornerRadius(settings.CornerRadius);
-        }
-
-        private static bool GetWindowsSystemThemeIsDark()
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key?.GetValue("AppsUseLightTheme") is int val)
-                {
-                    return val == 0;
-                }
-            }
-            catch { }
-            return true;
         }
 
         public void OpenSettingsWindow()
