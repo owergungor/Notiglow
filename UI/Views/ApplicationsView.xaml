@@ -182,6 +182,15 @@
                                     </ComboBox>
                                 </StackPanel>
 
+                                <!-- Category Selector -->
+                                <StackPanel Margin="0,0,0,12">
+                                    <TextBlock Text="{DynamicResource Applications.Category}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                    <ComboBox x:Name="CmbEditCategory" Style="{DynamicResource AppleSelectComboBoxStyle}" MinHeight="36" Height="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
+                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGeneral}" Tag="General" Padding="12,7"/>
+                                        <ComboBoxItem Content="{DynamicResource Applications.CategoryGaming}" Tag="Gaming" Padding="12,7"/>
+                                    </ComboBox>
+                                </StackPanel>
+
                                 <!-- Priority Selector -->
                                 <StackPanel Margin="0,0,0,12">
                                     <TextBlock Text="{DynamicResource Applications.Priority}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
@@ -196,7 +205,7 @@
                                 <StackPanel Margin="0,0,0,16">
                                     <Grid Margin="0,0,0,6">
                                         <TextBlock Text="{DynamicResource Applications.Duration}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                        <TextBlock x:Name="TxtDurationVal" Text="4000 ms" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
+                                        <TextBlock x:Name="TxtDurationVal" Text="4 s" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondary}"/>
                                     </Grid>
                                     <Slider x:Name="SldDuration" Minimum="500" Maximum="15000" Value="4000" SmallChange="500" LargeChange="1000" TickFrequency="500" IsSnapToTickEnabled="True" ValueChanged="SldDuration_ValueChanged"/>
                                 </StackPanel>

@@ -893,21 +893,22 @@ namespace NotiGlow.Services
             {
                 bool isDark = GetIsDark(mode);
 
+                if (_lastAppliedColorTheme == colorTheme && _lastAppliedIsDark == isDark)
+                {
+                    return;
+                }
+
                 if (_lastAppliedIsDark != isDark)
                 {
                     try
                     {
                         ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light);
-                        _lastAppliedIsDark = isDark;
                     }
                     catch { }
                 }
 
-                if (_lastAppliedColorTheme == colorTheme && _lastAppliedIsDark == isDark)
-                {
-                    return;
-                }
                 _lastAppliedColorTheme = colorTheme;
+                _lastAppliedIsDark = isDark;
 
                 var palette = GetPalette(colorTheme, isDark);
                 var res = System.Windows.Application.Current?.Resources;
@@ -969,14 +970,13 @@ namespace NotiGlow.Services
         {
             try
             {
-                double clamped = Math.Clamp(radius, 0.0, 20.0);
+                double clamped = Math.Clamp(radius, 0.0, 48.0);
                 var cornerRadius = new System.Windows.CornerRadius(clamped);
                 var res = System.Windows.Application.Current?.Resources;
                 if (res != null)
                 {
-                    res["ControlCornerRadius"] = cornerRadius;
-                    res["CardCornerRadius"] = cornerRadius;
-                    res["PopupCornerRadius"] = new System.Windows.CornerRadius(Math.Min(12.0, clamped + 2.0));
+                    res["GlowCornerRadius"] = cornerRadius;
+                    // Do not alter ControlCornerRadius or CardCornerRadius so UI controls preserve their 8px rounded corners
                 }
             }
             catch (Exception ex)
