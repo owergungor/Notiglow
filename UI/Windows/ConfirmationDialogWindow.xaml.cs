@@ -80,10 +80,10 @@ namespace NotiGlow.UI.Dialogs
             var dialog = new ConfirmationDialogWindow();
             PositionDialog(dialog, owner);
 
-            dialog.TxtTitle.Text = title;
-            dialog.TxtMessage.Text = message;
-            dialog.BtnConfirm.Content = confirmText;
-            dialog.BtnCancel.Content = cancelText;
+            dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
+            dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
+            dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(confirmText);
+            dialog.BtnCancel.Content = LocalizationService.GenerateSafeFallbackText(cancelText);
 
             if (isDestructive)
             {
@@ -125,9 +125,9 @@ namespace NotiGlow.UI.Dialogs
             var dialog = new ConfirmationDialogWindow();
             PositionDialog(dialog, owner);
 
-            dialog.TxtTitle.Text = title;
-            dialog.TxtMessage.Text = message;
-            dialog.BtnConfirm.Content = buttonText;
+            dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
+            dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
+            dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
             dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
             dialog.HeaderIcon.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF5, 0x9E, 0x0B));
@@ -162,9 +162,9 @@ namespace NotiGlow.UI.Dialogs
             var dialog = new ConfirmationDialogWindow();
             PositionDialog(dialog, owner);
 
-            dialog.TxtTitle.Text = title;
-            dialog.TxtMessage.Text = message;
-            dialog.BtnConfirm.Content = buttonText;
+            dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
+            dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
+            dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
             dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
             dialog.HeaderIcon.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
@@ -199,9 +199,9 @@ namespace NotiGlow.UI.Dialogs
             var dialog = new ConfirmationDialogWindow();
             PositionDialog(dialog, owner);
 
-            dialog.TxtTitle.Text = title;
-            dialog.TxtMessage.Text = message;
-            dialog.BtnConfirm.Content = buttonText;
+            dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
+            dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
+            dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
             dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Info24;
             dialog.SetSingleButtonMode();

@@ -230,7 +230,7 @@ namespace NotiGlow.UI.Views
 
                             if (installConfirmed)
                             {
-                                UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
+                                bool launched = UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
                                 {
                                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                                     {
@@ -244,6 +244,14 @@ namespace NotiGlow.UI.Views
                                         }
                                     });
                                 });
+
+                                if (!launched)
+                                {
+                                    string failTitle = LocalizationService.Instance.GetString("Advanced.UpdateCheckFailed");
+                                    ToastNotificationService.Instance.ShowError(
+                                        "Failed to start updater process. Existing version will continue running.",
+                                        string.IsNullOrEmpty(failTitle) ? "Update Error" : failTitle);
+                                }
                             }
                         }
                     }

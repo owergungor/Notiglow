@@ -19,6 +19,20 @@ namespace NotiGlow.UI.Views
         private GameDetectionService? _gameDetectionService;
         private bool _isInitializing = false;
         private string? _editingGameEntry;
+        private bool _isLoadedOnce = false;
+        private bool _isDirty = true;
+
+        public bool IsDirty => _isDirty;
+
+        public void EnsureLoaded()
+        {
+            if (!_isLoadedOnce || _isDirty)
+            {
+                _isLoadedOnce = true;
+                _isDirty = false;
+                RenderTrackedGameCards();
+            }
+        }
 
         public GamingView()
         {
@@ -33,7 +47,7 @@ namespace NotiGlow.UI.Views
             Loaded += (s, e) =>
             {
                 UpdateLocalizedTexts();
-                RenderTrackedGameCards();
+                EnsureLoaded();
             };
         }
 
@@ -58,7 +72,11 @@ namespace NotiGlow.UI.Views
                 Dispatcher.BeginInvoke(() =>
                 {
                     UpdateLocalizedTexts();
-                    RenderTrackedGameCards();
+                    _isDirty = true;
+                    if (IsVisible)
+                    {
+                        RenderTrackedGameCards();
+                    }
                     if (PnlEditGameOverride.Visibility == Visibility.Visible && !string.IsNullOrEmpty(_editingGameEntry))
                     {
                         OpenGameOverridesEditor(_editingGameEntry);
@@ -235,6 +253,7 @@ namespace NotiGlow.UI.Views
 
         private void OnSettingsChanged(object? sender, EventArgs e)
         {
+            _isDirty = true;
             if (!IsVisible || _isLoadingCommonGamingSettings || _isInitializing) return;
             try
             {
@@ -278,6 +297,8 @@ namespace NotiGlow.UI.Views
         public void RenderTrackedGameCards()
         {
             if (_settingsService == null) return;
+            _isDirty = false;
+            _isLoadedOnce = true;
             var settings = _settingsService.Current;
             var games = settings.TrackedGames;
 

@@ -121,7 +121,7 @@ namespace NotiGlow.Services
 
             if (string.IsNullOrEmpty(value))
             {
-                value = key;
+                value = GenerateSafeFallbackText(key);
             }
 
             if (args != null && args.Length > 0)
@@ -235,6 +235,86 @@ namespace NotiGlow.Services
             {
                 LoggerService.LogWarning($"Failed applying localized strings to WPF resources: {ex.Message}");
             }
+        }
+
+                private static readonly Dictionary<string, string> _canonicalFallbackAliases = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ResetToDefaults"] = "Reset to Defaults",
+            ["ResetToDefault"] = "Reset to Default",
+            ["InstallNow"] = "Install Now",
+            ["CheckForUpdates"] = "Check for Updates",
+            ["Confirm"] = "Confirm",
+            ["Cancel"] = "Cancel",
+            ["Save"] = "Save",
+            ["Apply"] = "Apply",
+            ["Close"] = "Close",
+            ["Delete"] = "Delete",
+            ["Warning"] = "Warning",
+            ["Error"] = "Error",
+            ["Info"] = "Information",
+            ["Information"] = "Information",
+            ["Settings"] = "Settings",
+            ["Advanced"] = "Advanced",
+            ["General"] = "General",
+            ["Applications"] = "Applications",
+            ["Gaming"] = "Gaming",
+            ["Appearance"] = "Appearance",
+            ["Display"] = "Display",
+            ["Notifications"] = "Notifications",
+            ["Ok"] = "OK"
+        };
+
+        public static string GenerateSafeFallbackText(string? keyOrText)
+        {
+            if (string.IsNullOrWhiteSpace(keyOrText)) return string.Empty;
+
+            // If it does not contain a namespace dot, return as-is
+            if (!keyOrText.Contains('.'))
+            {
+                return keyOrText;
+            }
+
+            // Extract leaf node after last dot
+            string leaf = keyOrText;
+            int lastDot = keyOrText.LastIndexOf('.');
+            if (lastDot >= 0 && lastDot < keyOrText.Length - 1)
+            {
+                leaf = keyOrText.Substring(lastDot + 1);
+            }
+
+            // Check canonical alias table
+            if (_canonicalFallbackAliases.TryGetValue(leaf, out var alias))
+            {
+                return alias;
+            }
+
+            // PascalCase word splitting
+            return SplitPascalCaseToWords(leaf);
+        }
+
+        public static string SplitPascalCaseToWords(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+
+            var sb = new System.Text.StringBuilder(input.Length + 10);
+            for (int i = 0; i < input.Length; i++)
+            {
+                char c = input[i];
+                if (char.IsUpper(c) && i > 0)
+                {
+                    char prev = input[i - 1];
+                    if (char.IsLower(prev) || char.IsDigit(prev))
+                    {
+                        sb.Append(' ');
+                    }
+                    else if (i + 1 < input.Length && char.IsLower(input[i + 1]))
+                    {
+                        sb.Append(' ');
+                    }
+                }
+                sb.Append(c);
+            }
+            return sb.ToString();
         }
 
         #region Translation Dictionaries
@@ -575,7 +655,37 @@ namespace NotiGlow.Services
                 ["Gaming.CommonSettingsDesc"] = "Unified duration, glow intensity, and blur size applied across all tracked games.",
                 ["Gaming.CommonDuration"] = "Duration",
                 ["Gaming.CommonIntensity"] = "Glow Intensity",
-                ["Gaming.CommonBlurSize"] = "Glow Blur Size"
+                ["Gaming.CommonBlurSize"] = "Glow Blur Size",
+                // v2.7 Localization Additions
+                ["Advanced.InstallNow"] = "Install Now",
+                ["Advanced.ResetToDefaults"] = "Reset to Defaults",
+                ["Applications.CardColorToolTip"] = "Change glow color",
+                ["Applications.CardCopy"] = "Duplicate",
+                ["Applications.CardDelete"] = "Delete",
+                ["Applications.CardDurationAndIntensity"] = "Duration & Intensity",
+                ["Applications.CardEdit"] = "Edit",
+                ["Applications.CardPreview"] = "Preview",
+                ["Applications.CardToggleToolTip"] = "Enable or disable profile",
+                ["Applications.Delete"] = "Delete",
+                ["Applications.ExecutableOrAppId"] = "Executable or App ID",
+                ["EdgePreview.LivePreviewBanner"] = "Live Preview active",
+                ["Toast.AccessDenied"] = "Access denied",
+                ["Toast.ErrorTitle"] = "Error",
+                ["Toast.FileNotFound"] = "File not found",
+                ["Toast.GenericError"] = "An unexpected error occurred",
+                ["Toast.InfoTitle"] = "Information",
+                ["Toast.IoError"] = "I/O Error",
+                ["Toast.SuccessTitle"] = "Success",
+                ["Toast.WarningTitle"] = "Warning",
+                ["Tray.Exit"] = "Exit NotiGlow",
+                ["Tray.OpenSettings"] = "Open NotiGlow",
+                ["Common.Confirm"] = "Confirm",
+                ["Common.Apply"] = "Apply",
+                ["Common.Warning"] = "Warning",
+                ["Common.Error"] = "Error",
+                ["Common.Information"] = "Information",
+                ["Common.Info"] = "Info",
+                ["Common.Advanced"] = "Advanced",
             },
 
             ["es-ES"] = new(StringComparer.Ordinal)
@@ -912,7 +1022,37 @@ namespace NotiGlow.Services
                 ["Gaming.CommonSettingsDesc"] = "Duración unificada, intensidad de brillo y desenfoque aplicados a todos los juegos.",
                 ["Gaming.CommonDuration"] = "Duración",
                 ["Gaming.CommonIntensity"] = "Intensidad de brillo",
-                ["Gaming.CommonBlurSize"] = "Tamaño de desenfoque de brillo"
+                ["Gaming.CommonBlurSize"] = "Tamaño de desenfoque de brillo",
+                // v2.7 Localization Additions
+                ["Advanced.InstallNow"] = "Instalar ahora",
+                ["Advanced.ResetToDefaults"] = "Restablecer a valores predeterminados",
+                ["Applications.CardColorToolTip"] = "Cambiar color de brillo",
+                ["Applications.CardCopy"] = "Duplicar",
+                ["Applications.CardDelete"] = "Eliminar",
+                ["Applications.CardDurationAndIntensity"] = "Duración e intensidad",
+                ["Applications.CardEdit"] = "Editar",
+                ["Applications.CardPreview"] = "Vista previa",
+                ["Applications.CardToggleToolTip"] = "Activar o desactivar perfil",
+                ["Applications.Delete"] = "Eliminar",
+                ["Applications.ExecutableOrAppId"] = "Ejecutable o ID de aplicación",
+                ["EdgePreview.LivePreviewBanner"] = "Vista previa en vivo activa",
+                ["Toast.AccessDenied"] = "Acceso denegado",
+                ["Toast.ErrorTitle"] = "Error",
+                ["Toast.FileNotFound"] = "Archivo no encontrado",
+                ["Toast.GenericError"] = "Ocurrió un error inesperado",
+                ["Toast.InfoTitle"] = "Información",
+                ["Toast.IoError"] = "Error de E/S",
+                ["Toast.SuccessTitle"] = "Éxito",
+                ["Toast.WarningTitle"] = "Advertencia",
+                ["Tray.Exit"] = "Salir de NotiGlow",
+                ["Tray.OpenSettings"] = "Abrir NotiGlow",
+                ["Common.Confirm"] = "Confirmar",
+                ["Common.Apply"] = "Aplicar",
+                ["Common.Warning"] = "Advertencia",
+                ["Common.Error"] = "Error",
+                ["Common.Information"] = "Información",
+                ["Common.Info"] = "Info",
+                ["Common.Advanced"] = "Avanzado",
             },
 
             ["fr-FR"] = new(StringComparer.Ordinal)
@@ -1249,7 +1389,37 @@ namespace NotiGlow.Services
                 ["Gaming.CommonSettingsDesc"] = "Durée, intensité de lueur et taille de flou unifiées appliquées à tous les jeux suivis.",
                 ["Gaming.CommonDuration"] = "Durée",
                 ["Gaming.CommonIntensity"] = "Intensité de lueur",
-                ["Gaming.CommonBlurSize"] = "Taille du flou de lueur"
+                ["Gaming.CommonBlurSize"] = "Taille du flou de lueur",
+                // v2.7 Localization Additions
+                ["Advanced.InstallNow"] = "Installer maintenant",
+                ["Advanced.ResetToDefaults"] = "Rétablir les paramètres par défaut",
+                ["Applications.CardColorToolTip"] = "Modifier la couleur de la lueur",
+                ["Applications.CardCopy"] = "Dupliquer",
+                ["Applications.CardDelete"] = "Supprimer",
+                ["Applications.CardDurationAndIntensity"] = "Durée et intensité",
+                ["Applications.CardEdit"] = "Modifier",
+                ["Applications.CardPreview"] = "Aperçu",
+                ["Applications.CardToggleToolTip"] = "Activer ou désactiver le profil",
+                ["Applications.Delete"] = "Supprimer",
+                ["Applications.ExecutableOrAppId"] = "Exécutable ou identifiant d'application",
+                ["EdgePreview.LivePreviewBanner"] = "Aperçu en direct actif",
+                ["Toast.AccessDenied"] = "Accès refusé",
+                ["Toast.ErrorTitle"] = "Erreur",
+                ["Toast.FileNotFound"] = "Fichier non trouvé",
+                ["Toast.GenericError"] = "Une erreur inattendue est survenue",
+                ["Toast.InfoTitle"] = "Information",
+                ["Toast.IoError"] = "Erreur d'E/S",
+                ["Toast.SuccessTitle"] = "Succès",
+                ["Toast.WarningTitle"] = "Avertissement",
+                ["Tray.Exit"] = "Quitter NotiGlow",
+                ["Tray.OpenSettings"] = "Ouvrir NotiGlow",
+                ["Common.Confirm"] = "Confirmer",
+                ["Common.Apply"] = "Appliquer",
+                ["Common.Warning"] = "Avertissement",
+                ["Common.Error"] = "Erreur",
+                ["Common.Information"] = "Information",
+                ["Common.Info"] = "Info",
+                ["Common.Advanced"] = "Avancé",
             },
 
                         ["de-DE"] = new(StringComparer.Ordinal)
@@ -1560,7 +1730,37 @@ namespace NotiGlow.Services
                 ["Gaming.CommonSettingsDesc"] = "Einheitliche Dauer, Leuchtintensität und Weichzeichnung für alle erfassten Spiele.",
                 ["Gaming.CommonDuration"] = "Dauer",
                 ["Gaming.CommonIntensity"] = "Leuchtintensität",
-                ["Gaming.CommonBlurSize"] = "Leucht-Weichzeichnungsgröße"
+                ["Gaming.CommonBlurSize"] = "Leucht-Weichzeichnungsgröße",
+                // v2.7 Localization Additions
+                ["Advanced.InstallNow"] = "Jetzt installieren",
+                ["Advanced.ResetToDefaults"] = "Auf Standardwerte zurücksetzen",
+                ["Applications.CardColorToolTip"] = "Leuchtfarbe ändern",
+                ["Applications.CardCopy"] = "Duplizieren",
+                ["Applications.CardDelete"] = "Löschen",
+                ["Applications.CardDurationAndIntensity"] = "Dauer und Intensität",
+                ["Applications.CardEdit"] = "Bearbeiten",
+                ["Applications.CardPreview"] = "Vorschau",
+                ["Applications.CardToggleToolTip"] = "Profil aktivieren oder deaktivieren",
+                ["Applications.Delete"] = "Löschen",
+                ["Applications.ExecutableOrAppId"] = "Ausführbare Datei oder App-ID",
+                ["EdgePreview.LivePreviewBanner"] = "Live-Vorschau aktiv",
+                ["Toast.AccessDenied"] = "Zugriff verweigert",
+                ["Toast.ErrorTitle"] = "Fehler",
+                ["Toast.FileNotFound"] = "Datei nicht gefunden",
+                ["Toast.GenericError"] = "Ein unerwarteter Fehler ist aufgetreten",
+                ["Toast.InfoTitle"] = "Information",
+                ["Toast.IoError"] = "E/A-Fehler",
+                ["Toast.SuccessTitle"] = "Erfolg",
+                ["Toast.WarningTitle"] = "Warnung",
+                ["Tray.Exit"] = "NotiGlow beenden",
+                ["Tray.OpenSettings"] = "NotiGlow öffnen",
+                ["Common.Confirm"] = "Bestätigen",
+                ["Common.Apply"] = "Anwenden",
+                ["Common.Warning"] = "Warnung",
+                ["Common.Error"] = "Fehler",
+                ["Common.Information"] = "Information",
+                ["Common.Info"] = "Info",
+                ["Common.Advanced"] = "Erweitert",
             },
 
 ["tr-TR"] = new(StringComparer.Ordinal)
@@ -1895,7 +2095,37 @@ namespace NotiGlow.Services
                 ["Gaming.CommonSettingsDesc"] = "İzlenen tüm oyunlarda ortak geçerli olan süre, parıltı yoğunluğu ve bulanıklık boyutu.",
                 ["Gaming.CommonDuration"] = "Süre",
                 ["Gaming.CommonIntensity"] = "Parıltı Yoğunluğu",
-                ["Gaming.CommonBlurSize"] = "Bulanıklık Boyutu"
+                ["Gaming.CommonBlurSize"] = "Bulanıklık Boyutu",
+                // v2.7 Localization Additions
+                ["Advanced.InstallNow"] = "Şimdi Yükle",
+                ["Advanced.ResetToDefaults"] = "Varsayılanlara Sıfırla",
+                ["Applications.CardColorToolTip"] = "Parlama rengini değiştir",
+                ["Applications.CardCopy"] = "Çoğalt",
+                ["Applications.CardDelete"] = "Sil",
+                ["Applications.CardDurationAndIntensity"] = "Süre ve Yoğunluk",
+                ["Applications.CardEdit"] = "Düzenle",
+                ["Applications.CardPreview"] = "Önizle",
+                ["Applications.CardToggleToolTip"] = "Profili etkinleştir veya devre dışı bırak",
+                ["Applications.Delete"] = "Sil",
+                ["Applications.ExecutableOrAppId"] = "Yürütülebilir Dosya veya Uygulama Kimliği",
+                ["EdgePreview.LivePreviewBanner"] = "Canlı Önizleme etkin",
+                ["Toast.AccessDenied"] = "Erişim reddedildi",
+                ["Toast.ErrorTitle"] = "Hata",
+                ["Toast.FileNotFound"] = "Dosya bulunamadı",
+                ["Toast.GenericError"] = "Beklenmeyen bir hata oluştu",
+                ["Toast.InfoTitle"] = "Bilgi",
+                ["Toast.IoError"] = "G/Ç Hatası",
+                ["Toast.SuccessTitle"] = "Başarılı",
+                ["Toast.WarningTitle"] = "Uyarı",
+                ["Tray.Exit"] = "NotiGlow'dan Çık",
+                ["Tray.OpenSettings"] = "NotiGlow'u Aç",
+                ["Common.Confirm"] = "Onayla",
+                ["Common.Apply"] = "Uygula",
+                ["Common.Warning"] = "Uyarı",
+                ["Common.Error"] = "Hata",
+                ["Common.Information"] = "Bilgi",
+                ["Common.Info"] = "Bilgi",
+                ["Common.Advanced"] = "Gelişmiş",
             }
         };
 

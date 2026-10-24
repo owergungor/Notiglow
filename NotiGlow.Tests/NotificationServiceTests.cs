@@ -290,11 +290,20 @@ namespace NotiGlow.Tests
             var toast = new Windows.UI.Notifications.ToastNotification(template);
             toast.Tag = Guid.NewGuid().ToString();
             var notifier = Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier("5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App");
+            if (notifier.Setting != Windows.UI.Notifications.NotificationSetting.Enabled)
+            {
+                Assert.Inconclusive($"Toast notifications for App ID are '{notifier.Setting}', cannot test real toast reception.");
+                return;
+            }
             notifier.Show(toast);
 
-            await Task.Delay(600);
-
-            int detectedCount = await service.PollOnceAsync();
+            int detectedCount = 0;
+            for (int attempt = 0; attempt < 5; attempt++)
+            {
+                await Task.Delay(400);
+                detectedCount = await service.PollOnceAsync();
+                if (detectedCount >= 1) break;
+            }
             Assert.IsTrue(detectedCount >= 1, "Expected at least 1 new notification detected by active poller.");
             Assert.IsNotNull(capturedItem);
             Assert.AreEqual("5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App", capturedItem.AppId);

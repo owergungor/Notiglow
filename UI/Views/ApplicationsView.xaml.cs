@@ -416,12 +416,6 @@ namespace NotiGlow.UI.Views
             OpenEditor(newProfile, true);
         }
 
-        private void BtnTestNotification_Click(object sender, RoutedEventArgs e)
-        {
-            if (_glowManager == null || _editingProfile == null) return;
-            UpdateEditorPreview();
-            _glowManager.TriggerProfile(_editingProfile);
-        }
 
         private void BtnBrowseAppId_Click(object sender, RoutedEventArgs e)
         {

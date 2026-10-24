@@ -1,5 +1,9 @@
 using System;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NotiGlow.Tests
@@ -7,103 +11,55 @@ namespace NotiGlow.Tests
     [TestClass]
     public class XamlInstantiationTest
     {
+        private static void RunOnSta(Action action)
+        {
+            WpfTestHelper.Run(action);
+        }
+
         [TestMethod]
         public void TestMainWindowXamlLoading()
         {
-            Exception? caughtEx = null;
-
-            var thread = new Thread(() =>
+            RunOnSta(() =>
             {
-                try
-                {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        var app = new System.Windows.Application();
-                        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                    }
-
-                    var window = new NotiGlow.UI.MainWindow();
-                    var settings = new NotiGlow.Services.SettingsService();
-                    var profile = new NotiGlow.Services.ProfileService();
-                    var notif = new NotiGlow.Services.NotificationService();
-                    var glow = new NotiGlow.Services.GlowManager(settings, profile);
-                    window.Initialize(settings, profile, notif, glow);
-                }
-                catch (Exception ex)
-                {
-                    caughtEx = ex;
-                }
+                var window = new NotiGlow.UI.MainWindow();
+                var settings = new NotiGlow.Services.SettingsService();
+                var profile = new NotiGlow.Services.ProfileService();
+                var notif = new NotiGlow.Services.NotificationService();
+                var glow = new NotiGlow.Services.GlowManager(settings, profile);
+                window.Initialize(settings, profile, notif, glow);
             });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (caughtEx != null)
-            {
-                string details = $"EX: {caughtEx.GetType().FullName}: {caughtEx.Message}\nStackTrace:\n{caughtEx.StackTrace}";
-                var inner = caughtEx.InnerException;
-                int depth = 1;
-                while (inner != null)
-                {
-                    details += $"\n--- INNER #{depth} ({inner.GetType().FullName}) ---\nMessage: {inner.Message}\nStackTrace:\n{inner.StackTrace}";
-                    inner = inner.InnerException;
-                    depth++;
-                }
-
-                Assert.Fail($"XAML Load Failed:\n{details}");
-            }
         }
 
         [TestMethod]
         public void TestAppearanceViewDefaultStyleComboBoxHeightAndAlignment()
         {
-            Exception? caughtEx = null;
             double cmbHeight = 0;
             double cmbMinHeight = 0;
-            System.Windows.VerticalAlignment verticalAlignment = System.Windows.VerticalAlignment.Stretch;
+            VerticalAlignment verticalAlignment = VerticalAlignment.Stretch;
             double contentBorderHeight = 0;
 
-            var thread = new Thread(() =>
+            RunOnSta(() =>
             {
-                try
+                var view = new NotiGlow.UI.Views.AppearanceView();
+                var cmb = view.FindName("CmbDefaultStyle") as System.Windows.Controls.ComboBox;
+                if (cmb != null)
                 {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        var app = new System.Windows.Application();
-                        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                    }
+                    cmbHeight = cmb.Height;
+                    cmbMinHeight = cmb.MinHeight;
+                    verticalAlignment = cmb.VerticalContentAlignment;
 
-                    var view = new NotiGlow.UI.Views.AppearanceView();
-                    var cmb = view.FindName("CmbDefaultStyle") as System.Windows.Controls.ComboBox;
-                    if (cmb != null)
+                    cmb.ApplyTemplate();
+                    var contentBorder = cmb.Template?.FindName("ContentBorder", cmb) as System.Windows.Controls.Border;
+                    if (contentBorder != null)
                     {
-                        cmbHeight = cmb.Height;
-                        cmbMinHeight = cmb.MinHeight;
-                        verticalAlignment = cmb.VerticalContentAlignment;
-
-                        cmb.ApplyTemplate();
-                        var contentBorder = cmb.Template?.FindName("ContentBorder", cmb) as System.Windows.Controls.Border;
-                        if (contentBorder != null)
-                        {
-                            contentBorderHeight = contentBorder.Height;
-                        }
+                        contentBorderHeight = contentBorder.Height;
                     }
-                }
-                catch (Exception ex)
-                {
-                    caughtEx = ex;
                 }
             });
 
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            Assert.IsNull(caughtEx, $"Failed with exception: {caughtEx}");
             Assert.AreEqual(48.0, cmbHeight, 0.1, "CmbDefaultStyle Height should be 48px");
             Assert.AreEqual(48.0, cmbMinHeight, 0.1, "CmbDefaultStyle MinHeight should be 48px");
-            Assert.AreEqual(System.Windows.VerticalAlignment.Center, verticalAlignment, "CmbDefaultStyle should have VerticalContentAlignment set to Center");
+            Assert.AreEqual(VerticalAlignment.Center, verticalAlignment, "CmbDefaultStyle should have VerticalContentAlignment set to Center");
             Assert.AreEqual(48.0, contentBorderHeight, 0.1, "ContentBorder template part must have explicit Height 48px");
         }
     }
