@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - NotiGlow</title>
+  <meta name="description" content="Privacy Policy for NotiGlow ambient notification utility. Learn how NotiGlow respects your privacy with 100% local processing and zero telemetry.">
+  <link rel="icon" href="https://raw.githubusercontent.com/owergungor/Notiglow/main/Assets/NotiGlow.ico" type="image/x-icon">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --accent-subtle: rgba(99, 102, 241, 0.12);
+      --code-bg: rgba(0, 0, 0, 0.4);
+      --max-width: 840px;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --card-bg: #ffffff;
+        --card-border: #e2e8f0;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --accent: #4f46e5;
+        --accent-glow: rgba(79, 70, 229, 0.15);
+        --accent-subtle: rgba(79, 70, 229, 0.08);
+        --code-bg: #f1f5f9;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding: 40px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .highlight-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 36px;
+    }
+
+    .highlight-card p {
+      font-size: 15px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-main);
+    }
+
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 14px;
+      font-size: 15px;
+      color: var(--text-main);
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    ul {
+      margin: 12px 0 16px 24px;
+      color: var(--text-main);
+      font-size: 15px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    li:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      color: var(--text-main);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      padding: 2px 6px;
+      background: var(--code-bg);
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 24px 14px;
+      }
+      section {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <svg class="brand-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="10" fill="#0A0A0A"/>
+          <rect x="2" y="2" width="44" height="44" rx="8" stroke="#6366F1" stroke-width="2.5" stroke-opacity="0.9"/>
+          <circle cx="24" cy="24" r="8" fill="#6366F1"/>
+        </svg>
+        <span class="brand-title">NotiGlow</span>
+        <span class="badge">v3.0</span>
+      </div>
+      <h1>Privacy Policy</h1>
+      <p class="meta">Effective Date: October 25, 2026 &bull; Last Updated: October 25, 2026</p>
+    </header>
+
+    <div class="highlight-card">
+      <p>
+        <strong>Summary:</strong> NotiGlow is an ambient notification visualizer designed with a privacy-first, local-only architecture.
+        We do <strong>not</strong> collect, store, sell, or transmit your personal data.
+        Notification details are processed exclusively in real-time memory on your personal computer and are never uploaded anywhere.
+      </p>
+    </div>
+
+    <section>
+      <h2><span class="section-num">1</span> Information We Collect</h2>
+      <p>
+        <strong>We do not collect any personally identifiable information (PII).</strong>
+      </p>
+      <p>
+        When using NotiGlow, you are not asked to register, log in, provide an email address, or disclose any personal identity details.
+        NotiGlow does not employ user accounts or centralized profiles.
+      </p>
+      <ul>
+        <li><strong>Personal Information:</strong> None collected.</li>
+        <li><strong>Location Data:</strong> None collected.</li>
+        <li><strong>Device Identifiers / Telemetry:</strong> None collected.</li>
+        <li><strong>Payment & Financial Data:</strong> None collected.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">2</span> How We Process Notification Data</h2>
+      <p>
+        NotiGlow requires Windows notification listener permissions (<code>UserNotificationListener</code>) solely to detect incoming toasts and trigger screen edge glow animations.
+      </p>
+      <ul>
+        <li>
+          <strong>Transient In-Memory Matching:</strong> When Windows receives a toast notification, NotiGlow inspects the sender application identifier (AUMID or App Name, such as WhatsApp, Discord, or Slack) and header in transient local device memory.
+        </li>
+        <li>
+          <strong>Profile Color Association:</strong> The detected application ID is matched against your locally configured color themes to select the visual illumination style.
+        </li>
+        <li>
+          <strong>Immediate Discard:</strong> Notification data is processed strictly in volatile RAM and is immediately evicted. Notification message bodies, sender identities, and content are <strong>never written to disk, never logged to database, and never transmitted over the network</strong>.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">3</span> How We Use Information</h2>
+      <p>
+        Because NotiGlow does not gather personal information, we do not use your data for advertising, analytics, marketing, behavioral profiling, or machine learning model training.
+      </p>
+      <p>
+        Any interaction with local system APIs is used solely for the real-time execution of the desktop ambient lighting effect as configured by you.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">4</span> Data Storage</h2>
+      <p>
+        All application configuration files and customized application profiles are stored entirely on your local machine:
+      </p>
+      <ul>
+        <li>
+          <strong>Local Settings:</strong> User preferences (e.g., edge thickness, animation style, color theme, monitor selection) are saved locally in JSON format at <code>%AppData%\NotiGlow\settings.json</code> (or in your app's isolated local app container if installed via the Microsoft Store).
+        </li>
+        <li>
+          <strong>Application Profiles:</strong> Per-app color mappings are saved locally at <code>%AppData%\NotiGlow\profiles.json</code>.
+        </li>
+        <li>
+          <strong>Diagnostic Logs:</strong> Local operational logs (e.g., startup errors) may be written to <code>%AppData%\NotiGlow\logs\</code> strictly for local troubleshooting and are never uploaded.
+        </li>
+      </ul>
+      <p>
+        Uninstalling the application or deleting the application folder removes all associated local configuration data.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">5</span> Data Sharing</h2>
+      <p>
+        We do <strong>not</strong> share, sell, rent, disclose, or trade any information with third parties, data brokers, advertisers, or business partners.
+      </p>
+      <p>
+        There are no remote servers, centralized cloud databases, or third-party tracking SDKs integrated into NotiGlow.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">6</span> Network & Internet Communication</h2>
+      <p>
+        NotiGlow minimizes network communication based on the distribution channel:
+      </p>
+      <ul>
+        <li>
+          <strong>Microsoft Store Edition:</strong>
+          The Microsoft Store release of NotiGlow is <strong>100% offline</strong>.
+          It performs zero network calls.
+          All application updates and installations are managed securely and directly by the Microsoft Store client.
+        </li>
+        <li>
+          <strong>GitHub / Standalone Edition:</strong>
+          If configured by the user, NotiGlow periodically queries the public GitHub Releases API (<code>api.github.com</code>) to check if a newer version of the utility is available.
+          This request contains no user identifiers, personal information, or device tracking tokens—only standard HTTP headers. Users may disable automatic update checks entirely in the Advanced settings tab.
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="section-num">7</span> Third-Party Services & Analytics</h2>
+      <p>
+        NotiGlow does not embed or link to any third-party analytics platforms, diagnostic telemetry frameworks, crash collectors, or advertising networks (e.g., Google Analytics, Firebase, Sentry, App Center).
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">8</span> Children's Privacy</h2>
+      <p>
+        NotiGlow does not knowingly collect, request, or maintain personal information from children under the age of 13 (or under 16 in certain jurisdictions), nor does it target children. Because no personal data is collected from any user, NotiGlow is fully compliant with COPPA (Children's Online Privacy Protection Act) and the EU General Data Protection Regulation (GDPR).
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">9</span> Changes to This Privacy Policy</h2>
+      <p>
+        We may occasionally update this Privacy Policy to reflect application updates or regulatory requirements.
+        Any revisions will be published directly to this page with an updated "Effective Date".
+        Continued use of NotiGlow after any changes constitutes acceptance of the revised policy.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="section-num">10</span> Contact Information</h2>
+      <p>
+        If you have questions, feedback, or concerns regarding this Privacy Policy or NotiGlow's privacy practices, please contact us through our official project repository:
+      </p>
+      <ul>
+        <li><strong>Project Repository:</strong> <a href="https://github.com/owergungor/Notiglow" target="_blank" rel="noopener noreferrer">https://github.com/owergungor/Notiglow</a></li>
+        <li><strong>Issue Tracker & Inquiries:</strong> <a href="https://github.com/owergungor/Notiglow/issues" target="_blank" rel="noopener noreferrer">https://github.com/owergungor/Notiglow/issues</a></li>
+        <li><strong>Publisher:</strong> crius</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>&copy; 2026 NotiGlow Project &bull; crius &bull; All rights reserved.</p>
+    </footer>
+  </div>
+</body>
+</html>
