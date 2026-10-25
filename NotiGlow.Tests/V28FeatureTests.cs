@@ -46,10 +46,10 @@ namespace NotiGlow.Tests
             Assert.IsTrue(File.Exists(csprojPath), "NotiGlow.csproj must exist.");
 
             var content = File.ReadAllText(csprojPath);
-            StringAssert.Contains(content, "<Version>2.8</Version>");
-            StringAssert.Contains(content, "<AssemblyVersion>2.8.0.0</AssemblyVersion>");
-            StringAssert.Contains(content, "<FileVersion>2.8.0.0</FileVersion>");
-            StringAssert.Contains(content, "<InformationalVersion>2.8</InformationalVersion>");
+            StringAssert.Contains(content, "<Version>3.0</Version>");
+            StringAssert.Contains(content, "<AssemblyVersion>3.0.0.0</AssemblyVersion>");
+            StringAssert.Contains(content, "<FileVersion>3.0.0.0</FileVersion>");
+            StringAssert.Contains(content, "<InformationalVersion>3.0</InformationalVersion>");
         }
 
         [TestMethod]
@@ -59,10 +59,10 @@ namespace NotiGlow.Tests
             Assert.IsTrue(File.Exists(issPath), "NotiGlow-Setup.iss must exist.");
 
             var content = File.ReadAllText(issPath);
-            StringAssert.Contains(content, "AppVersion=2.8");
-            StringAssert.Contains(content, "VersionInfoVersion=2.8.0.0");
-            StringAssert.Contains(content, "VersionInfoTextVersion=2.8");
-            StringAssert.Contains(content, "OutputBaseFilename=NotiGlow-Setup-v2.8");
+            StringAssert.Contains(content, "AppVersion=3.0");
+            StringAssert.Contains(content, "VersionInfoVersion=3.0.0.0");
+            StringAssert.Contains(content, "VersionInfoTextVersion=3.0");
+            StringAssert.Contains(content, "OutputBaseFilename=NotiGlow-Setup-v3.0");
         }
 
         [TestMethod]
@@ -76,7 +76,7 @@ namespace NotiGlow.Tests
             var identity = doc.Descendants(ns + "Identity").FirstOrDefault();
 
             Assert.IsNotNull(identity, "Identity element must exist in AppxManifest.");
-            Assert.AreEqual("2.8.0.0", identity.Attribute("Version")?.Value);
+            Assert.AreEqual("3.0.0.0", identity.Attribute("Version")?.Value);
         }
 
         [TestMethod]
@@ -84,11 +84,11 @@ namespace NotiGlow.Tests
         {
             var updateServicePath = Path.Combine(_repoRoot, "Services", "UpdateService.cs");
             var content = File.ReadAllText(updateServicePath);
-            StringAssert.Contains(content, "_cachedVersion = \"2.8\";");
+            StringAssert.Contains(content, "_cachedVersion = \"3.0\";");
 
             var advancedXamlPath = Path.Combine(_repoRoot, "UI", "Views", "AdvancedView.xaml");
             var xamlContent = File.ReadAllText(advancedXamlPath);
-            StringAssert.Contains(xamlContent, "Current Version: v2.8");
+            StringAssert.Contains(xamlContent, "Current Version: v3.0");
         }
 
         #endregion
@@ -196,7 +196,7 @@ namespace NotiGlow.Tests
             Assert.IsNotNull(identity);
             Assert.AreEqual(PackageService.ExpectedPackageName, identity.Attribute("Name")?.Value);
             Assert.AreEqual(PackageService.ExpectedPublisher, identity.Attribute("Publisher")?.Value);
-            Assert.AreEqual("2.8.0.0", identity.Attribute("Version")?.Value);
+            Assert.AreEqual("3.0.0.0", identity.Attribute("Version")?.Value);
             Assert.AreEqual("x64", identity.Attribute("ProcessorArchitecture")?.Value);
 
             var properties = doc.Descendants(ns + "Properties").FirstOrDefault();

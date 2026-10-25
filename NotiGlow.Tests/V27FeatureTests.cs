@@ -247,21 +247,21 @@ namespace NotiGlow.Tests
                 baseDir = Directory.GetCurrentDirectory();
             }
 
-            Assert.IsTrue(UpdateService.CurrentVersionString == "2.7" || UpdateService.CurrentVersionString == "2.8", "UpdateService fallback version must be at least 2.7.");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.7" || UpdateService.CurrentVersionString == "2.8" || UpdateService.CurrentVersionString == "3.0", "UpdateService fallback version must be at least 2.7.");
 
             string csproj = File.ReadAllText(Path.Combine(baseDir, "NotiGlow.csproj"));
-            Assert.IsTrue(csproj.Contains("<Version>2.7</Version>") || csproj.Contains("<Version>2.8</Version>"));
-            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.7.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.8.0.0</AssemblyVersion>"));
-            Assert.IsTrue(csproj.Contains("<FileVersion>2.7.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.8.0.0</FileVersion>"));
-            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.7</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.8</InformationalVersion>"));
+            Assert.IsTrue(csproj.Contains("<Version>2.7</Version>") || csproj.Contains("<Version>2.8</Version>") || csproj.Contains("<Version>3.0</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.7.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.8.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>3.0.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.7.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.8.0.0</FileVersion>") || csproj.Contains("<FileVersion>3.0.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.7</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.8</InformationalVersion>") || csproj.Contains("<InformationalVersion>3.0</InformationalVersion>"));
 
             string iss = File.ReadAllText(Path.Combine(baseDir, "NotiGlow-Setup.iss"));
-            Assert.IsTrue(iss.Contains("AppVersion=2.7") || iss.Contains("AppVersion=2.8"));
-            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.7.0.0") || iss.Contains("VersionInfoVersion=2.8.0.0"));
-            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.7") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.8"));
+            Assert.IsTrue(iss.Contains("AppVersion=2.7") || iss.Contains("AppVersion=2.8") || iss.Contains("AppVersion=3.0"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.7.0.0") || iss.Contains("VersionInfoVersion=2.8.0.0") || iss.Contains("VersionInfoVersion=3.0.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.7") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.8") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v3.0"));
 
             string adv = File.ReadAllText(Path.Combine(baseDir, "UI", "Views", "AdvancedView.xaml"));
-            Assert.IsTrue(adv.Contains("Current Version: v2.7") || adv.Contains("Current Version: v2.8"));
+            Assert.IsTrue(adv.Contains("Current Version: v2.7") || adv.Contains("Current Version: v2.8") || adv.Contains("Current Version: v3.0"));
         }
 
         #endregion
