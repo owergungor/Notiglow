@@ -16,11 +16,16 @@ scratch/
 
 # Release distribution archives & packages
 release/
+artifacts/
 *.exe
 *.zip
 *.7z
 *.rar
 *.msi
+*.msix
+*.appx
+*.msixbundle
+*.appxbundle
 *.nupkg
 
 # Visual Studio, Rider & VS Code metadata

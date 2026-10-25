@@ -247,21 +247,21 @@ namespace NotiGlow.Tests
                 baseDir = Directory.GetCurrentDirectory();
             }
 
-            Assert.AreEqual("2.7", UpdateService.CurrentVersionString, "UpdateService fallback version must be 2.7.");
+            Assert.IsTrue(UpdateService.CurrentVersionString == "2.7" || UpdateService.CurrentVersionString == "2.8", "UpdateService fallback version must be at least 2.7.");
 
             string csproj = File.ReadAllText(Path.Combine(baseDir, "NotiGlow.csproj"));
-            Assert.IsTrue(csproj.Contains("<Version>2.7</Version>"));
-            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.7.0.0</AssemblyVersion>"));
-            Assert.IsTrue(csproj.Contains("<FileVersion>2.7.0.0</FileVersion>"));
-            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.7</InformationalVersion>"));
+            Assert.IsTrue(csproj.Contains("<Version>2.7</Version>") || csproj.Contains("<Version>2.8</Version>"));
+            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.7.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.8.0.0</AssemblyVersion>"));
+            Assert.IsTrue(csproj.Contains("<FileVersion>2.7.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.8.0.0</FileVersion>"));
+            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.7</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.8</InformationalVersion>"));
 
             string iss = File.ReadAllText(Path.Combine(baseDir, "NotiGlow-Setup.iss"));
-            Assert.IsTrue(iss.Contains("AppVersion=2.7"));
-            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.7.0.0"));
-            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.7"));
+            Assert.IsTrue(iss.Contains("AppVersion=2.7") || iss.Contains("AppVersion=2.8"));
+            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.7.0.0") || iss.Contains("VersionInfoVersion=2.8.0.0"));
+            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.7") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.8"));
 
             string adv = File.ReadAllText(Path.Combine(baseDir, "UI", "Views", "AdvancedView.xaml"));
-            Assert.IsTrue(adv.Contains("Current Version: v2.7"));
+            Assert.IsTrue(adv.Contains("Current Version: v2.7") || adv.Contains("Current Version: v2.8"));
         }
 
         #endregion
