@@ -45,6 +45,15 @@ namespace NotiGlow.UI.Views
         private void UpdateStatusText()
         {
             if (TxtUpdateStatus == null || _settingsService == null) return;
+
+            if (PackageService.IsPackaged)
+            {
+                TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
+                    "Advanced.StoreVersionFormat",
+                    UpdateService.CurrentVersionString);
+                return;
+            }
+
             var settings = _settingsService.Current;
             if (settings.LastUpdateCheck.HasValue)
             {
@@ -108,9 +117,20 @@ namespace NotiGlow.UI.Views
             ToggleIdentityDebug.IsChecked = settings.ShowIdentityDebugInfo;
 
             // Auto Update Settings
-            ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
-            CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
-            SelectUpdateFrequencyItem(settings.UpdateFrequency);
+            if (PackageService.IsPackaged)
+            {
+                ToggleAutoUpdates.IsChecked = true;
+                ToggleAutoUpdates.IsEnabled = false;
+                ToggleAutoUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+                CmbUpdateFrequency.IsEnabled = false;
+                BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+            }
+            else
+            {
+                ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
+                CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
+                SelectUpdateFrequencyItem(settings.UpdateFrequency);
+            }
             UpdateStatusText();
 
             _isInitializing = false;
@@ -145,6 +165,7 @@ namespace NotiGlow.UI.Views
         private void ToggleAutoUpdates_Click(object sender, RoutedEventArgs e)
         {
             if (_isInitializing || _settingsService == null) return;
+            if (PackageService.IsPackaged) return;
             var settings = _settingsService.Current;
             settings.AutoCheckUpdates = ToggleAutoUpdates.IsChecked == true;
             CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
@@ -174,6 +195,16 @@ namespace NotiGlow.UI.Views
         private async void BtnCheckUpdates_Click(object sender, RoutedEventArgs e)
         {
             if (_settingsService == null) return;
+
+            if (PackageService.IsPackaged)
+            {
+                string storeTitle = LocalizationService.Instance.GetString("Common.Information");
+                string storeMsg = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+                ToastNotificationService.Instance.ShowInfo(
+                    string.IsNullOrEmpty(storeMsg) ? "Updates are managed automatically by the Microsoft Store." : storeMsg,
+                    string.IsNullOrEmpty(storeTitle) ? "Microsoft Store" : storeTitle);
+                return;
+            }
 
             BtnCheckUpdates.IsEnabled = false;
             TxtUpdateStatus.Text = LocalizationService.Instance.GetString("Advanced.CheckingUpdates");

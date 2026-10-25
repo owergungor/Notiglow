@@ -83,7 +83,7 @@ namespace NotiGlow.Services
                 // Fallback
             }
 
-            _cachedVersion = "2.7";
+            _cachedVersion = "2.8";
             return _cachedVersion;
         }
         private const string GitHubOwner = "owergungor";
@@ -144,6 +144,9 @@ namespace NotiGlow.Services
 
         public static bool ShouldCheckForUpdates(AppSettings settings, DateTime utcNow)
         {
+            if (PackageService.IsPackaged)
+                return false;
+
             if (!settings.AutoCheckUpdates)
                 return false;
 
@@ -171,6 +174,17 @@ namespace NotiGlow.Services
 
         public async Task<UpdateInfo> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
         {
+            if (PackageService.IsPackaged)
+            {
+                LoggerService.LogInfo("Update check requested on packaged Microsoft Store build. Updates managed by Store.");
+                StatusChanged?.Invoke(this, (UpdateStatus.UpToDate, "Updates are managed automatically by the Microsoft Store.", 100));
+                return new UpdateInfo
+                {
+                    CurrentVersion = CurrentVersionString,
+                    IsUpdateAvailable = false
+                };
+            }
+
             StatusChanged?.Invoke(this, (UpdateStatus.Checking, "Checking for updates...", 0));
 
             var info = new UpdateInfo
@@ -278,6 +292,12 @@ namespace NotiGlow.Services
             IProgress<double>? progress = null,
             CancellationToken cancellationToken = default)
         {
+            if (PackageService.IsPackaged)
+            {
+                LoggerService.LogWarning("DownloadAndVerifyPackageAsync is disabled in Microsoft Store package builds.");
+                return null;
+            }
+
             string? downloadUrl = info.SelectedDownloadUrl;
             if (string.IsNullOrEmpty(downloadUrl))
             {
@@ -418,6 +438,12 @@ namespace NotiGlow.Services
 
         public static bool ExecuteUpdateAndRestart(string packagePath, Action onAppCloseRequested)
         {
+            if (PackageService.IsPackaged)
+            {
+                LoggerService.LogWarning("ExecuteUpdateAndRestart is disabled in Microsoft Store package builds.");
+                return false;
+            }
+
             try
             {
                 if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
