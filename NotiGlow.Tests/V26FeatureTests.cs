@@ -227,14 +227,7 @@ namespace NotiGlow.Tests
             Assert.AreEqual(version, UpdateService.FallbackVersion);
             ReleaseVersionAssertions.AssertInstallerVersionMetadata(version);
 
-            var advXaml = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "AdvancedView.xaml"));
-            var advCode = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "AdvancedView.xaml.cs"));
-            StringAssert.Contains(advXaml, "x:Name=\"TxtUpdateStatus\"");
-            Assert.IsFalse(Regex.IsMatch(advXaml, @"Text=""[^""]*Current Version:\s*v\d+\.\d+"),
-                "The view must not hardcode a release number in its initial status text.");
-            Assert.IsTrue(Regex.IsMatch(advCode,
-                @"GetString\(\s*""Advanced\.(?:CurrentVersionFormat|StoreVersionFormat)""\s*,\s*UpdateService\.CurrentVersionString\s*\)"),
-                "The visible update status must be formatted with CurrentVersionString.");
+            ReleaseVersionAssertions.AssertAdvancedViewUsesCurrentVersion();
         }
 
         #endregion

@@ -66,5 +66,31 @@ namespace NotiGlow.Tests
             StringAssert.Contains(installer, $"VersionInfoVersion={assemblyVersion}");
             StringAssert.Contains(installer, $"OutputBaseFilename=NotiGlow-Setup-v{currentVersion}");
         }
+
+        public static void AssertPackageManifestVersionMetadata(string currentVersion)
+        {
+            var manifest = XDocument.Load(Path.Combine(SolutionDirectory, "Package", "AppxManifest.xml"));
+            XNamespace ns = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
+            var identity = manifest.Descendants(ns + "Identity").FirstOrDefault();
+
+            Assert.IsNotNull(identity, "AppxManifest must contain an Identity element.");
+            Assert.AreEqual(currentVersion + ".0.0", identity!.Attribute("Version")?.Value,
+                "MSIX package version must match the four-part application version.");
+        }
+
+        public static void AssertAdvancedViewUsesCurrentVersion()
+        {
+            var xamlPath = Path.Combine(SolutionDirectory, "UI", "Views", "AdvancedView.xaml");
+            var codePath = Path.Combine(SolutionDirectory, "UI", "Views", "AdvancedView.xaml.cs");
+            var xaml = File.ReadAllText(xamlPath);
+            var code = File.ReadAllText(codePath);
+
+            StringAssert.Contains(xaml, "x:Name=\"TxtUpdateStatus\"");
+            Assert.IsFalse(Regex.IsMatch(xaml, @"Text=""[^""]*Current Version:\s*v\d+\.\d+"),
+                "The view must not hardcode a release number in its initial status text.");
+            Assert.IsTrue(Regex.IsMatch(code,
+                @"GetString\(\s*""Advanced\.(?:CurrentVersionFormat|StoreVersionFormat)""\s*,\s*UpdateService\.CurrentVersionString\s*\)"),
+                "The visible update status must be formatted with CurrentVersionString.");
+        }
     }
 }

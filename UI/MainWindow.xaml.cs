@@ -344,12 +344,25 @@ namespace NotiGlow.UI
 
         private void OnLanguageChanged(object? sender, string langCode)
         {
-            Dispatcher.Invoke(() =>
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive)
             {
-                UpdateLanguageButtonVisuals();
-                UpdateAppTitle();
-                UpdateNavSelectionVisuals(_currentTag);
-            });
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+                return;
+            }
+
+            try
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    UpdateLanguageButtonVisuals();
+                    UpdateAppTitle();
+                    UpdateNavSelectionVisuals(_currentTag);
+                });
+            }
+            catch (InvalidOperationException)
+            {
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            }
         }
 
         public void UpdateLanguageButtonDisplay(bool isPaneOpen)
