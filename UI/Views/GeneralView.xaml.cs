@@ -54,24 +54,57 @@ namespace NotiGlow.UI.Views
 
             if (_notificationService != null)
             {
-                _notificationService.AccessStatusChanged += (s, status) => Dispatcher?.Invoke(() => UpdateListenerStatus(status));
+                _notificationService.AccessStatusChanged += OnAccessStatusChanged;
                 UpdateListenerStatus(_notificationService.CurrentAccessStatus);
             }
 
-            LocalizationService.Instance.LanguageChanged += (s, e) =>
-            {
-                Dispatcher?.Invoke(() =>
-                {
-                    if (_notificationService != null)
-                    {
-                        UpdateListenerStatus(_notificationService.CurrentAccessStatus);
-                    }
-                    UpdateLanguageSelection(e);
-                    UpdateThemeIndicator(immediate: true);
-                });
-            };
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
 
             LoadSettings();
+        }
+
+        private void OnAccessStatusChanged(object? sender, Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
+        {
+            if (!TryPostToDispatcher(() => UpdateListenerStatus(status)) &&
+                (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive))
+            {
+                if (_notificationService != null)
+                    _notificationService.AccessStatusChanged -= OnAccessStatusChanged;
+            }
+        }
+
+        private void OnLanguageChanged(object? sender, string languageCode)
+        {
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive)
+            {
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+                return;
+            }
+
+            TryPostToDispatcher(() =>
+            {
+                if (_notificationService != null)
+                    UpdateListenerStatus(_notificationService.CurrentAccessStatus);
+                UpdateLanguageSelection(languageCode);
+                UpdateThemeIndicator(immediate: true);
+            });
+        }
+
+        private bool TryPostToDispatcher(Action action)
+        {
+            var dispatcher = Dispatcher;
+            if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished || !dispatcher.Thread.IsAlive)
+                return false;
+
+            try
+            {
+                dispatcher.BeginInvoke(action);
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         private bool _isUpdatingLanguage = false;

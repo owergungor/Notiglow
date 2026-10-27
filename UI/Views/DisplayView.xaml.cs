@@ -17,10 +17,26 @@ namespace NotiGlow.UI.Views
         public DisplayView()
         {
             InitializeComponent();
-            LocalizationService.Instance.LanguageChanged += (s, e) =>
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged(object? sender, string languageCode)
+        {
+            var dispatcher = Dispatcher;
+            if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished || !dispatcher.Thread.IsAlive)
             {
-                Dispatcher?.Invoke(RefreshDetectedMonitors);
-            };
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+                return;
+            }
+
+            try
+            {
+                dispatcher.BeginInvoke(RefreshDetectedMonitors);
+            }
+            catch (InvalidOperationException)
+            {
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            }
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null)

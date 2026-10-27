@@ -37,6 +37,8 @@ namespace NotiGlow.UI.Views
                 {
                     ApplyComboBoxItemTexts();
                     UpdateStatusText();
+                    BtnCheckUpdates.Content = LocalizationService.Instance.GetString(PackageService.IsPackaged ? "Advanced.UpdateInStore" : "Advanced.CheckForUpdates");
+                    if (PackageService.IsPackaged) BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
                 });
             }
             catch { }
@@ -46,7 +48,7 @@ namespace NotiGlow.UI.Views
         {
             if (TxtUpdateStatus == null || _settingsService == null) return;
 
-            if (PackageService.IsPackaged)
+            if (PackageService.GetUpdateRoute(PackageService.IsPackaged) == UpdateRoute.MicrosoftStorePage)
             {
                 TxtUpdateStatus.Text = LocalizationService.Instance.GetString(
                     "Advanced.StoreVersionFormat",
@@ -124,9 +126,12 @@ namespace NotiGlow.UI.Views
                 ToggleAutoUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
                 CmbUpdateFrequency.IsEnabled = false;
                 BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+                BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.UpdateInStore");
             }
             else
             {
+                BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.CheckForUpdates");
+                BtnCheckUpdates.ToolTip = null;
                 ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
                 CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
                 SelectUpdateFrequencyItem(settings.UpdateFrequency);
@@ -196,13 +201,9 @@ namespace NotiGlow.UI.Views
         {
             if (_settingsService == null) return;
 
-            if (PackageService.IsPackaged)
+            if (PackageService.GetUpdateRoute(PackageService.IsPackaged) == UpdateRoute.MicrosoftStorePage)
             {
-                string storeTitle = LocalizationService.Instance.GetString("Common.Information");
-                string storeMsg = LocalizationService.Instance.GetString("Advanced.StoreManaged");
-                ToastNotificationService.Instance.ShowInfo(
-                    string.IsNullOrEmpty(storeMsg) ? "Updates are managed automatically by the Microsoft Store." : storeMsg,
-                    string.IsNullOrEmpty(storeTitle) ? "Microsoft Store" : storeTitle);
+                PackageService.OpenStorePage();
                 return;
             }
 

@@ -7,6 +7,7 @@
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
                   mc:Ignorable="d" 
                   Title="NotiGlow" Height="760" Width="1140"
+                  Icon="pack://application:,,,/NotiGlow;component/Assets/NotiGlow.ico"
                   MinHeight="600" MinWidth="900"
                   WindowStartupLocation="CenterScreen"
                   ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
@@ -58,7 +59,7 @@
         <!-- Custom TitleBar -->
         <ui:TitleBar x:Name="AppTitleBar"
                      Grid.Row="0"
-                     Title="NotiGlow — Ambient Notification Utility"
+                     Title="NotiGlow"
                      Foreground="{DynamicResource TextPrimary}"
                      ButtonsForeground="{DynamicResource TextPrimary}">
             <ui:TitleBar.Icon>

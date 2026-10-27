@@ -47,6 +47,7 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
+        internal const string FallbackVersion = "3.1";
         public static string CurrentVersionString => ResolveCurrentVersion();
         private static string? _cachedVersion;
 
@@ -83,7 +84,7 @@ namespace NotiGlow.Services
                 // Fallback
             }
 
-            _cachedVersion = "3.0";
+            _cachedVersion = FallbackVersion;
             return _cachedVersion;
         }
         private const string GitHubOwner = "owergungor";

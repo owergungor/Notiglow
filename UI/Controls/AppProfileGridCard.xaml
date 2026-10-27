@@ -21,7 +21,7 @@
                 <!-- Top Row: Icon/Badge + App Title/Category + Enable Switch -->
                 <RowDefinition Height="Auto"/>
                 <!-- Middle Row: Details / Specs -->
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <!-- Bottom Row: Action Toolbar (Preview, Edit, Copy, Delete) -->
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -53,20 +53,16 @@
 
             <!-- Middle Row: Specs Chips / Info -->
             <Border Grid.Row="1" Margin="0,12,0,12" Background="{DynamicResource CardBackgroundSecondary}" CornerRadius="8" Padding="10,8">
-                <StackPanel>
-                    <Grid Margin="0,0,0,4">
-                        <TextBlock Text="{DynamicResource Applications.CardDurationAndIntensity}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
-                        <TextBlock x:Name="TxtDurationAndIntensity" Text="4.0s • 80%" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    </Grid>
-                    <Grid Margin="0,0,0,4">
-                        <TextBlock Text="{DynamicResource Applications.CardStyle}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
-                        <TextBlock x:Name="TxtStyle" Text="Pulse" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentColor}"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="{DynamicResource Applications.CardPriority}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
-                        <TextBlock x:Name="TxtPriority" Text="Normal" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
-                    </Grid>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtDurationAndIntensity" Grid.Column="0" Text="4s • 80%" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtStyle" Grid.Column="1" Text="Pulse" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentColor}"/>
+                    <TextBlock x:Name="TxtPriority" Grid.Column="2" Text="Normal" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                </Grid>
             </Border>
 
             <!-- Bottom Row: Hero UI-style Action Button Group -->
