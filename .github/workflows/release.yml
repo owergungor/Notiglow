@@ -91,10 +91,10 @@ jobs:
           $hash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash
           $shaLines = @("$hash  $zipName")
 
-          $installerPath = "release/NotiGlow-Setup-x64.exe"
+          $installerPath = "release/NotiGlow-Setup-v$cleanVersion.exe"
           if (Test-Path $installerPath) {
             $installerHash = (Get-FileHash -Path $installerPath -Algorithm SHA256).Hash
-            $shaLines += "$installerHash  NotiGlow-Setup-x64.exe"
+            $shaLines += "$installerHash  NotiGlow-Setup-v$cleanVersion.exe"
           }
 
           $shaLines | Out-File -FilePath "release/SHA256.txt" -Encoding utf8
@@ -131,7 +131,7 @@ jobs:
           generate_release_notes: ${{ env.HAS_EXISTING_BODY != 'true' }}
           files: |
             release/NotiGlow_*_win-x64.zip
-            release/NotiGlow-Setup-x64.exe
+            release/NotiGlow-Setup-v*.exe
             release/SHA256.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
