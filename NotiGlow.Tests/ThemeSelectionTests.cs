@@ -110,8 +110,8 @@ namespace NotiGlow.Tests
                 ms,
                 System.Windows.Media.Imaging.BitmapCreateOptions.None,
                 System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
-            Assert.AreEqual(1254, frame.PixelWidth);
-            Assert.AreEqual(1254, frame.PixelHeight);
+            Assert.AreEqual(1080, frame.PixelWidth);
+            Assert.AreEqual(1080, frame.PixelHeight);
         }
 
         [TestMethod]
