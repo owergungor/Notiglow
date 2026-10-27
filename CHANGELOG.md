@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.1] - 2026-10-27
+- Updated the Windows application icon to match the Microsoft Store artwork.
+- Added alphabetical and recently added sorting for tracked applications, including direction toggling.
+- Routed packaged builds to the Microsoft Store for updates and refreshed the themed tray menu.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

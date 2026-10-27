@@ -22,7 +22,9 @@ namespace NotiGlow.UI.Views
         private bool _isLoadedOnce = false;
         private bool _isDirty = true;
         private bool _hasInitialScanRun = false;
-
+        private ApplicationSortCriterion _sortCriterion = ApplicationSortCriterion.Alphabetical;
+        private bool _sortDescending;
+        private bool _ignoreNextSortSelectionChanged;
         public bool IsDirty => _isDirty;
 
         public void EnsureLoaded()
@@ -37,6 +39,8 @@ namespace NotiGlow.UI.Views
         public ApplicationsView()
         {
             InitializeComponent();
+            CmbApplicationSort.ItemContainerGenerator.StatusChanged += (s, e) => AttachSortItemHandlers();
+            CmbApplicationSort.Loaded += (s, e) => AttachSortItemHandlers();
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Loaded += async (s, e) =>
             {
@@ -61,6 +65,7 @@ namespace NotiGlow.UI.Views
                 Dispatcher.BeginInvoke(() =>
                 {
                     RefreshAppCards();
+                    RefreshSortLabels();
                     if (_editingProfile != null && PnlEditProfile.Visibility == Visibility.Visible)
                     {
                         TxtEditorTitle.Text = _isNewProfile
@@ -77,6 +82,10 @@ namespace NotiGlow.UI.Views
             _profileService = profileService;
             _glowManager = glowManager;
             _settingsService = settingsService;
+            _sortCriterion = ApplicationSortCriterion.Alphabetical;
+            _sortDescending = false;
+            CmbApplicationSort.SelectedIndex = 0;
+            RefreshSortLabels();
 
             if (_settingsService != null)
             {
@@ -94,6 +103,51 @@ namespace NotiGlow.UI.Views
             RefreshAppCards();
         }
 
+        private void RefreshSortLabels()
+        {
+            if (CmbApplicationSort == null || CmbApplicationSort.Items.Count < 2) return;
+            if (CmbApplicationSort.IsDropDownOpen) return;            var alphabetical = (ComboBoxItem)CmbApplicationSort.Items[0];            var recentlyAdded = (ComboBoxItem)CmbApplicationSort.Items[1];            alphabetical.Content = LocalizationService.Instance.GetString(                _sortCriterion == ApplicationSortCriterion.Alphabetical && _sortDescending                    ? "Applications.SortAlphabeticalDescendingShort"                    : "Applications.SortAlphabeticalAscendingShort");            recentlyAdded.Content = LocalizationService.Instance.GetString(                _sortCriterion == ApplicationSortCriterion.RecentlyAdded && !_sortDescending                    ? "Applications.SortFirstAddedShort"                    : "Applications.SortRecentlyAddedShort");            CmbApplicationSort.SelectedItem = _sortCriterion == ApplicationSortCriterion.Alphabetical                ? alphabetical                : recentlyAdded;        }
+
+        private void AttachSortItemHandlers()
+        {
+            if (CmbApplicationSort?.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated) return;
+            foreach (var item in CmbApplicationSort.Items)
+            {
+                if (CmbApplicationSort.ItemContainerGenerator.ContainerFromItem(item) is ComboBoxItem container)
+                {
+                    container.PreviewMouseLeftButtonDown -= SortItem_PreviewMouseLeftButtonDown;
+                    container.PreviewMouseLeftButtonDown += SortItem_PreviewMouseLeftButtonDown;
+                }
+            }
+        }
+
+        private void SortItem_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is not ComboBoxItem item || !ReferenceEquals(item, CmbApplicationSort.SelectedItem) || item.Tag is not string tag) return;
+            if (!Enum.TryParse(tag, out ApplicationSortCriterion criterion)) return;
+            _sortCriterion = criterion;
+            _sortDescending = !_sortDescending;
+            _ignoreNextSortSelectionChanged = true;
+            RefreshSortLabels();
+            RefreshAppCards();
+        }
+
+        private void CmbApplicationSort_DropDownOpened(object sender, EventArgs e)        {            ((ComboBoxItem)CmbApplicationSort.Items[0]).Content = LocalizationService.Instance.GetString("Applications.SortAlphabeticalAscending");            ((ComboBoxItem)CmbApplicationSort.Items[1]).Content = LocalizationService.Instance.GetString("Applications.SortRecentlyAdded");        }        private void CmbApplicationSort_DropDownClosed(object sender, EventArgs e)        {            _ignoreNextSortSelectionChanged = false;            RefreshSortLabels();        }        private void CmbApplicationSort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbApplicationSort.SelectedItem is not ComboBoxItem item || item.Tag is not string tag) return;
+            if (!Enum.TryParse(tag, out ApplicationSortCriterion criterion)) return;
+            if (_ignoreNextSortSelectionChanged)
+            {
+                _ignoreNextSortSelectionChanged = false;
+                return;
+            }
+            if (criterion == _sortCriterion) return;
+            _sortCriterion = criterion;
+            _sortDescending = criterion == ApplicationSortCriterion.RecentlyAdded;
+            RefreshSortLabels();
+            RefreshAppCards();
+        }
+
         private void RbViewMode_Click(object sender, RoutedEventArgs e)
         {
             var mode = (RbGridView.IsChecked == true) ? ApplicationViewMode.Grid : ApplicationViewMode.List;
@@ -149,7 +203,7 @@ namespace NotiGlow.UI.Views
             }
 
             // 1. Populate Normal Tracked Apps (excluding any app that belongs to Gaming Apps)
-            foreach (var profile in _profileService.Profiles)
+            foreach (var profile in ApplicationProfileSorter.Sort(_profileService.Profiles, _sortCriterion, _sortDescending))
             {
                 string profId = AppSettings.NormalizeGameIdentifier(profile.AppId);
                 string profExe = !string.IsNullOrEmpty(profile.ExecutablePath) ? AppSettings.NormalizeGameIdentifier(profile.ExecutablePath) : string.Empty;
@@ -165,7 +219,8 @@ namespace NotiGlow.UI.Views
                 }
 
                 // List Mode Card
-                var listCard = new AppProfileCard();
+                var listCard = new AppProfileCard();
+                listCard.ConfigureForApplicationsList();
                 listCard.SetProfile(profile);
                 listCard.EditRequested += (s, p) => OpenEditor(p, false);
                 listCard.DuplicateRequested += (s, p) => DuplicateProfile(p);

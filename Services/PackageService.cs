@@ -11,6 +11,12 @@ namespace NotiGlow.Services
         MicrosoftStore
     }
 
+    public enum UpdateRoute
+    {
+        GitHubSelfUpdate,
+        MicrosoftStorePage
+    }
+
     public static class PackageService
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -69,6 +75,7 @@ namespace NotiGlow.Services
         }
 
         public static DistributionChannel Channel => IsPackaged ? DistributionChannel.MicrosoftStore : DistributionChannel.GitHub;
+        public static UpdateRoute GetUpdateRoute(bool isPackaged) => isPackaged ? UpdateRoute.MicrosoftStorePage : UpdateRoute.GitHubSelfUpdate;
 
         public static string? PackageFullName
         {

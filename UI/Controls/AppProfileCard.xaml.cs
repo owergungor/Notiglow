@@ -1,7 +1,9 @@
 using System;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Wpf.Ui.Controls;
 using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
@@ -25,23 +27,40 @@ namespace NotiGlow.UI.Controls
             InitializeComponent();
         }
 
+        public void ConfigureForApplicationsList()
+        {
+            BtnDuplicate.Visibility = Visibility.Collapsed;
+            BtnEdit.Appearance = ControlAppearance.Transparent;
+            BtnDelete.Appearance = ControlAppearance.Transparent;
+            BtnEdit.Background = System.Windows.Media.Brushes.Transparent;
+            BtnDelete.Background = System.Windows.Media.Brushes.Transparent;
+            BtnEdit.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            BtnDelete.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            BtnEdit.Margin = new Thickness(0, 0, 4, 0);
+            BtnDelete.Margin = new Thickness(0, 0, 8, 0);
+            BtnEdit.MinWidth = 36;
+            BtnDelete.Width = 36;
+            BtnDelete.Content = null;
+            string deleteLabel = LocalizationService.Instance.GetString("Applications.CardDelete");
+            BtnDelete.ToolTip = deleteLabel;
+            AutomationProperties.SetName(BtnDelete, deleteLabel);
+        }
+
         public void SetProfile(AppProfile profile)
         {
             Profile = profile;
             DataContext = profile;
             TxtAppName.Text = !string.IsNullOrWhiteSpace(profile.Name) ? profile.Name : profile.AppId;
-            string categoryPrefix = !string.IsNullOrEmpty(profile.Category) ? $"{profile.Category} • " : string.Empty;
             string prioText = profile.Priority switch
             {
-                NotificationPriority.Low => LocalizationService.Instance.GetString("Applications.PriorityLow"),
-                NotificationPriority.High => LocalizationService.Instance.GetString("Applications.PriorityHigh"),
-                _ => LocalizationService.Instance.GetString("Applications.PriorityNormal")
+                NotificationPriority.Low => LocalizationService.Instance.GetString("Applications.PriorityLowShort"),
+                NotificationPriority.High => LocalizationService.Instance.GetString("Applications.PriorityHighShort"),
+                _ => LocalizationService.Instance.GetString("Applications.PriorityNormalShort")
             };
             string styleKey = $"Style.{profile.Style}";
             string styleText = LocalizationService.Instance.GetString(styleKey);
             if (string.IsNullOrEmpty(styleText) || styleText == styleKey) styleText = profile.Style.ToString();
-            string prioLabel = LocalizationService.Instance.GetString("Applications.Priority");
-            TxtDetails.Text = $"{categoryPrefix}{profile.FormattedDuration} • {profile.FormattedIntensity} • {styleText} • {prioLabel}: {prioText}";
+            TxtDetails.Text = $"{profile.FormattedDuration.Replace(" ", string.Empty)} • {profile.FormattedIntensity} • {styleText} • {prioText}";
             ToggleEnabled.IsChecked = profile.Enabled;
 
             if (ColorHelper.IsRgbSpectrum(profile.ColorHex))

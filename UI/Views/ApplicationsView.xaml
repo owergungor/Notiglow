@@ -27,6 +27,44 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <ComboBox x:Name="CmbApplicationSort" Style="{DynamicResource ColorThemeComboBoxStyle}" Width="92" MinHeight="36" Margin="0,0,12,0" SelectionChanged="CmbApplicationSort_SelectionChanged" DropDownOpened="CmbApplicationSort_DropDownOpened" DropDownClosed="CmbApplicationSort_DropDownClosed" ToolTip="{DynamicResource Applications.SortToolTip}">
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="ComboBoxItem">
+                            <Setter Property="MinWidth" Value="190"/>
+                            <Setter Property="MinHeight" Value="34"/>
+                            <Setter Property="Padding" Value="10,4"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ComboBoxItem">
+                                        <Border x:Name="ItemBorder"
+                                                Background="Transparent"
+                                                CornerRadius="6"
+                                                Margin="1"
+                                                Padding="{TemplateBinding Padding}"
+                                                SnapsToDevicePixels="True">
+                                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBackground}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource CardBackgroundSecondary}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+                                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="1"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                    <ComboBoxItem Tag="Alphabetical" IsSelected="True" Content="{DynamicResource Applications.SortAlphabeticalAscendingShort}"/>
+                    <ComboBoxItem Tag="RecentlyAdded" Content="{DynamicResource Applications.SortRecentlyAddedShort}"/>
+                </ComboBox>
                 <!-- Hero UI Segmented View Switcher: List vs Grid -->
                 <Border Background="{DynamicResource InputBackground}"
                         BorderBrush="{DynamicResource BorderColor}"
@@ -65,23 +103,17 @@
                 <ui:Button x:Name="BtnScanApplications" Appearance="Secondary" Click="BtnScanApplications_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.ScanAppsToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Applications.ScanApps}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Applications.ScanShort}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
 
                 <ui:Button x:Name="BtnAddApplication" Appearance="Secondary" Click="BtnAddApplication_Click" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.AddApplicationToolTip}" Foreground="{DynamicResource TextPrimary}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Add24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Applications.AddApplication}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Applications.AddShort}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
 
-                <ui:Button x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
             </StackPanel>
         </Grid>
 

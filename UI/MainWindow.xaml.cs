@@ -59,11 +59,10 @@ namespace NotiGlow.UI
 
         private void UpdateAppTitle()
         {
-            string version = UpdateService.CurrentVersionString;
-            Title = $"NotiGlow {version}";
+            Title = "NotiGlow";
             if (AppTitleBar != null)
             {
-                AppTitleBar.Title = $"NotiGlow {version} — Ambient Notification Utility";
+                AppTitleBar.Title = "NotiGlow";
             }
         }
 

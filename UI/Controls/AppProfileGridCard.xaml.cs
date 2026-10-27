@@ -31,12 +31,12 @@ namespace NotiGlow.UI.Controls
             DataContext = profile;
             TxtAppName.Text = !string.IsNullOrWhiteSpace(profile.Name) ? profile.Name : profile.AppId;
             TxtCategory.Text = !string.IsNullOrEmpty(profile.Category) ? profile.Category : "Application";
-            TxtDurationAndIntensity.Text = $"{profile.FormattedDuration} • {profile.FormattedIntensity}";
+            TxtDurationAndIntensity.Text = $"{profile.FormattedDuration.Replace(" ", string.Empty)} • {profile.FormattedIntensity}";
             string prioText = profile.Priority switch
             {
-                NotificationPriority.Low => LocalizationService.Instance.GetString("Applications.PriorityLow"),
-                NotificationPriority.High => LocalizationService.Instance.GetString("Applications.PriorityHigh"),
-                _ => LocalizationService.Instance.GetString("Applications.PriorityNormal")
+                NotificationPriority.Low => LocalizationService.Instance.GetString("Applications.PriorityLowShort"),
+                NotificationPriority.High => LocalizationService.Instance.GetString("Applications.PriorityHighShort"),
+                _ => LocalizationService.Instance.GetString("Applications.PriorityNormalShort")
             };
             string styleKey = $"Style.{profile.Style}";
             string styleText = LocalizationService.Instance.GetString(styleKey);

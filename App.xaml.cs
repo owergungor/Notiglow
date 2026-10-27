@@ -188,7 +188,8 @@ namespace NotiGlow
                         _settingsService,
                         OpenSettingsWindow,
                         TestAnimation,
-                        ExitApplication
+                        ExitApplication,
+                        OpenUpdateSettings
                     );
                     LoggerService.LogStartupPhase("Tray initialized");
                 }
@@ -228,7 +229,7 @@ namespace NotiGlow
                 _ = InitializeNotificationServiceAsync();
 
                 // Check for updates asynchronously in background if enabled according to frequency
-                if (UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow) && !isUpdatedRestart)
+                if (!PackageService.IsPackaged && UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow) && !isUpdatedRestart)
                 {
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
@@ -364,6 +365,7 @@ namespace NotiGlow
             if (_settingsService?.Current == null) return;
             var settings = _settingsService.Current;
             ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+            _trayService?.RefreshTheme();
             ThemeService.ApplyCornerRadius(settings.CornerRadius);
         }
 
@@ -376,6 +378,12 @@ namespace NotiGlow
             }
             _mainWindow.WindowState = WindowState.Normal;
             _mainWindow.Activate();
+        }
+
+        private void OpenUpdateSettings()
+        {
+            OpenSettingsWindow();
+            _mainWindow?.NavigateToTag("Advanced");
         }
 
         public void TestAnimation()
