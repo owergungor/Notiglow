@@ -379,16 +379,16 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void V19_VersionMetadata_MatchesVersion19()
         {
-            Assert.IsTrue(UpdateService.CurrentVersionString == "2.1" || UpdateService.CurrentVersionString == "2.2" || UpdateService.CurrentVersionString == "2.3" || UpdateService.CurrentVersionString == "2.4" || UpdateService.CurrentVersionString == "2.5" || UpdateService.CurrentVersionString == "2.6" || UpdateService.CurrentVersionString == "2.7", "CurrentVersionString must dynamically resolve to 2.1, 2.2, 2.3, 2.4, or 2.5.");
+            ReleaseVersionAssertions.AssertApplicationVersionMetadata();
 
             var thread = new System.Threading.Thread(() =>
             {
                 var app = System.Windows.Application.Current ?? new System.Windows.Application();
                 var window = new NotiGlow.UI.MainWindow();
-                Assert.IsTrue(window.Title == "NotiGlow" || window.Title == "NotiGlow 2.1" || window.Title == "NotiGlow 2.2" || window.Title == "NotiGlow 2.3" || window.Title == "NotiGlow 2.4" || window.Title == "NotiGlow 2.5" || window.Title == "NotiGlow 2.6" || window.Title == "NotiGlow 2.7");
+                Assert.AreEqual("NotiGlow", window.Title);
                 var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
                 Assert.IsNotNull(titleBar);
-                Assert.IsTrue(titleBar.Title == "NotiGlow 2.1 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.2 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.3 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.4 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.5 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.6 — Ambient Notification Utility" || titleBar.Title == "NotiGlow 2.7 — Ambient Notification Utility" || titleBar.Title == "NotiGlow — Ambient Notification Utility");
+                Assert.AreEqual("NotiGlow", titleBar.Title);
                 Assert.IsFalse(window.Title?.Contains("1.6") == true, "Title must not contain 1.6.");
                 Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain 1.6.");
             });

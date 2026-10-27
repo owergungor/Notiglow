@@ -223,21 +223,18 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void VersionMetadata_StrictlyVersion26()
         {
-            Assert.IsTrue(UpdateService.CurrentVersionString == "2.6" || UpdateService.CurrentVersionString == "2.7", "UpdateService fallback version must be 2.6.");
+            var version = ReleaseVersionAssertions.AssertApplicationVersionMetadata();
+            Assert.AreEqual(version, UpdateService.FallbackVersion);
+            ReleaseVersionAssertions.AssertInstallerVersionMetadata(version);
 
-            var csproj = File.ReadAllText(Path.Combine(SolutionDir, "NotiGlow.csproj"));
-            Assert.IsTrue(csproj.Contains("<Version>2.6</Version>") || csproj.Contains("<Version>2.7</Version>"));
-            Assert.IsTrue(csproj.Contains("<AssemblyVersion>2.6.0.0</AssemblyVersion>") || csproj.Contains("<AssemblyVersion>2.7.0.0</AssemblyVersion>"));
-            Assert.IsTrue(csproj.Contains("<FileVersion>2.6.0.0</FileVersion>") || csproj.Contains("<FileVersion>2.7.0.0</FileVersion>"));
-            Assert.IsTrue(csproj.Contains("<InformationalVersion>2.6</InformationalVersion>") || csproj.Contains("<InformationalVersion>2.7</InformationalVersion>"));
-
-            var iss = File.ReadAllText(Path.Combine(SolutionDir, "NotiGlow-Setup.iss"));
-            Assert.IsTrue(iss.Contains("AppVersion=2.6") || iss.Contains("AppVersion=2.7"));
-            Assert.IsTrue(iss.Contains("VersionInfoVersion=2.6.0.0") || iss.Contains("VersionInfoVersion=2.7.0.0"));
-            Assert.IsTrue(iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.6") || iss.Contains("OutputBaseFilename=NotiGlow-Setup-v2.7"));
-
-            var adv = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "AdvancedView.xaml"));
-            Assert.IsTrue(adv.Contains("Current Version: v2.6") || adv.Contains("Current Version: v2.7"));
+            var advXaml = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "AdvancedView.xaml"));
+            var advCode = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "AdvancedView.xaml.cs"));
+            StringAssert.Contains(advXaml, "x:Name=\"TxtUpdateStatus\"");
+            Assert.IsFalse(Regex.IsMatch(advXaml, @"Text=""[^""]*Current Version:\s*v\d+\.\d+"),
+                "The view must not hardcode a release number in its initial status text.");
+            Assert.IsTrue(Regex.IsMatch(advCode,
+                @"GetString\(\s*""Advanced\.(?:CurrentVersionFormat|StoreVersionFormat)""\s*,\s*UpdateService\.CurrentVersionString\s*\)"),
+                "The visible update status must be formatted with CurrentVersionString.");
         }
 
         #endregion
