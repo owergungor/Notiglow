@@ -100,7 +100,7 @@
                                    FontWeight="Medium"
                                    Foreground="{DynamicResource TextMuted}"/>
                         <TextBlock x:Name="TxtCurrentVersion"
-                                   Text="v2.3"
+                                   Text="v3.2"
                                    FontSize="14"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextSecondary}"

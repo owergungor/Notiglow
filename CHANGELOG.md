@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2] - 2026-10-28
+- Added continuous left-button drag selection to the custom saturation/value color field and Hue strip.
+- Safely ends color picker drags when the mouse button is released or mouse capture is lost.
+- Added targeted tests for color field coordinate mapping and clamping.
+
 ## [3.1] - 2026-10-27
 - Updated the Windows application icon to match the Microsoft Store artwork.
 - Added alphabetical and recently added sorting for tracked applications, including direction toggling.

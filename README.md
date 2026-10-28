@@ -20,10 +20,10 @@ Modern, customizable ambient notification utility for Windows.
 
 ## Download
 
-Get the latest release (v2.3):
+Get the latest release (v3.2):
 [https://github.com/owergungor/Notiglow/releases/latest](https://github.com/owergungor/Notiglow/releases/latest)
 
-- **Installer (`NotiGlow-Setup-v2.3.exe`)** — Recommended installation
+- **Installer (`NotiGlow-Setup-v3.2.exe`)** — Recommended installation
 - **ZIP (`NotiGlow_2.3_win-x64.zip`)** — Portable option, no setup required
 
 For bug reports and feature requests, visit [Issues](https://github.com/owergungor/Notiglow/issues).
