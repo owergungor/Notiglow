@@ -54,6 +54,7 @@ namespace NotiGlow.UI.Controls
 
         private bool _isUpdating = false;
         private bool _isDraggingSatVal = false;
+        private bool _isDraggingHue = false;
         private double _currentHue = 234;
         private double _currentSat = 0.63;
         private double _currentVal = 0.95;
@@ -323,11 +324,62 @@ namespace NotiGlow.UI.Controls
             ApplyHsvColor();
         }
 
+        private void SldHue_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _isDraggingHue = true;
+            SldHue.CaptureMouse();
+            UpdateHueFromPoint(e.GetPosition(SldHue));
+            e.Handled = true;
+        }
+
+        private void SldHue_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_isDraggingHue)
+            {
+                _isDraggingHue = false;
+                if (SldHue.IsMouseCaptured) SldHue.ReleaseMouseCapture();
+            }
+            e.Handled = true;
+        }
+
+        private void SldHue_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isDraggingHue && e.LeftButton == MouseButtonState.Pressed)
+                UpdateHueFromPoint(e.GetPosition(SldHue));
+            else if (_isDraggingHue)
+                StopHueDrag();
+        }
+
+        private void SldHue_LostMouseCapture(object sender, MouseEventArgs e) => _isDraggingHue = false;
+
+        private void StopHueDrag()
+        {
+            _isDraggingHue = false;
+            if (SldHue.IsMouseCaptured) SldHue.ReleaseMouseCapture();
+        }
+
+        private void UpdateHueFromPoint(Point pos)
+        {
+            double width = SldHue.ActualWidth;
+            if (width <= 0) return;
+
+            _currentHue = HueFromPosition(pos.X, width);
+            SldHue.Value = _currentHue;
+        }
+
+        internal static double HueFromPosition(double x, double width) =>
+            width <= 0 ? 0 : Math.Clamp(x / width, 0, 1) * 360;
+
+        internal static (double Saturation, double Value) SatValFromPosition(Point pos, double width, double height) =>
+            (width <= 0 ? 0 : Math.Clamp(pos.X / width, 0, 1),
+             height <= 0 ? 0 : 1.0 - Math.Clamp(pos.Y / height, 0, 1));
+
         private void SatValCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _isDraggingSatVal = true;
             SatValCanvas.CaptureMouse();
             UpdateSatValFromPoint(e.GetPosition(SatValCanvas));
+            e.Handled = true;
         }
 
         private void SatValCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -335,15 +387,23 @@ namespace NotiGlow.UI.Controls
             if (_isDraggingSatVal)
             {
                 _isDraggingSatVal = false;
-                SatValCanvas.ReleaseMouseCapture();
+                if (SatValCanvas.IsMouseCaptured) SatValCanvas.ReleaseMouseCapture();
             }
+            e.Handled = true;
         }
+
+        private void SatValCanvas_LostMouseCapture(object sender, MouseEventArgs e) => _isDraggingSatVal = false;
 
         private void SatValCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (_isDraggingSatVal)
+            if (_isDraggingSatVal && e.LeftButton == MouseButtonState.Pressed)
             {
                 UpdateSatValFromPoint(e.GetPosition(SatValCanvas));
+            }
+            else if (_isDraggingSatVal)
+            {
+                _isDraggingSatVal = false;
+                if (SatValCanvas.IsMouseCaptured) SatValCanvas.ReleaseMouseCapture();
             }
         }
 
@@ -352,11 +412,12 @@ namespace NotiGlow.UI.Controls
             double width = SatValCanvas.ActualWidth > 0 ? SatValCanvas.ActualWidth : 250;
             double height = SatValCanvas.ActualHeight > 0 ? SatValCanvas.ActualHeight : 130;
 
-            double x = Math.Clamp(pos.X, 0, width);
-            double y = Math.Clamp(pos.Y, 0, height);
+            var (saturation, value) = SatValFromPosition(pos, width, height);
+            double x = saturation * width;
+            double y = (1.0 - value) * height;
 
-            _currentSat = x / width;
-            _currentVal = 1.0 - (y / height);
+            _currentSat = saturation;
+            _currentVal = value;
 
             Canvas.SetLeft(SatValThumb, Math.Clamp(x - 7, 0, width - 14));
             Canvas.SetTop(SatValThumb, Math.Clamp(y - 7, 0, height - 14));
