@@ -3,8 +3,10 @@
 Modern, customizable ambient notification utility for Windows.
 
 **##Screenshots**
-<img width="1504" height="1416" alt="git-2" src="https://github.com/user-attachments/assets/51ab66f0-0410-4c3c-8833-c132cf93cfaf" />
-<img width="2000" height="1336" alt="git-1" src="https://github.com/user-attachments/assets/2bf748ea-8160-4793-8615-52bded5925b0" />
+<img width="3840" height="2160" alt="NotiGlow-poster (1)" src="https://github.com/user-attachments/assets/7b3f4394-7ec9-4b12-892b-8de67129cac8" />
+<img width="1710" height="1140" alt="git-2" src="https://github.com/user-attachments/assets/2b2c99b7-fb7a-47db-b0d9-3be431e2e198" />
+<img width="1710" height="1140" alt="git-1" src="https://github.com/user-attachments/assets/0fea7d45-d45e-4c4d-9022-ef47128b34a9" />
+
 
 ## Features
 
