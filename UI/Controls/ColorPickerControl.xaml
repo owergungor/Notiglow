@@ -61,7 +61,7 @@
             <StackPanel>
                 <!-- Saturation / Value Canvas -->
                 <Grid Height="130" Margin="0,0,0,10">
-                    <Grid x:Name="SatValCanvas" Background="Transparent" ClipToBounds="True" PreviewMouseLeftButtonDown="SatValCanvas_MouseLeftButtonDown" MouseLeftButtonDown="SatValCanvas_MouseLeftButtonDown" MouseLeftButtonUp="SatValCanvas_MouseLeftButtonUp" PreviewMouseMove="SatValCanvas_MouseMove" MouseMove="SatValCanvas_MouseMove">
+                    <Grid x:Name="SatValCanvas" Background="Transparent" ClipToBounds="True" PreviewMouseLeftButtonDown="SatValCanvas_MouseLeftButtonDown" PreviewMouseLeftButtonUp="SatValCanvas_MouseLeftButtonUp" PreviewMouseMove="SatValCanvas_MouseMove" LostMouseCapture="SatValCanvas_LostMouseCapture">
                         <!-- Layer 1: Pure Hue -->
                         <Rectangle x:Name="RectPureHue" IsHitTestVisible="False">
                             <Rectangle.Fill>
@@ -114,7 +114,7 @@
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
-                    <Slider x:Name="SldHue" Minimum="0" Maximum="360" Value="0" ValueChanged="SldHue_ValueChanged" Background="Transparent">
+                    <Slider x:Name="SldHue" Minimum="0" Maximum="360" Value="0" ValueChanged="SldHue_ValueChanged" Background="Transparent" PreviewMouseLeftButtonDown="SldHue_MouseLeftButtonDown" PreviewMouseLeftButtonUp="SldHue_MouseLeftButtonUp" PreviewMouseMove="SldHue_MouseMove" LostMouseCapture="SldHue_LostMouseCapture">
                         <Slider.Template>
                             <ControlTemplate TargetType="{x:Type Slider}">
                                 <Grid VerticalAlignment="Center" SnapsToDevicePixels="True">
