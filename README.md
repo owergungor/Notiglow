@@ -2,6 +2,10 @@
 
 Modern, customizable ambient notification utility for Windows.
 
+**##Screenshots**
+<img width="1504" height="1416" alt="git-2" src="https://github.com/user-attachments/assets/51ab66f0-0410-4c3c-8833-c132cf93cfaf" />
+<img width="2000" height="1336" alt="git-1" src="https://github.com/user-attachments/assets/2bf748ea-8160-4793-8615-52bded5925b0" />
+
 ## Features
 
 - Ambient edge glow notifications
