@@ -1,6 +1,6 @@
 <div align="center">
-
-  <img src="Assets/NotiGlowLogo.png" alt="NotiGlow Logo" width="130" height="130" />
+  
+  <img width="1080" height="1080" alt="notiglow-logo-1080 (3)" src="https://github.com/user-attachments/assets/5445f032-ebf8-4e2e-9019-a52349d60bde" />
 
   <h1>NotiGlow</h1>
 
