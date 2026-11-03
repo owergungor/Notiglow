@@ -22,11 +22,11 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
-    <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET 9.0" />
-    <img src="https://img.shields.io/badge/UI-WPF%20%2F%20Fluent-8B5CF6?style=flat-square" alt="WPF Fluent UI" />
-    <img src="https://img.shields.io/badge/License-MIT-10B981?style=flat-square" alt="MIT License" />
-    <img src="https://img.shields.io/badge/Privacy-100%25%20Local--First-6366F1?style=flat-square" alt="100% Local-First" />
+    <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-08a1f7?style=flat&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
+    <img src="https://img.shields.io/badge/Privacy-100%25%20Local--First-40E40B?style=flat" alt="100% Local-First" />
+    <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 9.0" />
+    <img src="https://img.shields.io/badge/UI-WPF%20%2F%20Fluent-8B5CF6?style=flat" alt="WPF Fluent UI" />
+    <img src="https://img.shields.io/badge/License-MIT-750014?style=flat" alt="MIT License" />
   </p>
 
 </div>
