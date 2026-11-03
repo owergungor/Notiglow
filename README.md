@@ -1,6 +1,6 @@
 <div align="center">
   
-  <img width="1080" height="1080" alt="notiglow-logo-1080" src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" width="360"/>
+  <img alt="notiglow-logo-1080" src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" width="96" height="96" />
 
   <h1>NotiGlow</h1>
 
@@ -8,11 +8,12 @@
 
   <p>
     <a href="https://apps.microsoft.com/detail/9P9L33HG5V64" target="_blank">
-      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" width="200" />
+      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" height="44" />
     </a>
     &nbsp;&nbsp;
     <a href="https://github.com/owergungor/Notiglow/releases" target="_blank">
-      <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub" width="200"/>
+      <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub" height="44" />
+    </a>
 
   </p>
 
