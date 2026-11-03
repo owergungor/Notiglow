@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="Assets/NotiGlowLogo.png" alt="NotiGlow Logo" width="130" height="130" />
+  <img src="Assets/NotiGlowLogo.png" alt="NotiGlow Logo" width="96" height="96" />
 
   <h1>NotiGlow</h1>
 
@@ -8,11 +8,11 @@
 
   <p>
     <a href="https://apps.microsoft.com/detail/9P9L33HG5V64" target="_blank">
-      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" width="190" />
+      <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" height="44" />
     </a>
     &nbsp;&nbsp;
     <a href="https://github.com/owergungor/Notiglow/releases" target="_blank">
-      <img src="https://img.shields.io/badge/GitHub%20Releases-Download%20Installer-6366F1?style=for-the-badge&logo=github&logoColor=white" height="42" alt="Download from GitHub Releases" />
+      <img src="https://img.shields.io/badge/GitHub%20Releases-Download%20Installer-6366F1?style=for-the-badge&logo=github&logoColor=white" alt="Download from GitHub Releases" height="44" />
     </a>
   </p>
 
