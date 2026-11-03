@@ -12,8 +12,8 @@
     </a>
     &nbsp;&nbsp;
     <a href="https://github.com/owergungor/Notiglow/releases" target="_blank">
-      <img src="https://img.shields.io/badge/GitHub%20Releases-Download%20Installer-6366F1?style=for-the-badge&logo=github&logoColor=white" height="42" alt="Download from GitHub Releases" />
-    </a>
+      <img width="383" height="147" alt="download-from-github" src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" />
+
   </p>
 
   <p>
