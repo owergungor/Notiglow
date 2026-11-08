@@ -177,6 +177,7 @@ namespace NotiGlow.UI.Views
             var current = _settingsService.Current;
             MasterToggle.IsChecked = current.MasterEnabled;
             ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
+            ToggleShowInTaskbar.IsChecked = current.ShowInTaskbar;
             ToggleReduceAnimations.IsChecked = current.ReduceAnimations;
             MotionPolicy.Update(current.ReduceMotion, current.ReduceAnimations);
 
@@ -205,12 +206,14 @@ namespace NotiGlow.UI.Views
             {
                 if (item is ComboBoxItem cbi && cbi.Tag is string tag)
                 {
-                    if (string.Equals(tag, targetTag, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(tag, targetTag, StringComparison.OrdinalIgnoreCase) ||
+                        ((string.Equals(targetTag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(targetTag, "Vercel", StringComparison.OrdinalIgnoreCase)) &&
+                         (string.Equals(tag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(tag, "Vercel", StringComparison.OrdinalIgnoreCase))))
                     {
                         matchingItem = cbi;
                         break;
                     }
-                    if (string.Equals(tag, "Standard", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(tag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(tag, "Vercel", StringComparison.OrdinalIgnoreCase))
                     {
                         standardItem = cbi;
                     }
@@ -240,6 +243,7 @@ namespace NotiGlow.UI.Views
             {
                 settings.ThemeMode = selectedMode;
                 _settingsService.Save(settings);
+                ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
             }
         }
 
@@ -343,13 +347,15 @@ namespace NotiGlow.UI.Views
         {
             bool enable = ToggleStartWithWindows.IsChecked == true;
             AutoStartHelper.SetAutoStart(enable);
+            ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
+        }
 
-            if (_settingsService != null)
-            {
-                var settings = _settingsService.Current;
-                settings.StartWithWindows = enable;
-                _settingsService.Save(settings);
-            }
+        private void ToggleShowInTaskbar_Click(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+            settings.ShowInTaskbar = ToggleShowInTaskbar.IsChecked == true;
+            _settingsService.Save(settings);
         }
 
         private void ToggleReduceAnimations_Click(object sender, RoutedEventArgs e)
@@ -359,6 +365,7 @@ namespace NotiGlow.UI.Views
             settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
             _settingsService.Save(settings);
             MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
+            UpdateThemeIndicator(immediate: true);
         }
     }
 }

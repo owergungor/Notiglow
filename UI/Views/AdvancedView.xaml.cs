@@ -124,12 +124,16 @@ namespace NotiGlow.UI.Views
                 ToggleAutoUpdates.IsChecked = true;
                 ToggleAutoUpdates.IsEnabled = false;
                 ToggleAutoUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+                if (CardCheckFrequency != null) CardCheckFrequency.Visibility = Visibility.Collapsed;
+                if (CardAutoUpdates != null) CardAutoUpdates.Margin = new Thickness(0, 0, 0, 24);
                 CmbUpdateFrequency.IsEnabled = false;
                 BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
                 BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.UpdateInStore");
             }
             else
             {
+                if (CardCheckFrequency != null) CardCheckFrequency.Visibility = Visibility.Visible;
+                if (CardAutoUpdates != null) CardAutoUpdates.Margin = new Thickness(0, 0, 0, 12);
                 BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.CheckForUpdates");
                 BtnCheckUpdates.ToolTip = null;
                 ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;

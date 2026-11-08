@@ -14,6 +14,7 @@ namespace NotiGlow.Services
         private readonly SettingsService _settingsService;
         private readonly SteamGameDetector _steamDetector;
         private readonly EpicGameDetector _epicDetector;
+        private readonly XboxAndStoreGameDetector _xboxStoreDetector;
         private DateTime _lastCheckTime = DateTime.MinValue;
         private bool _cachedIsGaming = false;
         private string _activeGameName = string.Empty;
@@ -52,11 +53,14 @@ namespace NotiGlow.Services
         public GameDetectionService(
             SettingsService settingsService,
             SteamGameDetector? steamDetector = null,
-            EpicGameDetector? epicDetector = null)
+            EpicGameDetector? epicDetector = null,
+            XboxAndStoreGameDetector? xboxStoreDetector = null)
         {
             _settingsService = settingsService;
             _steamDetector = steamDetector ?? new SteamGameDetector();
             _epicDetector = epicDetector ?? new EpicGameDetector();
+            bool isMockContext = steamDetector != null || epicDetector != null;
+            _xboxStoreDetector = xboxStoreDetector ?? (isMockContext ? XboxAndStoreGameDetector.CreateEmpty() : new XboxAndStoreGameDetector());
         }
 
         public async System.Threading.Tasks.Task<IReadOnlyList<DetectedGameInfo>> DetectInstalledGamesAsync()
@@ -85,21 +89,40 @@ namespace NotiGlow.Services
                     LoggerService.LogError("Epic game detection failed", ex);
                 }
 
+                try
+                {
+                    var xboxStoreGames = _xboxStoreDetector.DetectGames();
+                    combined.AddRange(xboxStoreGames);
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogError("Xbox and Store game detection failed", ex);
+                }
+
                 var uniqueGames = new List<DetectedGameInfo>();
                 var seenExes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var game in combined)
                 {
                     if (string.IsNullOrWhiteSpace(game.ExecutablePath)) continue;
 
                     string exeName = Path.GetFileName(game.ExecutablePath).ToLowerInvariant();
-                    string fullPath = Path.GetFullPath(game.ExecutablePath).ToLowerInvariant();
+                    string fullPath = game.ExecutablePath.Trim().ToLowerInvariant();
+                    try
+                    {
+                        if (Path.IsPathRooted(fullPath)) fullPath = Path.GetFullPath(fullPath).ToLowerInvariant();
+                    }
+                    catch { }
 
-                    if (!seenExes.Contains(exeName) && !seenPaths.Contains(fullPath))
+                    string nameKey = (game.Name ?? string.Empty).Trim().ToLowerInvariant();
+
+                    if (!seenExes.Contains(exeName) && !seenPaths.Contains(fullPath) && (string.IsNullOrEmpty(nameKey) || !seenNames.Contains(nameKey)))
                     {
                         seenExes.Add(exeName);
                         seenPaths.Add(fullPath);
+                        if (!string.IsNullOrEmpty(nameKey)) seenNames.Add(nameKey);
                         uniqueGames.Add(game);
                     }
                 }
@@ -149,7 +172,7 @@ namespace NotiGlow.Services
                 if (addedCount > 0)
                 {
                     _settingsService.Save(settings);
-                    LoggerService.LogInfo($"Automatically synced {addedCount} games from Steam and Epic Games.");
+                    LoggerService.LogInfo($"Automatically synced {addedCount} games from launchers (Steam, Epic, Xbox, Microsoft Store).");
                 }
 
                 return addedCount;

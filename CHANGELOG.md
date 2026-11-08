@@ -1,4 +1,22 @@
-# Changelog
+﻿# Changelog
+
+## [3.3] - 2026-11-08
+- **Xbox App & Microsoft Store Game Detection**:
+  - Full game detection support for PC Game Pass, Xbox App, and Microsoft Store titles.
+  - Manifest parsing (MicrosoftGame.config, AppxManifest.xml) and AUMID resolution.
+  - Non-blocking drive index caching and launcher categorization badges.
+- **Taskbar Show/Hide Control**:
+  - Added "Show in Taskbar" toggle setting in General Settings.
+  - Allows clean background running with only the system tray icon visible.
+- **System Tray Interaction**:
+  - Single left-click on the tray icon now smoothly un-minimizes, restores, and brings the main window to the foreground, even when hidden from the taskbar.
+  - Added click throttling to prevent rapid event bounce.
+- **Visual & UI Refinements**:
+  - Enlarged application profile icons in both List (30x30) and Grid (26x26) views for optimal frame fill and clarity without clipping.
+  - Default Color Theme standardized to Vercel for new installations across all theme modes (System, Light, Dark).
+  - Streamlined theme modes to System, Light, and Dark, with backward-compatible legacy settings fallback.
+- **Localization**:
+  - Complete translations for all new features and settings in English, Spanish, French, German, and Turkish.
 
 ## [3.2] - 2026-10-28
 - Added continuous left-button drag selection to the custom saturation/value color field and Hue strip.
@@ -47,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dynamic smooth drop-down entrance from `Y = -16` to `0` (200ms cubic ease) and slide-up exit.
   - Multi-monitor / DPI-safe layout and debounced non-blocking queue.
 - **Enhanced Language Selection & Flag Emojis**:
-  - Added national flag emojis across all supported languages (🇬🇧 English, 🇪🇸 Español, 🇫🇷 Français, 🇩🇪 Deutsch, 🇹🇷 Türkçe) in sidebar language dropdown and General Settings view.
+  - Added national flag emojis across all supported languages (ğŸ‡¬ğŸ‡§ English, ğŸ‡ªğŸ‡¸ EspaÃ±ol, ğŸ‡«ğŸ‡· FranÃ§ais, ğŸ‡©ğŸ‡ª Deutsch, ğŸ‡¹ğŸ‡· TÃ¼rkÃ§e) in sidebar language dropdown and General Settings view.
   - New dedicated "Application Language" setting card in General settings synchronized with global preferences.
 - **Apple-Inspired Fluid Switch Animation**:
   - Re-architected `ToggleSwitch` template with dual-track architecture (`SwitchTrack` + `ActiveTrack`) with synchronized opacity crossfading.
@@ -75,7 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added national flags and native language labels in the sidebar language selection menu.
   - Reached 100% key parity across all 250+ UI string resources in all five languages.
 - **Per-Game Glow Duration, Intensity, and Blur Size Overrides**:
-  - Added executable-level configuration drawer allowing users to customize duration (500–15000 ms), intensity (10–100%), and blur size (5–100 px) per tracked game.
+  - Added executable-level configuration drawer allowing users to customize duration (500â€“15000 ms), intensity (10â€“100%), and blur size (5â€“100 px) per tracked game.
   - Unset properties cleanly inherit global settings and game reduction multipliers.
   - Safe range clamping and path normalization (`NormalizeGameIdentifier`) across case variations.
 - **Tracked Games List & Grid Views**:
@@ -159,7 +177,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Boosted Comet visibility with a brilliant nucleus head, glowing bloom layer, and rich trailing tail.
   - Full RGB spectrum and theme color compatibility with smooth perimeter motion.
 - **Enhanced Sweep Beam Animation**:
-  - Replaced thin 1px stripe with a wide, luminous light beam featuring feathered glow transitions (dark → soft glow → vibrant core → bright sweep peak → dark) and ambient bloom.
+  - Replaced thin 1px stripe with a wide, luminous light beam featuring feathered glow transitions (dark â†’ soft glow â†’ vibrant core â†’ bright sweep peak â†’ dark) and ambient bloom.
 - **Collapsed Sidebar Icon Centering**:
   - Resolved sidebar icon misalignment when collapsed; icons now align perfectly along horizontal and vertical centers in compact mode.
 

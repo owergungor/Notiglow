@@ -47,12 +47,60 @@ namespace NotiGlow.Models
         LiquidGlass
     }
 
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(ThemeModeJsonConverter))]
     public enum ThemeMode
     {
         System,
         Light,
         Dark
+    }
+
+    public class ThemeModeJsonConverter : JsonConverter<ThemeMode>
+    {
+        public override ThemeMode Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                string? str = reader.GetString();
+                if (!string.IsNullOrWhiteSpace(str))
+                {
+                    string normalized = str.Trim();
+                    if (string.Equals(normalized, "Liquid", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(normalized, "LiquidGlass", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ThemeMode.Dark;
+                    }
+                    if (string.Equals(normalized, "Light", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ThemeMode.Light;
+                    }
+                    if (string.Equals(normalized, "Dark", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ThemeMode.Dark;
+                    }
+                    if (string.Equals(normalized, "System", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return ThemeMode.System;
+                    }
+                    if (Enum.TryParse<ThemeMode>(normalized, true, out var parsed))
+                    {
+                        return parsed;
+                    }
+                }
+                return ThemeMode.Dark;
+            }
+            else if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int intVal))
+            {
+                if (Enum.IsDefined(typeof(ThemeMode), intVal))
+                    return (ThemeMode)intVal;
+            }
+            return ThemeMode.Dark;
+        }
+
+        public override void Write(Utf8JsonWriter writer, ThemeMode value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString());
+        }
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -76,7 +124,8 @@ namespace NotiGlow.Models
         Violet,
         Indigo,
         Sapphire,
-        Nature
+        Nature,
+        Vercel = Standard
     }
 
     [JsonConverter(typeof(UpdateCheckFrequencyJsonConverter))]

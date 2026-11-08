@@ -73,6 +73,60 @@ namespace NotiGlow.UI.Controls
                 ColorBadgeBrush.Color = c;
                 ColorBadge.Background = ColorBadgeBrush;
             }
+
+            LoadAppIconAsync(profile);
+        }
+
+        private async void LoadAppIconAsync(AppProfile profile)
+        {
+            if (Dispatcher != null && !Dispatcher.CheckAccess())
+            {
+                _ = Dispatcher.BeginInvoke(new Action(() => LoadAppIconAsync(profile)));
+                return;
+            }
+
+            if (ImgAppIcon == null || FallbackAppIcon == null) return;
+
+            var cached = AppIconService.Instance.GetCachedIcon(profile.ExecutablePath, profile.AppId);
+            if (cached != null)
+            {
+                ImgAppIcon.Source = cached;
+                ImgAppIcon.Visibility = Visibility.Visible;
+                FallbackAppIcon.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            ImgAppIcon.Visibility = Visibility.Collapsed;
+            FallbackAppIcon.Visibility = Visibility.Visible;
+
+            var icon = await AppIconService.Instance.GetAppIconAsync(profile);
+
+            void UpdateVisuals()
+            {
+                if (Profile == profile && ImgAppIcon != null && FallbackAppIcon != null)
+                {
+                    if (icon != null)
+                    {
+                        ImgAppIcon.Source = icon;
+                        ImgAppIcon.Visibility = Visibility.Visible;
+                        FallbackAppIcon.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        ImgAppIcon.Visibility = Visibility.Collapsed;
+                        FallbackAppIcon.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+
+            if (Dispatcher != null && !Dispatcher.CheckAccess())
+            {
+                _ = Dispatcher.BeginInvoke(new Action(UpdateVisuals));
+            }
+            else
+            {
+                UpdateVisuals();
+            }
         }
 
         private void BtnPreview_Click(object sender, RoutedEventArgs e)

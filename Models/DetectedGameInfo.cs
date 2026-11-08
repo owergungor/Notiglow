@@ -6,5 +6,7 @@ namespace NotiGlow.Models
         public string ExecutablePath { get; set; } = string.Empty;
         public string Launcher { get; set; } = string.Empty;
         public string? AppId { get; set; }
+        public string? IconPath { get; set; }
+        public string? AumId { get; set; }
     }
 }

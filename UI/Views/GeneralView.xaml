@@ -218,6 +218,17 @@
                 <ui:ToggleSwitch x:Name="ToggleStartWithWindows" Click="ToggleStartWithWindows_Click" VerticalAlignment="Center"/>
             </ui:CardControl>
 
+            <!-- Card: Show in Taskbar -->
+            <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
+                <ui:CardControl.Header>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{DynamicResource General.ShowInTaskbar}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="{DynamicResource General.ShowInTaskbarDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ui:CardControl.Header>
+                <ui:ToggleSwitch x:Name="ToggleShowInTaskbar" Click="ToggleShowInTaskbar_Click" VerticalAlignment="Center"/>
+            </ui:CardControl>
+
             <!-- Card 4: Reduce Animations -->
             <ui:CardControl Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
                 <ui:CardControl.Header>

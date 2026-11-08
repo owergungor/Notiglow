@@ -250,6 +250,20 @@ namespace NotiGlow.UI
                 app.ApplyCurrentSettingsTheme();
             }
 
+            ShowInTaskbar = _settingsService.Current.ShowInTaskbar;
+            _settingsService.SettingsChanged += (s, e) =>
+            {
+                if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ShowInTaskbar = _settingsService.Current.ShowInTaskbar;
+                    if (System.Windows.Application.Current is App app)
+                    {
+                        app.ApplyCurrentSettingsTheme();
+                    }
+                }));
+            };
+
             NavigateToTag("General");
         }
 
