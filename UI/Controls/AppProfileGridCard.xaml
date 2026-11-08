@@ -18,7 +18,7 @@
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <!-- Top Row: Icon/Badge + App Title/Category + Enable Switch -->
+                <!-- Top Row: Icon + App Title/Category + ColorBadge + Enable Switch -->
                 <RowDefinition Height="Auto"/>
                 <!-- Middle Row: Details / Specs -->
                 <RowDefinition Height="Auto"/>
@@ -32,23 +32,32 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Color Swatch / Spectrum Badge -->
-                <Border Grid.Column="0" x:Name="ColorBadge" Width="24" Height="24" CornerRadius="6" Margin="0,0,10,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="{DynamicResource Applications.CardColorToolTip}">
+                <!-- Column 0: App Icon (32x32) with Fallback -->
+                <Border Grid.Column="0" Width="32" Height="32" CornerRadius="7" Margin="0,0,10,0" VerticalAlignment="Center" Background="{DynamicResource ControlBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+                    <Grid>
+                        <Image x:Name="ImgAppIcon" Width="26" Height="26" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <ui:SymbolIcon x:Name="FallbackAppIcon" Symbol="Apps24" FontSize="18" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+
+                <!-- Column 1: Name & Category -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
+                    <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue='Application'}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtCategory" Text="Communication" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <!-- Column 2: Color Swatch / Spectrum Badge -->
+                <Border Grid.Column="2" x:Name="ColorBadge" Width="14" Height="14" CornerRadius="4" Margin="0,0,8,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="{DynamicResource Applications.CardColorToolTip}">
                     <Border.Background>
                         <SolidColorBrush x:Name="ColorBadgeBrush" Color="#FF5865F2"/>
                     </Border.Background>
                 </Border>
 
-                <!-- Name & Category -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue='Application'}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="TxtCategory" Text="Communication" FontSize="11" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-
-                <!-- Enabled Toggle -->
-                <ui:ToggleSwitch Grid.Column="2" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.CardToggleToolTip}"/>
+                <!-- Column 3: Enabled Toggle -->
+                <ui:ToggleSwitch Grid.Column="3" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.CardToggleToolTip}"/>
             </Grid>
 
             <!-- Middle Row: Specs Chips / Info -->

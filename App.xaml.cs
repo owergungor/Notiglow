@@ -234,7 +234,7 @@ namespace NotiGlow
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
 
-                // Sync installed games from Steam & Epic asynchronously in background (non-blocking)
+                // Sync installed games from Steam, Epic, Xbox & Microsoft Store asynchronously in background (non-blocking)
                 _ = System.Threading.Tasks.Task.Run(async () =>
                 {
                     try
@@ -376,8 +376,14 @@ namespace NotiGlow
             {
                 _mainWindow.Show();
             }
-            _mainWindow.WindowState = WindowState.Normal;
+            if (_mainWindow.WindowState == WindowState.Minimized)
+            {
+                _mainWindow.WindowState = WindowState.Normal;
+            }
             _mainWindow.Activate();
+            _mainWindow.Topmost = true;
+            _mainWindow.Topmost = false;
+            _mainWindow.Focus();
         }
 
         private void OpenUpdateSettings()

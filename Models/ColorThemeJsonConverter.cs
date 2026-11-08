@@ -13,7 +13,14 @@ namespace NotiGlow.Models
                 string? str = reader.GetString();
                 if (string.IsNullOrWhiteSpace(str))
                 {
-                    return ColorTheme.Standard;
+                    return ColorTheme.Vercel;
+                }
+
+                // Vercel / Standard
+                if (string.Equals(str, "Vercel", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(str, "Standard", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ColorTheme.Vercel;
                 }
 
                 // Legacy Nubank maps to new Amethyst
@@ -33,7 +40,7 @@ namespace NotiGlow.Models
                     return result;
                 }
 
-                return ColorTheme.Standard;
+                return ColorTheme.Vercel;
             }
 
             if (reader.TokenType == JsonTokenType.Number)
@@ -43,10 +50,10 @@ namespace NotiGlow.Models
                 {
                     return (ColorTheme)val;
                 }
-                return ColorTheme.Standard;
+                return ColorTheme.Vercel;
             }
 
-            return ColorTheme.Standard;
+            return ColorTheme.Vercel;
         }
 
         public override void Write(Utf8JsonWriter writer, ColorTheme value, JsonSerializerOptions options)

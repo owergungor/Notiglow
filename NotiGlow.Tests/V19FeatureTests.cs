@@ -370,10 +370,13 @@ namespace NotiGlow.Tests
                 Assert.IsTrue(File.Exists(g.ExecutablePath), $"Detected game executable must exist on disk: {g.ExecutablePath}");
             }
 
+            var xboxStore = new XboxAndStoreGameDetector();
+            var xboxGames = xboxStore.DetectGames();
+
             var service = new GameDetectionService(new SettingsService());
             var allGames = await service.DetectInstalledGamesAsync();
             Assert.IsNotNull(allGames);
-            Assert.IsTrue(allGames.Count <= steamGames.Count + epicGames.Count, "Deduplication must never inflate total game count.");
+            Assert.IsTrue(allGames.Count <= steamGames.Count + epicGames.Count + xboxGames.Count, "Deduplication must never inflate total game count.");
         }
 
         [TestMethod]

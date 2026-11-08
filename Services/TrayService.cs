@@ -24,6 +24,8 @@ namespace NotiGlow.Services
         private ToolStripMenuItem _exitItem = null!;
         private ContextMenuStrip _menu = null!;
 
+        private long _lastOpenTicks = 0;
+
         public bool IsVisible => _notifyIcon.Visible;
         public Icon? CurrentIcon => _notifyIcon.Icon;
         internal ContextMenuStrip ContextMenuForTesting => _menu;
@@ -37,12 +39,29 @@ namespace NotiGlow.Services
             _updateAction = updateAction ?? openSettingsAction;
             _notifyIcon = new NotifyIcon { Text = LocalizationService.Instance.GetString("Tray.Tooltip"), Icon = LoadTrayIcon() };
             BuildContextMenu();
-            _notifyIcon.DoubleClick += (s, e) => _openSettingsAction();
+            _notifyIcon.MouseUp += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    HandleTrayLeftClick();
+                }
+            };
+            _notifyIcon.DoubleClick += (s, e) => HandleTrayLeftClick();
             _settingsService.SettingsChanged += OnSettingsChanged;
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             ApplyTheme();
             _notifyIcon.Visible = true;
         }
+
+        public void HandleTrayLeftClick()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastOpenTicks < 250) return;
+            _lastOpenTicks = now;
+            _openSettingsAction();
+        }
+
+        public void SimulateLeftClickForTesting() => HandleTrayLeftClick();
 
         private static Icon LoadTrayIcon()
         {
@@ -120,7 +139,7 @@ namespace NotiGlow.Services
         private void ApplyTheme()
         {
             var settings = _settingsService.Current;
-            var palette = ThemeService.GetPalette(settings.ColorTheme, ThemeService.GetIsDark(settings.ThemeMode));
+            var palette = ThemeService.GetPalette(settings.ColorTheme, settings.ThemeMode);
             var renderer = (TrayMenuRenderer)_menu.Renderer!;
             renderer.BackColor = ParseColor(palette.CardBackground);
             renderer.ForeColor = ParseColor(palette.TextPrimary);

@@ -6,12 +6,13 @@ namespace NotiGlow.Models
     {
         public bool MasterEnabled { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;
+        public bool ShowInTaskbar { get; set; } = true;
         public bool ReduceAnimations { get; set; } = false;
         public bool ReduceMotion { get; set; } = false;
         public bool ReduceGlow { get; set; } = false;
         public bool OledMode { get; set; } = false;
         public ThemeMode ThemeMode { get; set; } = ThemeMode.Dark;
-        public ColorTheme ColorTheme { get; set; } = ColorTheme.Standard;
+        public ColorTheme ColorTheme { get; set; } = ColorTheme.Vercel;
         public double CornerRadius { get; set; } = 0.0;
         public string AppLanguage { get; set; } = "en-US";
         public AppTheme Theme

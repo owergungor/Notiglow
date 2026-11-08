@@ -39,8 +39,6 @@ namespace NotiGlow.Services
         public string DropdownSelectedBackground { get; init; } = "#3B82F6";
         public string SkeletonShimmerBase { get; init; } = "#1F1F1F";
         public string SkeletonShimmerHighlight { get; init; } = "#2F2F2F";
-        public string GlassOverlay { get; init; } = "#00000000";
-        public string GlassBorder { get; init; } = "#262626";
     }
 
     public static class ThemeService
@@ -875,6 +873,11 @@ namespace NotiGlow.Services
             };
         }
 
+        public static ThemePalette GetPalette(ColorTheme theme, ThemeMode mode)
+        {
+            return GetPalette(theme, GetIsDark(mode));
+        }
+
         public static ThemePalette GetPalette(ColorTheme theme, bool isDark)
         {
             if (Palettes.TryGetValue((theme, isDark), out var palette))
@@ -886,6 +889,7 @@ namespace NotiGlow.Services
 
         private static bool? _lastAppliedIsDark = null;
         private static ColorTheme? _lastAppliedColorTheme = null;
+        private static ThemeMode? _lastAppliedThemeMode = null;
 
         public static void ApplyTheme(ColorTheme colorTheme, ThemeMode mode)
         {
@@ -893,7 +897,7 @@ namespace NotiGlow.Services
             {
                 bool isDark = GetIsDark(mode);
 
-                if (_lastAppliedColorTheme == colorTheme && _lastAppliedIsDark == isDark)
+                if (_lastAppliedColorTheme == colorTheme && _lastAppliedThemeMode == mode && _lastAppliedIsDark == isDark)
                 {
                     return;
                 }
@@ -909,8 +913,9 @@ namespace NotiGlow.Services
 
                 _lastAppliedColorTheme = colorTheme;
                 _lastAppliedIsDark = isDark;
+                _lastAppliedThemeMode = mode;
 
-                var palette = GetPalette(colorTheme, isDark);
+                var palette = GetPalette(colorTheme, mode);
                 var res = System.Windows.Application.Current?.Resources;
                 if (res == null) return;
 
@@ -943,8 +948,6 @@ namespace NotiGlow.Services
                 SetFrozenBrush(res, "DropdownSelectedBackground", palette.DropdownSelectedBackground);
                 SetFrozenBrush(res, "SkeletonShimmerBase", palette.SkeletonShimmerBase);
                 SetFrozenBrush(res, "SkeletonShimmerHighlight", palette.SkeletonShimmerHighlight);
-                SetFrozenBrush(res, "GlassOverlay", palette.GlassOverlay);
-                SetFrozenBrush(res, "GlassBorder", palette.GlassBorder);
 
                 SetFrozenBrush(res, "CardControlBorderBrush", palette.BorderColor);
                 SetFrozenBrush(res, "CardControlHeaderBorderBrush", palette.DividerColor);
