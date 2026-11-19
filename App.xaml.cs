@@ -1,15 +1,16 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using NotiGlow.Models;
 using NotiGlow.Services;
 using NotiGlow.UI;
-using Wpf.Ui.Appearance;
+using WinRT.Interop;
 
 namespace NotiGlow
 {
-    public partial class App : System.Windows.Application
+    public sealed partial class App : Application
     {
         private static System.Threading.Mutex? _singleInstanceMutex;
         private static bool _hasMutexOwnership = false;
@@ -20,13 +21,17 @@ namespace NotiGlow
         private TrayService? _trayService;
         private MainWindow? _mainWindow;
 
+        public static MainWindow? MainWindowInstance { get; private set; }
+        public static MainWindow? CurrentMainWindow => MainWindowInstance;
+        public static string[] StartupArgs { get; set; } = Array.Empty<string>();
+
         public App()
         {
-            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            this.InitializeComponent();
 
-            DispatcherUnhandledException += (s, e) =>
+            UnhandledException += (s, e) =>
             {
-                LoggerService.LogStartupError("Unhandled Dispatcher Exception", e.Exception);
+                LoggerService.LogStartupError("Unhandled UI Exception", e.Exception);
                 bool isFatal = e.Exception is OutOfMemoryException or StackOverflowException or AccessViolationException;
                 ShowExceptionDialog("Unhandled UI Exception", e.Exception, isFatal);
                 if (!isFatal)
@@ -49,29 +54,19 @@ namespace NotiGlow
                 LoggerService.LogStartupError("Unobserved Task Exception", e.Exception);
                 e.SetObserved();
             };
-
-            try
-            {
-                Microsoft.Win32.SystemEvents.UserPreferenceChanged += (s, e) =>
-                {
-                    if (_settingsService?.Current?.ThemeMode == NotiGlow.Models.ThemeMode.System)
-                    {
-                        Dispatcher?.Invoke(() => ApplyCurrentSettingsTheme());
-                    }
-                };
-            }
-            catch { }
         }
 
-        protected override void OnStartup(StartupEventArgs e)
+        public App(string[] args) : this()
         {
-            base.OnStartup(e);
+            StartupArgs = args;
+        }
 
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        {
             try
             {
                 LoggerService.LogStartupPhase("START");
                 LoggerService.LogStartupPhase("Runtime initialized");
-                NotiGlow.UI.Animations.ButtonPressAnimationBehavior.InitializeGlobal();
 
                 // Single Instance Check
                 const string mutexName = "NotiGlow_SingleInstance_Mutex_8697";
@@ -82,7 +77,6 @@ namespace NotiGlow
                     _singleInstanceMutex = new System.Threading.Mutex(true, mutexName, out isNewInstance);
                     if (isNewInstance)
                     {
-                        // Check if a legacy instance is still running
                         if (System.Threading.Mutex.TryOpenExisting(legacyMutexName, out var legacyMutex))
                         {
                             legacyMutex.Dispose();
@@ -96,7 +90,6 @@ namespace NotiGlow
                     }
                     else
                     {
-                        // Try acquiring mutex if previous process exited/abandoned it
                         try
                         {
                             if (_singleInstanceMutex.WaitOne(0))
@@ -126,7 +119,7 @@ namespace NotiGlow
                     {
                         LoggerService.LogInfo("Another active NotiGlow/GlowBorder process found. Signaling existing instance and exiting.");
                         NotiGlow.Core.Win32.NativeMethods.SignalExistingInstance();
-                        Shutdown();
+                        Exit();
                         return;
                     }
                     else
@@ -135,7 +128,7 @@ namespace NotiGlow
                     }
                 }
 
-                // Initialize Services
+                // Initialize Core Services
                 LoggerService.LogInfo("Starting NotiGlow application...");
 
                 _settingsService = new SettingsService();
@@ -169,16 +162,10 @@ namespace NotiGlow
                     NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
                 };
 
-                // Wire Notification Event safely with Dispatcher check
+                // Notification Received Event
                 _notificationService.NotificationReceived += (s, notification) =>
                 {
-                    if (Dispatcher != null && !Dispatcher.HasShutdownStarted)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            _glowManager.TriggerNotification(notification);
-                        });
-                    }
+                    _glowManager.TriggerNotification(notification);
                 };
 
                 // System Tray Setup
@@ -199,20 +186,19 @@ namespace NotiGlow
                     LoggerService.LogStartupPhase("Tray initialized (with error)");
                 }
 
-                bool isAutoStart = e.Args.Contains("--autostart");
-                bool isUpdatedRestart = e.Args.Contains("--updated");
+                bool isAutoStart = StartupArgs.Contains("--autostart");
+                bool isUpdatedRestart = StartupArgs.Contains("--updated");
 
-                // Initialize Main Window
+                // Initialize MainWindow
                 _mainWindow = new MainWindow();
+                MainWindowInstance = _mainWindow;
                 _mainWindow.Initialize(_settingsService, _profileService, _notificationService, _glowManager);
                 LoggerService.LogStartupPhase("MainWindow created");
 
                 if (!isAutoStart)
                 {
-                    _mainWindow.Show();
                     _mainWindow.Activate();
-                    _mainWindow.Focus();
-                    LoggerService.LogStartupPhase("MainWindow shown and activated");
+                    LoggerService.LogStartupPhase("MainWindow activated");
                 }
                 else
                 {
@@ -225,16 +211,16 @@ namespace NotiGlow
                     LoggerService.LogInfo($"NotiGlow started successfully after update to version {UpdateService.CurrentVersionString} (--updated).");
                 }
 
-                // Start notification listener asynchronously (non-blocking for app startup)
+                // Start Notification listener asynchronously
                 _ = InitializeNotificationServiceAsync();
 
-                // Check for updates asynchronously in background if enabled according to frequency
+                // Background update check if enabled
                 if (!PackageService.IsPackaged && UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow) && !isUpdatedRestart)
                 {
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
 
-                // Sync installed games from Steam, Epic, Xbox & Microsoft Store asynchronously in background (non-blocking)
+                // Sync installed games in background
                 _ = System.Threading.Tasks.Task.Run(async () =>
                 {
                     try
@@ -279,7 +265,6 @@ namespace NotiGlow
 
             try
             {
-                // Delay 5 seconds after startup to ensure zero impact on boot/initial render
                 await System.Threading.Tasks.Task.Delay(5000);
                 var updater = new UpdateService(_settingsService);
                 await updater.CheckForUpdatesAsync();
@@ -305,10 +290,7 @@ namespace NotiGlow
                     }
                 }
             }
-            catch
-            {
-                // In case process check fails, assume no other process
-            }
+            catch { }
             return false;
         }
 
@@ -316,7 +298,7 @@ namespace NotiGlow
         {
             LoggerService.LogStartupError(phase, ex);
             ShowExceptionDialog("Startup Error", ex, isFatal: true);
-            Shutdown();
+            Exit();
         }
 
         private void ShowExceptionDialog(string title, Exception ex, bool isFatal = false)
@@ -334,9 +316,8 @@ namespace NotiGlow
                     displayTitle,
                     displayMessage,
                     ex,
-                    logPath,
-                    retryAction: null,
-                    owner: _mainWindow?.IsVisible == true ? _mainWindow : null);
+                    isFatal,
+                    logPath);
             }
             catch
             {
@@ -348,16 +329,8 @@ namespace NotiGlow
                     string message = $"NotiGlow could not start or encountered an error.\n\nError: {shortMsg}\n\nDetailed information was written to:\n{logPath}";
                     NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowError(title, message, "OK");
                 }
-                catch
-                {
-                    // Fallback ignored
-                }
+                catch { }
             }
-        }
-
-        private void ApplyTheme(AppTheme theme)
-        {
-            ApplyCurrentSettingsTheme();
         }
 
         public void ApplyCurrentSettingsTheme()
@@ -366,30 +339,36 @@ namespace NotiGlow
             var settings = _settingsService.Current;
             ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
             _trayService?.RefreshTheme();
-            ThemeService.ApplyCornerRadius(settings.CornerRadius);
+            _mainWindow?.ApplyBackdropMaterial(settings.WindowMaterial);
+            _mainWindow?.ApplyThemeVisuals(settings.ColorTheme, settings.ThemeMode);
         }
 
         public void OpenSettingsWindow()
         {
             if (_mainWindow == null) return;
-            if (!_mainWindow.IsVisible)
+            _mainWindow.DispatcherQueue.TryEnqueue(() =>
             {
-                _mainWindow.Show();
-            }
-            if (_mainWindow.WindowState == WindowState.Minimized)
-            {
-                _mainWindow.WindowState = WindowState.Normal;
-            }
-            _mainWindow.Activate();
-            _mainWindow.Topmost = true;
-            _mainWindow.Topmost = false;
-            _mainWindow.Focus();
+                _mainWindow.AppWindow.Show();
+                if (_mainWindow.AppWindow.Presenter is OverlappedPresenter presenter)
+                {
+                    if (presenter.State == OverlappedPresenterState.Minimized)
+                    {
+                        presenter.Restore();
+                    }
+                }
+                var hwnd = WindowNative.GetWindowHandle(_mainWindow);
+                NotiGlow.Core.Win32.NativeMethods.SetForegroundWindow(hwnd);
+                _mainWindow.Activate();
+            });
         }
 
         private void OpenUpdateSettings()
         {
             OpenSettingsWindow();
-            _mainWindow?.NavigateToTag("Advanced");
+            _mainWindow?.DispatcherQueue.TryEnqueue(() =>
+            {
+                _mainWindow.NavigateToTag("Advanced");
+            });
         }
 
         public void TestAnimation()
@@ -413,7 +392,7 @@ namespace NotiGlow
         {
             CleanupResources();
             _mainWindow?.ForceExit();
-            Shutdown();
+            Exit();
         }
 
         private void CleanupResources()
@@ -442,13 +421,6 @@ namespace NotiGlow
             {
                 LoggerService.LogError("Error during application cleanup", ex);
             }
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            CleanupResources();
-            LoggerService.LogInfo("NotiGlow application exited.");
-            base.OnExit(e);
         }
     }
 }

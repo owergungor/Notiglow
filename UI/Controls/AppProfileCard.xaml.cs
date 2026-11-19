@@ -1,18 +1,16 @@
 using System;
-using System.Windows;
-using System.Windows.Automation;
-using System.Windows.Controls;
-using System.Windows.Media;
-using Wpf.Ui.Controls;
+using Windows.Foundation;
+using Windows.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
-using UserControl = System.Windows.Controls.UserControl;
-using Color = System.Windows.Media.Color;
 
 namespace NotiGlow.UI.Controls
 {
-    public partial class AppProfileCard : UserControl
+    public sealed partial class AppProfileCard : UserControl
     {
         public AppProfile? Profile { get; private set; }
 
@@ -24,26 +22,34 @@ namespace NotiGlow.UI.Controls
 
         public AppProfileCard()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         public void ConfigureForApplicationsList()
         {
             BtnDuplicate.Visibility = Visibility.Collapsed;
-            BtnEdit.Appearance = ControlAppearance.Transparent;
-            BtnDelete.Appearance = ControlAppearance.Transparent;
-            BtnEdit.Background = System.Windows.Media.Brushes.Transparent;
-            BtnDelete.Background = System.Windows.Media.Brushes.Transparent;
-            BtnEdit.BorderBrush = System.Windows.Media.Brushes.Transparent;
-            BtnDelete.BorderBrush = System.Windows.Media.Brushes.Transparent;
-            BtnEdit.Margin = new Thickness(0, 0, 4, 0);
-            BtnDelete.Margin = new Thickness(0, 0, 8, 0);
-            BtnEdit.MinWidth = 36;
-            BtnDelete.Width = 36;
-            BtnDelete.Content = null;
-            string deleteLabel = LocalizationService.Instance.GetString("Applications.CardDelete");
-            BtnDelete.ToolTip = deleteLabel;
-            AutomationProperties.SetName(BtnDelete, deleteLabel);
+        }
+
+        public void SetHighlighted(bool highlighted)
+        {
+            if (CardBorder == null) return;
+            var res = Application.Current.Resources;
+            if (highlighted)
+            {
+                if (res.TryGetValue("AccentColor", out var accent) && accent is Brush accentBrush)
+                    CardBorder.BorderBrush = accentBrush;
+                if (res.TryGetValue("NavActiveBackground", out var activeBg) && activeBg is Brush bgBrush)
+                    CardBorder.Background = bgBrush;
+                CardBorder.BorderThickness = new Thickness(1.5);
+            }
+            else
+            {
+                if (res.TryGetValue("BorderColor", out var border) && border is Brush borderBrush)
+                    CardBorder.BorderBrush = borderBrush;
+                if (res.TryGetValue("CardBackground", out var cardBg) && cardBg is Brush cardBrush)
+                    CardBorder.Background = cardBrush;
+                CardBorder.BorderThickness = new Thickness(1);
+            }
         }
 
         public void SetProfile(AppProfile profile)
@@ -61,11 +67,11 @@ namespace NotiGlow.UI.Controls
             string styleText = LocalizationService.Instance.GetString(styleKey);
             if (string.IsNullOrEmpty(styleText) || styleText == styleKey) styleText = profile.Style.ToString();
             TxtDetails.Text = $"{profile.FormattedDuration.Replace(" ", string.Empty)} • {profile.FormattedIntensity} • {styleText} • {prioText}";
-            ToggleEnabled.IsChecked = profile.Enabled;
+            ToggleEnabled.IsOn = profile.Enabled;
 
             if (ColorHelper.IsRgbSpectrum(profile.ColorHex))
             {
-                ColorBadge.Background = ColorHelper.CreateRainbowLinearBrush(new System.Windows.Point(0, 0), new System.Windows.Point(1, 1));
+                ColorBadge.Background = ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 1));
             }
             else
             {
@@ -74,17 +80,20 @@ namespace NotiGlow.UI.Controls
                 ColorBadge.Background = ColorBadgeBrush;
             }
 
+            if (string.Equals(profile.Category, "Gaming", StringComparison.OrdinalIgnoreCase))
+            {
+                FallbackAppIcon.Glyph = "\uE7FC"; // Dedicated Gamepad glyph for gaming profiles
+            }
+            else
+            {
+                FallbackAppIcon.Glyph = "\uE71D";
+            }
+
             LoadAppIconAsync(profile);
         }
 
         private async void LoadAppIconAsync(AppProfile profile)
         {
-            if (Dispatcher != null && !Dispatcher.CheckAccess())
-            {
-                _ = Dispatcher.BeginInvoke(new Action(() => LoadAppIconAsync(profile)));
-                return;
-            }
-
             if (ImgAppIcon == null || FallbackAppIcon == null) return;
 
             var cached = AppIconService.Instance.GetCachedIcon(profile.ExecutablePath, profile.AppId);
@@ -99,33 +108,12 @@ namespace NotiGlow.UI.Controls
             ImgAppIcon.Visibility = Visibility.Collapsed;
             FallbackAppIcon.Visibility = Visibility.Visible;
 
-            var icon = await AppIconService.Instance.GetAppIconAsync(profile);
-
-            void UpdateVisuals()
+            var loaded = await AppIconService.Instance.GetAppIconAsync(profile.ExecutablePath, profile.AppId);
+            if (loaded != null)
             {
-                if (Profile == profile && ImgAppIcon != null && FallbackAppIcon != null)
-                {
-                    if (icon != null)
-                    {
-                        ImgAppIcon.Source = icon;
-                        ImgAppIcon.Visibility = Visibility.Visible;
-                        FallbackAppIcon.Visibility = Visibility.Collapsed;
-                    }
-                    else
-                    {
-                        ImgAppIcon.Visibility = Visibility.Collapsed;
-                        FallbackAppIcon.Visibility = Visibility.Visible;
-                    }
-                }
-            }
-
-            if (Dispatcher != null && !Dispatcher.CheckAccess())
-            {
-                _ = Dispatcher.BeginInvoke(new Action(UpdateVisuals));
-            }
-            else
-            {
-                UpdateVisuals();
+                ImgAppIcon.Source = loaded;
+                ImgAppIcon.Visibility = Visibility.Visible;
+                FallbackAppIcon.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -149,11 +137,11 @@ namespace NotiGlow.UI.Controls
             if (Profile != null) DeleteRequested?.Invoke(this, Profile);
         }
 
-        private void ToggleEnabled_Click(object sender, RoutedEventArgs e)
+        private void ToggleEnabled_Toggled(object sender, RoutedEventArgs e)
         {
-            if (Profile != null)
+            if (Profile != null && Profile.Enabled != ToggleEnabled.IsOn)
             {
-                Profile.Enabled = ToggleEnabled.IsChecked == true;
+                Profile.Enabled = ToggleEnabled.IsOn;
                 ToggleChanged?.Invoke(this, Profile);
             }
         }

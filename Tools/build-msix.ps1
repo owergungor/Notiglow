@@ -6,19 +6,31 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = (Resolve-Path "$PSScriptRoot\..").Path
-$makeAppxPath = "C:\Users\omer\AppData\Local\Programs\msvc\msvc\Windows Kits\10\bin\10.0.22621.0\x64\makeappx.exe"
 
-if (-not (Test-Path $makeAppxPath)) {
-    throw "makeappx.exe not found at $makeAppxPath"
+$dotnetExe = Join-Path $env:LOCALAPPDATA "Microsoft\dotnet\dotnet.exe"
+if (-not (Test-Path $dotnetExe)) {
+    $dotnetExe = Get-Command "dotnet" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+}
+if (-not $dotnetExe -or -not (Test-Path $dotnetExe)) {
+    throw "dotnet.exe not found."
 }
 
-Write-Host "=== NotiGlow v3.3 MSIX Build Pipeline ===" -ForegroundColor Cyan
+$makeAppxCandidates = @(
+    "C:\Users\omer\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.26100.1742\bin\10.0.26100.0\x64\makeappx.exe",
+    "C:\Users\omer\AppData\Local\Programs\msvc\msvc\Windows Kits\10\bin\10.0.22621.0\x64\makeappx.exe"
+)
+$makeAppxPath = $makeAppxCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $makeAppxPath) {
+    throw "makeappx.exe not found."
+}
+
+Write-Host "=== NotiGlow v4.0 MSIX Build Pipeline ===" -ForegroundColor Cyan
 
 # 1. Publish self-contained x64 if requested
 $publishDir = Join-Path $repoRoot "bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
 if (-not $SkipPublish -or -not (Test-Path (Join-Path $publishDir "NotiGlow.exe"))) {
     Write-Host "[1/5] Publishing self-contained Release win-x64..." -ForegroundColor Yellow
-    & dotnet publish "$repoRoot\NotiGlow.csproj" -c Release -r win-x64 --self-contained true
+    & $dotnetExe publish "$repoRoot\NotiGlow.csproj" -c Release -r win-x64 --self-contained true
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet publish failed with exit code $LASTEXITCODE"
     }
@@ -47,7 +59,7 @@ $outputDir = Join-Path $repoRoot "artifacts\store"
 if (-not (Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 }
-$msixPath = Join-Path $outputDir "NotiGlow-v3.3-x64.msix"
+$msixPath = Join-Path $outputDir "NotiGlow-v4.0-x64.msix"
 
 Write-Host "[4/5] Packaging MSIX: $msixPath..." -ForegroundColor Yellow
 & $makeAppxPath pack /v /h SHA256 /d $stagingDir /p $msixPath /o
@@ -55,17 +67,29 @@ if ($LASTEXITCODE -ne 0) {
     throw "makeappx pack failed with exit code $LASTEXITCODE"
 }
 
-# 5. Sign Package for local installation if signtool is available
+# 5. Sign Package if signtool and publisher certificate are available
 if ($SignPackage) {
-    Write-Host "[5/5] Checking signing tools..." -ForegroundColor Yellow
+    Write-Host "[5/5] Checking signing tools and publisher certificate..." -ForegroundColor Yellow
     $subject = "CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1"
-    
-    $signtool = Get-Command "signtool.exe" -ErrorAction SilentlyContinue
-    if ($null -ne $signtool) {
-        Write-Host "Found signtool at $($signtool.Source). Signing MSIX package..." -ForegroundColor Cyan
-        & $signtool sign /fd SHA256 /a /n "crius" $msixPath
+    $cert = Get-ChildItem Cert:\CurrentUser\My -ErrorAction SilentlyContinue |
+        Where-Object { $_.Subject -eq $subject -and $_.HasPrivateKey } |
+        Select-Object -First 1
+
+    $signtoolCandidates = @(
+        (Get-Command "signtool.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source),
+        "C:\Users\omer\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.26100.1742\bin\10.0.26100.0\x64\signtool.exe",
+        "C:\Users\omer\.nuget\packages\microsoft.windows.sdk.buildtools\10.0.22621.756\bin\10.0.22621.0\x64\signtool.exe"
+    )
+    $signtoolPath = $signtoolCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+
+    if ($signtoolPath -and $cert) {
+        Write-Host "Signing MSIX with $signtoolPath using cert $($cert.Thumbprint)..." -ForegroundColor Cyan
+        & $signtoolPath sign /fd SHA256 /sha1 $cert.Thumbprint $msixPath
+        if ($LASTEXITCODE -ne 0) {
+            throw "signtool sign failed with exit code $LASTEXITCODE"
+        }
     } else {
-        Write-Host "Note: signtool.exe not found on PATH. Package is ready for Microsoft Partner Center upload (Partner Center applies official Store digital signatures automatically)." -ForegroundColor Gray
+        Write-Host "Note: signtool or publisher certificate not found. Package remains unsigned." -ForegroundColor Yellow
     }
 }
 

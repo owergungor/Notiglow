@@ -1,15 +1,20 @@
 using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Windows.Media;
-using Color = System.Windows.Media.Color;
-using ColorConverter = System.Windows.Media.ColorConverter;
-using Point = System.Windows.Point;
+using Windows.UI;
+using Microsoft.UI.Xaml.Media;
+using Point = Windows.Foundation.Point;
 
 namespace NotiGlow.Core.Helpers
 {
     public static class ColorHelper
     {
         private static readonly Regex RgbRegex = new Regex(@"rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        public static Color FromRgb(byte r, byte g, byte b)
+        {
+            return Color.FromArgb(255, r, g, b);
+        }
 
         public static Color ParseColor(string input, string fallbackHex = "#5865F2")
         {
@@ -28,7 +33,7 @@ namespace NotiGlow.Core.Helpers
                     byte.TryParse(rgbMatch.Groups[2].Value, out byte g) &&
                     byte.TryParse(rgbMatch.Groups[3].Value, out byte b))
                 {
-                    return Color.FromRgb(r, g, b);
+                    return Color.FromArgb(255, r, g, b);
                 }
             }
 
@@ -39,24 +44,56 @@ namespace NotiGlow.Core.Helpers
                 hexCandidate = "#" + hexCandidate;
             }
 
-            // Valid hex lengths: #RGB (4), #RRGGBB (7), #AARRGGBB (9)
-            if (hexCandidate.Length == 7 || hexCandidate.Length == 9 || hexCandidate.Length == 4)
+            if (TryParseHex(hexCandidate, out Color parsedColor))
             {
-                try
-                {
-                    var converted = ColorConverter.ConvertFromString(hexCandidate);
-                    if (converted is Color color)
-                    {
-                        return color;
-                    }
-                }
-                catch
-                {
-                    // Fallthrough to fallback
-                }
+                return parsedColor;
             }
 
             return GetFallbackColor(fallbackHex);
+        }
+
+        public static bool TryParseHex(string hex, out Color color)
+        {
+            color = default;
+            if (string.IsNullOrWhiteSpace(hex)) return false;
+
+            string clean = hex.Trim();
+            if (clean.StartsWith("#")) clean = clean.Substring(1);
+
+            try
+            {
+                if (clean.Length == 3) // RGB (e.g. F05 -> FF0055)
+                {
+                    byte r = byte.Parse($"{clean[0]}{clean[0]}", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte g = byte.Parse($"{clean[1]}{clean[1]}", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte b = byte.Parse($"{clean[2]}{clean[2]}", NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    color = Color.FromArgb(255, r, g, b);
+                    return true;
+                }
+                else if (clean.Length == 6) // RRGGBB
+                {
+                    byte r = byte.Parse(clean.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte g = byte.Parse(clean.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte b = byte.Parse(clean.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    color = Color.FromArgb(255, r, g, b);
+                    return true;
+                }
+                else if (clean.Length == 8) // AARRGGBB
+                {
+                    byte a = byte.Parse(clean.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte r = byte.Parse(clean.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte g = byte.Parse(clean.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    byte b = byte.Parse(clean.Substring(6, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                    color = Color.FromArgb(a, r, g, b);
+                    return true;
+                }
+            }
+            catch
+            {
+                // Parse failure
+            }
+
+            return false;
         }
 
         public static bool IsRgbSpectrum(string? input)
@@ -70,15 +107,15 @@ namespace NotiGlow.Core.Helpers
 
         public static readonly Color[] RgbSpectrumColors = new[]
         {
-            Color.FromRgb(255, 0, 77),    // Pink/Red
-            Color.FromRgb(255, 122, 0),   // Orange
-            Color.FromRgb(255, 214, 0),   // Yellow
-            Color.FromRgb(0, 230, 118),   // Green
-            Color.FromRgb(0, 229, 255),   // Cyan
-            Color.FromRgb(41, 121, 255),  // Blue
-            Color.FromRgb(124, 58, 237),  // Purple
-            Color.FromRgb(255, 0, 128),   // Magenta
-            Color.FromRgb(255, 0, 77)     // Loop back to Pink/Red
+            Color.FromArgb(255, 255, 0, 77),    // Pink/Red
+            Color.FromArgb(255, 255, 122, 0),   // Orange
+            Color.FromArgb(255, 255, 214, 0),   // Yellow
+            Color.FromArgb(255, 0, 230, 118),   // Green
+            Color.FromArgb(255, 0, 229, 255),   // Cyan
+            Color.FromArgb(255, 41, 121, 255),  // Blue
+            Color.FromArgb(255, 124, 58, 237),  // Purple
+            Color.FromArgb(255, 255, 0, 128),   // Magenta
+            Color.FromArgb(255, 255, 0, 77)     // Loop back to Pink/Red
         };
 
         public static LinearGradientBrush CreateRainbowLinearBrush(Point startPoint, Point endPoint)
@@ -87,7 +124,7 @@ namespace NotiGlow.Core.Helpers
             double step = 1.0 / (RgbSpectrumColors.Length - 1);
             for (int i = 0; i < RgbSpectrumColors.Length; i++)
             {
-                brush.GradientStops.Add(new GradientStop(RgbSpectrumColors[i], i * step));
+                brush.GradientStops.Add(new GradientStop { Color = RgbSpectrumColors[i], Offset = i * step });
             }
             return brush;
         }
@@ -99,16 +136,11 @@ namespace NotiGlow.Core.Helpers
 
         private static Color GetFallbackColor(string fallbackHex)
         {
-            try
+            if (TryParseHex(fallbackHex, out Color color))
             {
-                var converted = ColorConverter.ConvertFromString(fallbackHex);
-                if (converted is Color color) return color;
+                return color;
             }
-            catch
-            {
-                // Fallback to default Discord purple
-            }
-            return Color.FromRgb(88, 101, 242);
+            return Color.FromArgb(255, 88, 101, 242);
         }
     }
 }

@@ -12,39 +12,41 @@ namespace NotiGlow.Models
         public bool ReduceGlow { get; set; } = false;
         public bool OledMode { get; set; } = false;
         public ThemeMode ThemeMode { get; set; } = ThemeMode.Dark;
-        public ColorTheme ColorTheme { get; set; } = ColorTheme.Vercel;
+        public ColorTheme ColorTheme { get; set; } = ColorTheme.Windows;
         public double CornerRadius { get; set; } = 0.0;
         public string AppLanguage { get; set; } = "en-US";
+        public WindowMaterial WindowMaterial { get; set; } = WindowMaterial.Acrylic;
+        [System.Text.Json.Serialization.JsonIgnore]
+        private bool _isLiquidGlass = false;
         public AppTheme Theme
         {
             get => ThemeMode switch
             {
                 ThemeMode.Light => AppTheme.Light,
                 ThemeMode.System => AppTheme.System,
-                _ => (ColorTheme == ColorTheme.Indigo ? AppTheme.LiquidGlass : AppTheme.Dark)
+                _ => _isLiquidGlass ? AppTheme.LiquidGlass : AppTheme.Dark
             };
             set
             {
                 if (value == AppTheme.Light)
                 {
                     ThemeMode = ThemeMode.Light;
+                    _isLiquidGlass = false;
                 }
                 else if (value == AppTheme.System)
                 {
                     ThemeMode = ThemeMode.System;
+                    _isLiquidGlass = false;
                 }
                 else if (value == AppTheme.LiquidGlass)
                 {
                     ThemeMode = ThemeMode.Dark;
-                    ColorTheme = ColorTheme.Indigo;
+                    _isLiquidGlass = true;
                 }
                 else
                 {
                     ThemeMode = ThemeMode.Dark;
-                    if (ColorTheme == ColorTheme.Indigo)
-                    {
-                        ColorTheme = ColorTheme.Standard;
-                    }
+                    _isLiquidGlass = false;
                 }
             }
         }
@@ -210,5 +212,12 @@ namespace NotiGlow.Models
         public UpdateCheckFrequency UpdateFrequency { get; set; } = UpdateCheckFrequency.OnStartup;
         public DateTime? LastUpdateCheck { get; set; }
         public string? LastUpdateVersion { get; set; }
+
+        // Window Geometry Persistence
+        public int? WindowWidth { get; set; }
+        public int? WindowHeight { get; set; }
+        public int? WindowX { get; set; }
+        public int? WindowY { get; set; }
+        public bool WindowMaximized { get; set; } = false;
     }
 }

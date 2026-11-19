@@ -1,156 +1,260 @@
-<UserControl x:Class="NotiGlow.UI.Views.AdvancedView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="650" d:DesignWidth="800">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24">
+<UserControl
+    x:Class="NotiGlow.UI.Views.AdvancedView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+    <ScrollViewer x:Name="RootScrollViewer"
+                  Background="Transparent"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  HorizontalContentAlignment="Stretch"
+                  IsScrollInertiaEnabled="True"
+                  ScrollViewer.VerticalScrollMode="Enabled">
+        <StackPanel Margin="32,20,32,48" HorizontalAlignment="Stretch">
             <!-- Header Section with Top-Right Test Animation Button -->
-            <Grid Margin="0,0,0,24">
+            <Grid Margin="0,0,0,20" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{DynamicResource Advanced.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="{DynamicResource Advanced.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="TxtTitle" Text="Advanced Settings" FontSize="28" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                    <TextBlock x:Name="TxtSubtitle" Text="Configure updates, accessibility, backup, and diagnostic tools" Foreground="{ThemeResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" x:Name="BtnTestAnimation" Click="BtnTestAnimation_Click" VerticalAlignment="Center" Padding="14,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE768;" FontSize="14" Foreground="{ThemeResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtBtnTestAnimation" Text="Test Animation" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
-                </ui:Button>
+                </Button>
             </Grid>
 
-            <!-- Section 1: Auto Update -->
-            <TextBlock Text="{DynamicResource Advanced.AutoUpdate}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
-
-            <!-- Automatic Updates -->
-            <ui:CardControl x:Name="CardAutoUpdates" Padding="18" Margin="0,0,0,12" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.AutomaticUpdates}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock x:Name="TxtUpdateStatus" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                        <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentColor}"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnCheckUpdates" Content="{DynamicResource Advanced.CheckForUpdates}" Appearance="Secondary" Click="BtnCheckUpdates_Click" Margin="0,0,16,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="ArrowSync24" Foreground="{DynamicResource TextPrimary}"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:ToggleSwitch x:Name="ToggleAutoUpdates" IsChecked="True" Click="ToggleAutoUpdates_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Advanced.AutoCheckUpdatesToolTip}"/>
-                </StackPanel>
-            </ui:CardControl>
-
-            <!-- Check Frequency Dropdown -->
-            <ui:CardControl x:Name="CardCheckFrequency" Padding="18" Margin="0,0,0,24" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.CheckFrequency}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.CheckFrequencyDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ComboBox x:Name="CmbUpdateFrequency"
-                          Style="{DynamicResource AppleSelectComboBoxStyle}"
-                          Width="180"
-                          VerticalAlignment="Center"
-                          SelectionChanged="CmbUpdateFrequency_SelectionChanged">
-                    <ComboBoxItem Content="{DynamicResource Advanced.FreqStartup}" Tag="OnStartup"/>
-                    <ComboBoxItem Content="{DynamicResource Advanced.FreqDaily}" Tag="Daily"/>
-                    <ComboBoxItem Content="{DynamicResource Advanced.FreqWeekly}" Tag="Weekly"/>
-                    <ComboBoxItem Content="{DynamicResource Advanced.FreqMonthly}" Tag="Monthly"/>
-                </ComboBox>
-            </ui:CardControl>
-
-            <!-- Section 2: Accessibility -->
-            <TextBlock Text="{DynamicResource Advanced.Accessibility}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
-
-            <!-- OLED Mode -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Desktop24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{DynamicResource Advanced.OledMode}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="{DynamicResource Advanced.OledModeDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+            <!-- Section 1: Application Updates -->
+            <TextBlock x:Name="TxtAutoUpdateSection" Text="Application Updates" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextSecondary}" Margin="0,8,0,8"/>
+            <Border x:Name="CardAutoUpdates" Background="{ThemeResource CardBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+                <StackPanel HorizontalAlignment="Stretch">
+                    <!-- Automatic Updates Row -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE777;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtAutomaticUpdates" Text="Automatic Updates" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtUpdateStatus" Text="Up to date" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <ProgressBar x:Name="PbUpdateProgress" Height="4" Margin="0,6,0,0" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="10">
+                            <Button x:Name="BtnCheckUpdates" Click="BtnCheckUpdates_Click" VerticalAlignment="Center" Padding="10,6">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <FontIcon Glyph="&#xE72C;" FontSize="12"/>
+                                    <TextBlock x:Name="TxtBtnCheckUpdates" Text="Check for Updates"/>
+                                </StackPanel>
+                            </Button>
+                            <ToggleSwitch x:Name="ToggleAutoUpdates" IsOn="True" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleAutoUpdates_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Automatic Updates"/>
                         </StackPanel>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleOledMode" Click="ToggleOledMode_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
+                    </Grid>
 
-            <!-- Reduce Motion -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.ReduceMotion}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.ReduceMotionDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleReduceMotion" Click="ToggleReduceMotion_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Reduce Glow -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.ReduceGlow}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.ReduceGlowDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleReduceGlow" Click="ToggleReduceGlow_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
-
-            <!-- Section 2: Backup & Restore -->
-            <TextBlock Text="{DynamicResource Advanced.BackupRestore}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
-
-            <!-- Settings Import / Export / Reset -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.ConfigManagement}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.ConfigManagementDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="BtnExport" Content="{DynamicResource Advanced.ExportSettings}" Icon="{ui:SymbolIcon ArrowUpload24}" Appearance="Primary" Click="BtnExport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
-                    <ui:Button x:Name="BtnImport" Content="{DynamicResource Advanced.ImportSettings}" Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Secondary" Click="BtnImport_Click" Margin="0,0,8,0" Foreground="{DynamicResource TextPrimary}"/>
-                    <ui:Button x:Name="BtnReset" Content="{DynamicResource Advanced.FactoryReset}" Icon="{ui:SymbolIcon Delete24}" Appearance="Danger" Click="BtnReset_Click"/>
+                    <!-- Check Frequency Row -->
+                    <Border x:Name="CardCheckFrequency">
+                        <StackPanel HorizontalAlignment="Stretch">
+                            <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+                            <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Column="0" Glyph="&#xE823;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtCheckFrequency" Text="Check Frequency" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                        <TextBlock x:Name="TxtCheckFrequencyDesc" Text="Choose how frequently NotiGlow checks for available updates" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+                                <ComboBox Grid.Column="1" x:Name="CmbUpdateFrequency" Width="180" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="CmbUpdateFrequency_SelectionChanged">
+                                    <ComboBoxItem x:Name="CbiFreqStartup" Content="On Startup" Tag="OnStartup"/>
+                                    <ComboBoxItem x:Name="CbiFreqDaily" Content="Daily" Tag="Daily"/>
+                                    <ComboBoxItem x:Name="CbiFreqWeekly" Content="Weekly" Tag="Weekly"/>
+                                    <ComboBoxItem x:Name="CbiFreqMonthly" Content="Monthly" Tag="Monthly"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </ui:CardControl>
+            </Border>
 
-            <!-- Section 3: Diagnostics -->
-            <TextBlock Text="{DynamicResource Advanced.Diagnostics}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,12"/>
+            <!-- Section 2: Accessibility & Comfort -->
+            <TextBlock x:Name="TxtAccessibilitySection" Text="Accessibility &amp; Display" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextSecondary}" Margin="0,4,0,8"/>
+            <Border Background="{ThemeResource CardBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+                <StackPanel HorizontalAlignment="Stretch">
+                    <!-- Row 1: OLED Mode -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE793;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtOledMode" Text="OLED Screen Saver Mode" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtOledModeDesc" Text="Prevents pixel burn-in by subtly shifting edge glow positions over extended use" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                        <ToggleSwitch Grid.Column="1" x:Name="ToggleOledMode" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleOledMode_Toggled" VerticalAlignment="Center" AutomationProperties.Name="OLED Screen Saver Mode"/>
+                    </Grid>
 
-            <!-- Debug Logging Toggle -->
-            <ui:CardControl Padding="18" Margin="0,0,0,12" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.DebugLogging}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.DebugLoggingDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+
+                    <!-- Row 2: Reduce Motion -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE77A;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtReduceMotion" Text="Reduce Motion" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtReduceMotionDesc" Text="Minimizes UI and glow motion effects across the entire application" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                        <ToggleSwitch Grid.Column="1" x:Name="ToggleReduceMotion" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleReduceMotion_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Reduce Motion"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+
+                    <!-- Row 3: Reduce Glow -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE706;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtReduceGlow" Text="Subtle Glow Mode" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtReduceGlowDesc" Text="Reduces maximum outer bloom radius for a softer, non-intrusive ambient glow" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                        <ToggleSwitch Grid.Column="1" x:Name="ToggleReduceGlow" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleReduceGlow_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Subtle Glow Mode"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Section 3: Backup & Restore -->
+            <TextBlock x:Name="TxtBackupRestoreSection" Text="Backup &amp; Restore" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextSecondary}" Margin="0,4,0,8"/>
+            <Border Background="{ThemeResource CardBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+                <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE8F1;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtConfigManagement" Text="Profile &amp; Settings Management" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtConfigManagementDesc" Text="Export your custom profiles, restore backups, or reset settings to factory defaults" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="8">
+                        <Button x:Name="BtnExport" Click="BtnExport_Click" Padding="10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE898;" FontSize="12"/>
+                                <TextBlock x:Name="TxtBtnExport" Text="Export"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="BtnImport" Click="BtnImport_Click" Padding="10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE896;" FontSize="12"/>
+                                <TextBlock x:Name="TxtBtnImport" Text="Import"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="BtnReset" Click="BtnReset_Click" Padding="10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon Glyph="&#xE74D;" FontSize="12" Foreground="#E11D48"/>
+                                <TextBlock x:Name="TxtBtnReset" Text="Reset" Foreground="#E11D48"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleDebugLogging" Click="ToggleDebugLogging_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
+                </Grid>
+            </Border>
 
-            <!-- Notification Identity Debug Toggle -->
-            <ui:CardControl Padding="18" Margin="0,0,0,24" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}" HorizontalAlignment="Stretch">
-                <ui:CardControl.Header>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{DynamicResource Advanced.IdentityDebug}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="{DynamicResource Advanced.IdentityDebugDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </ui:CardControl.Header>
-                <ui:ToggleSwitch x:Name="ToggleIdentityDebug" Click="ToggleIdentityDebug_Click" VerticalAlignment="Center"/>
-            </ui:CardControl>
+            <!-- Section 4: Diagnostics -->
+            <TextBlock x:Name="TxtDiagnosticsSection" Text="Diagnostics &amp; Developer Tools" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextSecondary}" Margin="0,4,0,8"/>
+            <Border Background="{ThemeResource CardBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1" CornerRadius="8" HorizontalAlignment="Stretch">
+                <StackPanel HorizontalAlignment="Stretch">
+                    <!-- Debug Logging Row -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xE9F9;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtDebugLogging" Text="Debug Logging" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtDebugLoggingDesc" Text="Write diagnostic log entries to disk to assist with troubleshooting" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                        <ToggleSwitch Grid.Column="1" x:Name="ToggleDebugLogging" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleDebugLogging_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Debug Logging"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+
+                    <!-- Notification Identity Debug Row -->
+                    <Grid MinHeight="64" Padding="16,12" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Grid.Column="0" Glyph="&#xEA86;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtIdentityDebug" Text="Show Notification Identity Info" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtIdentityDebugDesc" Text="Include AppId and AUMID details in toast notifications for precise profile mapping" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                        <ToggleSwitch Grid.Column="1" x:Name="ToggleIdentityDebug" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleIdentityDebug_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Show Notification Identity Info"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

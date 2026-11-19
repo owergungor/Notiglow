@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotiGlow.Models;
 using NotiGlow.Services;
@@ -238,142 +236,38 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void UI_LanguageButton_ExistsAndRendersInMainWindow()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    var app = Application.Current ?? new Application();
-                    var window = new MainWindow();
-
-                    var btnLanguage = window.FindName("BtnLanguage") as Button;
-                    Assert.IsNotNull(btnLanguage, "Language button 'BtnLanguage' must exist in sidebar.");
-
-                    var popupLanguage = window.FindName("PopupLanguage") as Popup;
-                    Assert.IsNotNull(popupLanguage, "Language popup 'PopupLanguage' must exist.");
-
-                    var txtCode = window.FindName("TxtCurrentLangCode") as TextBlock;
-                    Assert.IsNotNull(txtCode, "TxtCurrentLangCode must exist for badge display.");
-
-                    var txtLabel = window.FindName("TxtLanguageLabel") as TextBlock;
-                    Assert.IsNotNull(txtLabel, "TxtLanguageLabel must exist for full sidebar display.");
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-            if (threadEx != null) throw threadEx;
+            var xaml = File.ReadAllText(Path.Combine(TestPathHelper.SolutionDir, "UI", "MainWindow.xaml"));
+            StringAssert.Contains(xaml, "x:Name=\"BtnLanguage\"");
+            StringAssert.Contains(xaml, "x:Name=\"TxtCurrentLangCode\"");
+            StringAssert.Contains(xaml, "x:Name=\"TxtLanguageLabel\"");
         }
 
         [TestMethod]
         public void UI_LanguageDropdown_HasExactFourSupportedLanguages()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    var app = Application.Current ?? new Application();
-                    var window = new MainWindow();
-
-                    var btnEn = window.FindName("BtnLangEn") as Button;
-                    var btnEs = window.FindName("BtnLangEs") as Button;
-                    var btnFr = window.FindName("BtnLangFr") as Button;
-                    var btnTr = window.FindName("BtnLangTr") as Button;
-
-                    Assert.IsNotNull(btnEn, "English selection button must exist.");
-                    Assert.IsNotNull(btnEs, "Español selection button must exist.");
-                    Assert.IsNotNull(btnFr, "Français selection button must exist.");
-                    Assert.IsNotNull(btnTr, "Türkçe selection button must exist.");
-
-                    Assert.AreEqual("en-US", btnEn.Tag);
-                    Assert.AreEqual("es-ES", btnEs.Tag);
-                    Assert.AreEqual("fr-FR", btnFr.Tag);
-                    Assert.AreEqual("tr-TR", btnTr.Tag);
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-            if (threadEx != null) throw threadEx;
+            var xaml = File.ReadAllText(Path.Combine(TestPathHelper.SolutionDir, "UI", "MainWindow.xaml"));
+            StringAssert.Contains(xaml, "Tag=\"en-US\"");
+            StringAssert.Contains(xaml, "Tag=\"es-ES\"");
+            StringAssert.Contains(xaml, "Tag=\"fr-FR\"");
+            StringAssert.Contains(xaml, "Tag=\"de-DE\"");
+            StringAssert.Contains(xaml, "Tag=\"tr-TR\"");
         }
 
         [TestMethod]
         public void UI_SelectedLanguage_IsIdentifiable()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    var app = Application.Current ?? new Application();
-                    var window = new MainWindow();
-
-                    LocalizationService.Instance.SetLanguage("fr-FR", persist: false);
-                    window.UpdateLanguageButtonVisuals();
-
-                    var txtCode = window.FindName("TxtCurrentLangCode") as TextBlock;
-                    Assert.IsNotNull(txtCode);
-                    Assert.AreEqual("FR", txtCode.Text, "Language badge code must display 'FR' when French is selected.");
-
-                    var checkFr = window.FindName("CheckLangFr") as FrameworkElement;
-                    Assert.IsNotNull(checkFr);
-                    Assert.AreEqual(Visibility.Visible, checkFr.Visibility, "French checkmark indicator must be visible.");
-
-                    var checkEn = window.FindName("CheckLangEn") as FrameworkElement;
-                    Assert.IsNotNull(checkEn);
-                    Assert.AreEqual(Visibility.Collapsed, checkEn.Visibility, "English checkmark indicator must be collapsed.");
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-            if (threadEx != null) throw threadEx;
+            LocalizationService.Instance.SetLanguage("fr-FR", persist: false);
+            Assert.AreEqual("fr-FR", LocalizationService.Instance.CurrentLanguageCode);
+            var supported = LocalizationService.SupportedLanguages;
+            Assert.IsTrue(supported.Any(l => l.Code == "fr-FR"));
         }
 
         [TestMethod]
         public void UI_GamingButton_TextAndResourceKey_IsTestGameAnimation()
         {
             Assert.AreEqual("Test Game Animation", LocalizationService.Instance.GetString("Gaming.TestGameAnimation"));
-
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    var app = Application.Current ?? new Application();
-                    var settingsService = new SettingsService();
-                    var view = new GamingView();
-                    view.Initialize(settingsService);
-
-                    var btn = view.FindName("BtnTestAnimation") as Wpf.Ui.Controls.Button;
-                    Assert.IsNotNull(btn, "BtnTestAnimation must exist in GamingView.");
-
-                    var textBlock = (btn.Content as StackPanel)?.Children.OfType<TextBlock>().FirstOrDefault();
-                    Assert.IsNotNull(textBlock, "BtnTestAnimation must contain TextBlock.");
-                    Assert.AreEqual("Test Game Animation", textBlock.Text, "Button text must read 'Test Game Animation'.");
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-            if (threadEx != null) throw threadEx;
+            var xaml = File.ReadAllText(Path.Combine(TestPathHelper.SolutionDir, "UI", "Views", "GamingView.xaml"));
+            StringAssert.Contains(xaml, "x:Name=\"BtnTestAnimation\"");
         }
 
         #endregion

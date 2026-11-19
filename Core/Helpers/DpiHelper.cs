@@ -1,41 +1,28 @@
-using System.Windows;
-using System.Windows.Media;
+using System;
+using Windows.Foundation;
 
 namespace NotiGlow.Core.Helpers
 {
     public static class DpiHelper
     {
-        public static System.Windows.Point TransformToDeviceIndependentPixels(Visual visual, double x, double y)
+        public static Point TransformToDeviceIndependentPixels(double x, double y, double scale = 1.0)
         {
-            var source = PresentationSource.FromVisual(visual);
-            if (source?.CompositionTarget != null)
+            if (scale > 0)
             {
-                Matrix matrix = source.CompositionTarget.TransformFromDevice;
-                return matrix.Transform(new System.Windows.Point(x, y));
+                return new Point(x / scale, y / scale);
             }
-            return new System.Windows.Point(x, y);
+            return new Point(x, y);
         }
 
-        public static Rect GetDpiScaledRect(System.Drawing.Rectangle bounds, Visual? visual = null)
+        public static Rect GetDpiScaledRect(System.Drawing.Rectangle bounds, double scale = 1.0)
         {
-            double scaleX = 1.0;
-            double scaleY = 1.0;
-
-            if (visual != null)
-            {
-                var source = PresentationSource.FromVisual(visual);
-                if (source?.CompositionTarget != null)
-                {
-                    scaleX = 1.0 / source.CompositionTarget.TransformToDevice.M11;
-                    scaleY = 1.0 / source.CompositionTarget.TransformToDevice.M22;
-                }
-            }
+            double scaleFactor = scale > 0 ? 1.0 / scale : 1.0;
 
             return new Rect(
-                bounds.X * scaleX,
-                bounds.Y * scaleY,
-                bounds.Width * scaleX,
-                bounds.Height * scaleY
+                bounds.X * scaleFactor,
+                bounds.Y * scaleFactor,
+                bounds.Width * scaleFactor,
+                bounds.Height * scaleFactor
             );
         }
     }

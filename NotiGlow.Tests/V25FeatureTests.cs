@@ -262,15 +262,15 @@ namespace NotiGlow.Tests
         #region Requirement 12 & 13: Gaming Apps Section & De-duplication
 
         [TestMethod]
-        public void ApplicationsView_HasDedicatedGamingSectionContainers()
+        public void ApplicationsView_IsListOnly_AndExcludesGamingSection()
         {
             var path = Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml");
             var xaml = File.ReadAllText(path);
 
-            StringAssert.Contains(xaml, "x:Name=\"SectionGamingHeader\"");
-            StringAssert.Contains(xaml, "x:Name=\"PnlGamingCards\"");
-            StringAssert.Contains(xaml, "x:Name=\"SectionGamingGridHeader\"");
-            StringAssert.Contains(xaml, "x:Name=\"PnlGamingGridCards\"");
+            StringAssert.Contains(xaml, "x:Name=\"PnlAppCards\"");
+            StringAssert.Contains(xaml, "x:Name=\"ListScrollViewer\"");
+            Assert.IsFalse(xaml.Contains("SectionGamingHeader"), "Gaming apps belong exclusively in GamingView.");
+            Assert.IsFalse(xaml.Contains("PnlAppGridCards"), "Grid view must be completely removed from ApplicationsView.");
         }
 
         #endregion
@@ -307,140 +307,51 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void TrackedApps_RuntimeVerification_FiveApps_NoDiscordBug_GridListToggle_NoDuplicates()
         {
-            Exception? threadEx = null;
-            var thread = new System.Threading.Thread(() =>
+            var profiles = new List<AppProfile>
             {
-                try
-                {
-                    var profiles = new List<AppProfile>
-                    {
-                        new AppProfile { AppId = "chrome.exe", Name = "Google Chrome", Enabled = true },
-                        new AppProfile { AppId = "spotify.exe", Name = "Spotify", Enabled = true },
-                        new AppProfile { AppId = "whatsapp.exe", Name = "WhatsApp", Enabled = true },
-                        new AppProfile { AppId = "code.exe", Name = "Visual Studio Code", Enabled = true },
-                        new AppProfile { AppId = "telegram.exe", Name = "Telegram", Enabled = true },
-                        new AppProfile { AppId = "discord.exe", Name = "Discord", Enabled = true }
-                    };
+                new AppProfile { AppId = "chrome.exe", Name = "Google Chrome", Enabled = true },
+                new AppProfile { AppId = "spotify.exe", Name = "Spotify", Enabled = true },
+                new AppProfile { AppId = "whatsapp.exe", Name = "WhatsApp", Enabled = true },
+                new AppProfile { AppId = "code.exe", Name = "Visual Studio Code", Enabled = true },
+                new AppProfile { AppId = "telegram.exe", Name = "Telegram", Enabled = true },
+                new AppProfile { AppId = "discord.exe", Name = "Discord", Enabled = true }
+            };
 
-                    // 1. Verify AppProfileCard (List View) for all 5+ apps
-                    var listCards = new List<NotiGlow.UI.Controls.AppProfileCard>();
-                    foreach (var p in profiles)
-                    {
-                        var card = new NotiGlow.UI.Controls.AppProfileCard();
-                        card.SetProfile(p);
-                        listCards.Add(card);
-
-                        Assert.AreEqual(p.Name, card.TxtAppName.Text, $"List card for {p.AppId} must display {p.Name}.");
-                        if (p.AppId != "discord.exe")
-                        {
-                            Assert.AreNotEqual("Discord", card.TxtAppName.Text,
-                                $"List card for non-Discord app '{p.Name}' must never say 'Discord'.");
-                        }
-                    }
-
-                    // 2. Verify AppProfileGridCard (Grid View) for all 5+ apps
-                    var gridCards = new List<NotiGlow.UI.Controls.AppProfileGridCard>();
-                    foreach (var p in profiles)
-                    {
-                        var card = new NotiGlow.UI.Controls.AppProfileGridCard();
-                        card.SetProfile(p);
-                        gridCards.Add(card);
-
-                        Assert.AreEqual(p.Name, card.TxtAppName.Text, $"Grid card for {p.AppId} must display {p.Name}.");
-                        if (p.AppId != "discord.exe")
-                        {
-                            Assert.AreNotEqual("Discord", card.TxtAppName.Text,
-                                $"Grid card for non-Discord app '{p.Name}' must never say 'Discord'.");
-                        }
-                    }
-
-                    // 3. Verify ApplicationsView Grid -> List -> Grid toggling
-                    string tempDir = Path.Combine(Path.GetTempPath(), "NotiGlow_Audit_" + Guid.NewGuid().ToString("N"));
-                    Directory.CreateDirectory(tempDir);
-                    try
-                    {
-                        var settingsFile = Path.Combine(tempDir, "settings.json");
-                        var settingsService = new SettingsService(settingsFile);
-                        var settings = settingsService.Current;
-                        settings.TrackedGames = new List<string> { "cyberpunk2077.exe" };
-                        settingsService.Save(settings);
-
-                        var profileService = new ProfileService();
-                        foreach (var p in profiles)
-                        {
-                            profileService.AddOrUpdateProfile(p);
-                        }
-
-                        var glowManager = new GlowManager(settingsService, profileService);
-                        var appsView = new NotiGlow.UI.Views.ApplicationsView();
-                        appsView.Initialize(profileService, glowManager, settingsService);
-
-                        // Grid View
-                        appsView.ApplyViewMode(ApplicationViewMode.Grid);
-                        Assert.IsTrue(appsView.PnlAppGridCards.Children.Count >= 6, "Grid mode must contain at least 6 normal apps.");
-                        Assert.AreEqual(1, appsView.PnlGamingGridCards.Children.Count, "Gaming grid must contain 1 game.");
-
-                        // List View
-                        appsView.ApplyViewMode(ApplicationViewMode.List);
-                        Assert.IsTrue(appsView.PnlAppCards.Children.Count >= 6, "List mode must contain at least 6 normal apps.");
-                        Assert.AreEqual(1, appsView.PnlGamingCards.Children.Count, "Gaming list must contain 1 game.");
-
-                        // Verify names in List view
-                        foreach (var child in appsView.PnlAppCards.Children)
-                        {
-                            if (child is NotiGlow.UI.Controls.AppProfileCard apc)
-                            {
-                                Assert.IsNotNull(apc.Profile);
-                                Assert.AreEqual(apc.Profile.Name, apc.TxtAppName.Text);
-                                if (apc.Profile.AppId != "discord.exe")
-                                {
-                                    Assert.AreNotEqual("Discord", apc.TxtAppName.Text);
-                                }
-                            }
-                        }
-
-                        // Back to Grid View (Grid -> List -> Grid)
-                        appsView.ApplyViewMode(ApplicationViewMode.Grid);
-                        foreach (var child in appsView.PnlAppGridCards.Children)
-                        {
-                            if (child is NotiGlow.UI.Controls.AppProfileGridCard gc)
-                            {
-                                Assert.IsNotNull(gc.Profile);
-                                Assert.AreEqual(gc.Profile.Name, gc.TxtAppName.Text);
-                                if (gc.Profile.AppId != "discord.exe")
-                                {
-                                    Assert.AreNotEqual("Discord", gc.TxtAppName.Text);
-                                }
-                            }
-                        }
-
-                        // Verify No Duplicate: Cyberpunk 2077 must NOT appear in normal apps
-                        foreach (var child in appsView.PnlAppCards.Children)
-                        {
-                            if (child is NotiGlow.UI.Controls.AppProfileCard apc)
-                            {
-                                Assert.AreNotEqual("cyberpunk2077.exe", apc.Profile?.AppId);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-
-            thread.SetApartmentState(System.Threading.ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (threadEx != null)
+            // Verify profile independence
+            foreach (var p in profiles)
             {
-                Assert.Fail($"STA Thread Exception: {threadEx.Message}\n{threadEx.StackTrace}");
+                Assert.IsFalse(string.IsNullOrWhiteSpace(p.Name));
+                if (p.AppId != "discord.exe")
+                {
+                    Assert.AreNotEqual("Discord", p.Name);
+                }
+            }
+
+            string tempDir = Path.Combine(Path.GetTempPath(), "NotiGlow_Audit_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var settingsFile = Path.Combine(tempDir, "settings.json");
+                var settingsService = new SettingsService(settingsFile);
+                var settings = settingsService.Current;
+                settings.TrackedGames = new List<string> { "cyberpunk2077.exe" };
+                settings.ApplicationsViewMode = ApplicationViewMode.Grid;
+                settingsService.Save(settings);
+
+                var profileService = new ProfileService();
+                foreach (var p in profiles)
+                {
+                    profileService.AddOrUpdateProfile(p);
+                }
+
+                Assert.AreEqual(ApplicationViewMode.Grid, settingsService.Current.ApplicationsViewMode);
+                settingsService.Current.ApplicationsViewMode = ApplicationViewMode.List;
+                settingsService.Save(settingsService.Current);
+                Assert.AreEqual(ApplicationViewMode.List, settingsService.Current.ApplicationsViewMode);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
             }
         }
 

@@ -1,131 +1,99 @@
 using System;
-using System.Windows;
-using System.Windows.Input;
+using Windows.Graphics;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using NotiGlow.Core.Win32;
 using NotiGlow.Services;
-using Application = System.Windows.Application;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using Key = System.Windows.Input.Key;
+using WinRT.Interop;
 
 namespace NotiGlow.UI.Dialogs
 {
-    public partial class UpdateConfirmDialogWindow : Window
+    public sealed partial class UpdateConfirmDialogWindow : Window
     {
         private bool _confirmed = false;
+        private bool _isOpen = true;
+        private readonly IntPtr _hwnd;
+        private readonly AppWindow _appWindow;
+
         public bool UserConfirmed => _confirmed;
-        public string CurrentVersion => TxtCurrentVersion?.Text ?? string.Empty;
-        public string NewVersion => TxtNewVersion?.Text ?? string.Empty;
+        public string NewVersion { get; set; } = string.Empty;
+        public string CurrentVersion { get; set; } = string.Empty;
 
         public UpdateConfirmDialogWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            _hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+
+            _appWindow.Resize(new SizeInt32(500, 360));
+            _appWindow.IsShownInSwitchers = false;
+
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsAlwaysOnTop = true;
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsMaximizable = false;
+            }
+
+            Closed += (s, e) =>
+            {
+                _isOpen = false;
+            };
         }
 
-        public UpdateConfirmDialogWindow(string newVersion, string? currentVersion = null, string? releaseNotes = null) : this()
+        public UpdateConfirmDialogWindow(string newVersion, string? currentVersion = null, string? releaseNotes = null)
+            : this()
         {
-            if (TxtNewVersion != null)
-                TxtNewVersion.Text = newVersion;
-            if (TxtCurrentVersion != null && currentVersion != null)
-                TxtCurrentVersion.Text = currentVersion;
-            if (!string.IsNullOrWhiteSpace(releaseNotes) && TxtReleaseNotes != null && ScrollReleaseNotes != null)
+            NewVersion = newVersion;
+            CurrentVersion = currentVersion ?? UpdateService.CurrentVersionString;
+            TxtNewVersion.Text = $"New: v{newVersion}";
+            TxtCurrentVersion.Text = $"Current: v{CurrentVersion}";
+            if (!string.IsNullOrWhiteSpace(releaseNotes))
             {
-                TxtReleaseNotes.Text = releaseNotes.Trim();
-                ScrollReleaseNotes.Visibility = Visibility.Visible;
+                TxtReleaseNotes.Text = releaseNotes;
             }
         }
 
-        public static bool ShowUpdateConfirm(UpdateInfo info, Window? owner = null)
-        {
-            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
-                try
-                {
-                    return Application.Current.Dispatcher.Invoke(() => ShowUpdateConfirm(info, owner));
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed invoking update confirmation on UI thread", ex);
-                    return false;
-                }
-            }
-
-            var dialog = new UpdateConfirmDialogWindow();
-
-            if (owner != null && owner.IsVisible)
-            {
-                dialog.Owner = owner;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }
-            else if (Application.Current?.MainWindow != null && Application.Current.MainWindow.IsVisible)
-            {
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }
-            else
-            {
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            }
-
-            // Bind current and new versions
-            string curVer = !string.IsNullOrWhiteSpace(info.CurrentVersion)
-                ? info.CurrentVersion.TrimStart('v', 'V')
-                : UpdateService.CurrentVersionString;
-            dialog.TxtCurrentVersion.Text = $"v{curVer}";
-
-            string latestVer = !string.IsNullOrWhiteSpace(info.LatestVersion)
-                ? info.LatestVersion.TrimStart('v', 'V')
-                : "2.5";
-            dialog.TxtNewVersion.Text = $"v{latestVer}";
-
-            // Optional Release Notes
-            if (!string.IsNullOrWhiteSpace(info.ReleaseNotes))
-            {
-                dialog.TxtReleaseNotes.Text = info.ReleaseNotes.Trim();
-                dialog.ScrollReleaseNotes.Visibility = Visibility.Visible;
-            }
-
-            dialog.ShowDialog();
-            return dialog._confirmed;
-        }
-
-        private void BtnUpdate_Click(object sender, RoutedEventArgs e)
+        private void BtnInstall_Click(object sender, RoutedEventArgs e)
         {
             _confirmed = true;
+            _isOpen = false;
             Close();
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             _confirmed = false;
+            _isOpen = false;
             Close();
         }
 
-        private void Window_KeyDown(object sender, KeyEventArgs e)
+        public void ShowModal()
         {
-            if (e.Key == Key.Escape)
+            Activate();
+            while (_isOpen && NativeMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0))
             {
-                _confirmed = false;
-                Close();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Enter)
-            {
-                _confirmed = true;
-                Close();
-                e.Handled = true;
+                NativeMethods.TranslateMessage(ref msg);
+                NativeMethods.DispatchMessage(ref msg);
             }
         }
 
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        public static bool ShowUpdateConfirm(UpdateInfo info, object? owner = null)
         {
-            base.OnMouseLeftButtonDown(e);
-            if (e.ButtonState == MouseButtonState.Pressed)
-            {
-                try
-                {
-                    DragMove();
-                }
-                catch { }
-            }
+            return ShowUpdate(info.LatestVersion, info.CurrentVersion, info.ReleaseNotes, owner);
+        }
+
+        public static bool ShowUpdate(
+            string newVersion,
+            string? currentVersion = null,
+            string? releaseNotes = null,
+            object? owner = null)
+        {
+            var dialog = new UpdateConfirmDialogWindow(newVersion, currentVersion, releaseNotes);
+            dialog.ShowModal();
+            return dialog._confirmed;
         }
     }
 }

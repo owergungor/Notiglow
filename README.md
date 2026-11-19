@@ -1,31 +1,27 @@
 <div align="center">
-  
-  <img alt="notiglow-logo-1080" src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" width="96" height="96" />
 
-  <h1>NotiGlow</h1>
+  <img alt="NotiGlow Logo" src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" width="96" height="96" />
 
-  <p><strong>Transform your Windows notifications into sleek, ambient fullscreen edge glow animations.</strong></p>
+  <h1>NotiGlow v4.0</h1>
+
+  <p><strong>Transform your Windows notifications into sleek, ambient fullscreen edge glow animations — now rebuilt natively with WinUI 3 and Windows 11 Fluent Design.</strong></p>
 
   <p>
     <a href="https://apps.microsoft.com/detail/9P9L33HG5V64" target="_blank">
       <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" height="44" />
     </a>
     &nbsp;&nbsp;
-    <a href="https://github.com/owergungor/Notiglow/releases" target="_blank">
-      <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub" height="44" />
+    <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.0" target="_blank">
+      <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub Releases" height="44" />
     </a>
-
   </p>
 
   <p>
-    A lightweight, open-source ambient notification utility engineered for Windows 10 & 11 with Fluent Design aesthetics, deep customization, and a strict local-first privacy architecture.
-  </p>
-
-  <p>
+    <img src="https://img.shields.io/badge/Version-4.0-0078D4?style=flat" alt="Version 4.0" />
     <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-08a1f7?style=flat&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
-    <img src="https://img.shields.io/badge/Privacy-100%25%20Local--First-40E40B?style=flat" alt="100% Local-First" />
+    <img src="https://img.shields.io/badge/UI-WinUI%203%20%2F%20Fluent-0067C0?style=flat" alt="WinUI 3 Fluent Design" />
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 9.0" />
-    <img src="https://img.shields.io/badge/UI-WPF%20%2F%20Fluent-8B5CF6?style=flat" alt="WPF Fluent UI" />
+    <img src="https://img.shields.io/badge/Privacy-Local--First-40E40B?style=flat" alt="Local-First Privacy" />
     <img src="https://img.shields.io/badge/License-MIT-750014?style=flat" alt="MIT License" />
   </p>
 
@@ -33,177 +29,145 @@
 
 ---
 
-## 🌟 Overview
+## What Is NotiGlow?
 
-Standard Windows toast notifications can be abrupt, distracting, and easily missed during immersive gameplay, video playback, or deep focus workflows.
+Standard Windows toast notifications are easy to miss during immersive gameplay, full-screen video playback, or focused work — or too intrusive when they pop over active content.
 
-**NotiGlow** replaces that friction with an elegant, peripheral screen-edge glow. Whenever a notification arrives from your favorite apps—such as Discord, WhatsApp, Slack, Outlook, or Steam—NotiGlow illuminates the perimeter of your screen with smooth, customizable light effects, matching each application’s distinct color identity.
+**NotiGlow** listens to incoming Windows notifications locally and illuminates the perimeter of your display with smooth, hardware-accelerated ambient edge glow animations tailored to each application's color and style.
 
-- 🪟 **Native Fluent Experience**: Designed to feel right at home on modern Windows 11 and Windows 10 with acrylic blur, rounded corners, and smooth cubic animations.
-- 🔒 **Local-First & Private**: Evaluates notification events strictly in volatile local RAM; zero telemetry, zero analytics, zero cloud transmission.
-- ⚡ **Lightweight & High-Performance**: Optimized background listener with minimal idle CPU and RAM footprint.
+Starting with **v4.0**, NotiGlow has been completely migrated from WPF to **WinUI 3 + Windows App SDK 1.6**, delivering a genuine Windows 11 Settings-inspired experience with native Fluent controls, backdrop materials, and improved visual polish.
 
 ---
 
-## 📸 Screenshots & Preview
+## Preview
 
 <div align="center">
-  <img width="3840" height="2160" alt="NotiGlow-poster (1)" src="https://github.com/user-attachments/assets/7b3f4394-7ec9-4b12-892b-8de67129cac8" />
-  <img width="1710" height="1140" alt="git-2" src="https://github.com/user-attachments/assets/2b2c99b7-fb7a-47db-b0d9-3be431e2e198" />
-  <img width="1710" height="1140" alt="git-1" src="https://github.com/user-attachments/assets/0fea7d45-d45e-4c4d-9022-ef47128b34a9" />
+  <img width="3840" height="2160" alt="NotiGlow Overview" src="https://github.com/user-attachments/assets/7b3f4394-7ec9-4b12-892b-8de67129cac8" />
   <br/><br/>
-  <img src="Package/Assets/SplashScreen.png" alt="NotiGlow Ambient Edge Glow Preview" width="680" />
-  <p><em>Immersive ambient lighting with customizable border thickness, glow blur, and fluid animation physics.</em></p>
+  <img src="Package/Assets/SplashScreen.png" alt="NotiGlow Ambient Edge Glow" width="640" />
+  <p><em>Customizable ambient screen-edge glow with real-time live preview and per-app color profiles.</em></p>
 </div>
 
 ---
 
-## ✨ Features
+## Core Features
 
-### 🌈 Customizable Edge Glow
-- **Border Geometry**: Fine-tune edge thickness (1 px – 40 px), glow blur radius (5 px – 100 px), and opacity intensity (10% – 100%).
-- **Duration Control**: Configure illumination duration from quick 500 ms flashes up to sustained 15-second ambient glows.
-- **Multi-Monitor Flexibility**: Render edge glows on your **Active Monitor** (where your mouse is focused), your **Primary Monitor**, or across **All Connected Displays**.
-- **Burst Handling**: Choose how rapid back-to-back notifications behave: *Restart* the animation, *Extend* duration, *Queue* sequentially, or *Ignore* spam.
+### Ambient Edge Glow & Animation Styles
+- **Five Animation Styles**:
+  - **Pulse** — Gentle breathing illumination with smooth easing.
+  - **Sweep** — Fluid light beam traveling around your screen edges.
+  - **Comet** — Travelling bright head with a fading trail.
+  - **Ripple** — Expanding wave propagation around the screen perimeter.
+  - **Ambient** — Steady, soft border glow for minimal distraction.
+- **Fine-Grained Geometry & Timing**:
+  - Adjust **Duration** (`500 ms` – `15 s`), **Intensity** (`10%` – `100%`), **Border Thickness**, **Glow Size** (`0 px` – `256 px`), and **Corner Radius** (`0 px` – `48 px`).
+- **Multi-Monitor Support**: Display edge glows on the **Active Monitor** (following cursor/focus), **Primary Monitor**, or **All Monitors**.
+- **Notification Burst Handling**: Choose how rapid notifications behave — **Restart**, **Extend**, **Queue**, or **Ignore**.
+- **Accessibility & Display Safety**: Supports **OLED Screen Saver Mode**, **Subtle Glow Mode**, and respects **Reduce Motion / Reduce Animations** preferences.
 
-### 🎨 Color Palette & Themes
-- **12 Curated Presets**: Switch instantly between *Standard, Zen, Amber, Mocha, Burgundy, Sakura, Bubblegum, Amethyst, Violet, Indigo, Sapphire*, and *Nature*.
-- **Custom Color Picker**: Interactive HSV saturation/value spectrum with continuous drag selection and manual RGB/Hex input.
-- **Theme Modes**: Seamlessly toggle between **Dark**, **Light**, **System Sync**, or the translucent **Liquid Glass** aesthetic.
+### Supported Game Platforms & App Detection
+- **Game Platform Discovery**:
+  - **Steam** — Scans local Steam library folders (`libraryfolders.vdf` and `appmanifest_*.acf`) to discover installed titles.
+  - **Epic Games** — Reads local Epic Games Launcher manifests (`%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests`) to identify installed games.
+  - **Manual Addition** — Add any game or desktop executable directly via file selection (`.exe`) or App ID.
+- **Installed Application Detection**:
+  - Scans standard Windows installed application entries (Registry Uninstall keys, App Paths, Start Menu shortcuts, and common built-in desktop apps such as Discord, WhatsApp, Telegram, Teams, Spotify, Slack, and Steam) to populate profiles automatically.
+  - Matches incoming Windows notifications by AppUserModelId (AUMID), executable name, or display name.
 
-### 💫 Animation Styles
-NotiGlow features five distinct animation profiles engineered with hardware-accelerated WPF storyboards:
-- **Pulse**: Gentle breathing glow with soothing cubic ease-in-out curve.
-- **Sweep**: Fluid neon beam racing around your display bezels.
-- **Ambient**: Subtle, uniform perimeter glow for non-disruptive awareness.
-- **Comet**: Dynamic tracer with a trailing tail navigating screen edges.
-- **Ripple**: Wave-like propagation that spreads outward from screen corners.
+### Applications & Gaming Management
+- **Applications (Streamlined List View)**:
+  - Clean, Windows 11 Settings-style horizontal list cards displaying each app's icon, name, duration, intensity, animation style, priority, color swatch, quick preview, edit, delete, and native enable/disable toggle.
+  - Alphabetical and Recently Added sorting, one-click **Scan Installed Apps**, and **Add App**.
+- **Gaming Mode**:
+  - Detects when tracked games are running and applies configurable in-game behavior rules: **Glow During Games**, **Dim Intensity in Games**, **Shorten Duration in Games**, and **High Priority Only**.
+  - Compact game cards with iconized **Customize** (pencil) and **Remove** (trash with destructive red hover) buttons, plus a native Windows 11 modal `ContentDialog` confirmation before removing a game.
+- **Automatic Category Routing**:
+  - Every profile belongs strictly to either **General App** (`Applications` tab) or **Gaming** (`Gaming` tab).
+  - Changing a profile's category immediately moves it to the target tab without losing any color, animation, or timing settings, navigates to that tab, scrolls the item into view, and highlights it.
 
-### 📱 Tracked Applications & Profiles
-- **App Detection**: Automatically identifies applications via Windows AppUserModelId (AUMID) or process executable path.
-- **Per-App Customization**: Assign dedicated colors, animation styles, notification priorities (*Low*, *Normal*, *High*), and duration overrides for individual apps.
-- **Profile Management**: Instant search, alphabetical/chronological sorting, and one-click enable/disable toggles.
+### Unified Profile & Game Customization
+- Both **Applications** and **Gaming** share the same reusable WinUI 3 `ProfileEditorControl`:
+  - **Color Picker**: Curated preset palette, custom HSV/Hex color selector, and dynamic **RGB Spectrum** mode.
+  - **Live Preview**: Real-time `EdgePreviewControl` showing your exact color, corner radius, intensity, and animation style before saving.
+  - **Per-Game Custom Glow Toggle**: Enable or disable custom per-game overrides to either use game-specific glow settings or inherit global Gaming Mode rules.
 
-### 🎮 Gaming Mode & Detection
-- **Game Discovery**: Automatically scans Steam libraries and Epic Games manifests to recognize installed titles.
-- **Unified Gaming Settings**: Apply shared duration, intensity, and blur scaling across all games simultaneously, or define per-game overrides.
-- **Dual View Layouts**: Organize your tracked gaming library with either a compact **List View** or an expansive **Grid View**.
-- **Fullscreen Respect**: Automatically suppresses or softens visual effects during competitive gameplay.
-
-### 🌍 Global Localization
-Dynamically switch between 5 fully supported languages with 100% key parity and instant in-memory re-rendering:
-- 🇬🇧 English (`en-US`)
-- 🇪🇸 Español (`es-ES`)
-- 🇫🇷 Français (`fr-FR`)
-- 🇩🇪 Deutsch (`de-DE`)
-- 🇹🇷 Türkçe (`tr-TR`)
-
----
-
-## 📥 Download & Installation
-
-Choose your preferred distribution method:
-
-| Method | Best For | Description | Link |
-| :--- | :--- | :--- | :--- |
-| **Microsoft Store** | Recommended | Automated updates, verified sandbox, zero configuration | [**Get from Store**](https://apps.microsoft.com/detail/9P9L33HG5V64) |
-| **Setup Installer** | Standalone Desktop | Standard Windows installer with desktop icon & auto-start option | [**Download EXE**](https://github.com/owergungor/Notiglow/releases) |
-| **Portable ZIP** | No Installation | Extract and run directly without administrative privileges | [**Download ZIP**](https://github.com/owergungor/Notiglow/releases) |
-
-### 🛍️ Option 1: Microsoft Store (Recommended)
-
-Install NotiGlow directly from the official Microsoft Store for verified security, sandboxed execution, and seamless automatic updates:
-
-<a href="https://apps.microsoft.com/detail/9P9L33HG5V64" target="_blank">
-  <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="200" />
-</a>
-
-- **Store Page**: [https://apps.microsoft.com/detail/9P9L33HG5V64](https://apps.microsoft.com/detail/9P9L33HG5V64)
-- **Package Identity**: `crius.Notiglow` (Store ID: `9P9L33HG5V64`)
-
-### 📦 Option 2: Standalone Setup (GitHub Releases)
-
-For standard desktop installation with an integrated updater and desktop/autostart options:
-
-1. Navigate to [NotiGlow Releases](https://github.com/owergungor/Notiglow/releases).
-2. Download the latest installer (`NotiGlow-Setup-vX.X.exe`).
-3. Run the installer and launch NotiGlow from your Start Menu or system tray.
-
-### 💼 Option 3: Portable Archive
-
-1. Download `NotiGlow_win-x64.zip` from [Releases](https://github.com/owergungor/Notiglow/releases).
-2. Extract the archive to any folder and launch `NotiGlow.exe`.
+### Windows 11 Fluent Design (WinUI 3) & Themes
+- **Native WinUI 3 Architecture**: Built with `NavigationView`, native `ToggleSwitch`, `ContentDialog`, `ComboBox`, `Slider`, and `EntranceThemeTransition`.
+- **Window Backdrop Materials**: Switch seamlessly between **Acrylic**, **Mica**, and **Mica Alt**.
+- **Themes & Accent Colors**: Supports **System**, **Light**, and **Dark** theme modes, defaulting to the **Windows System Accent** with curated accent color presets.
+- **5 Languages**: Instant in-app switching across **English (`en-US`)**, **Español (`es-ES`)**, **Français (`fr-FR`)**, **Deutsch (`de-DE`)**, and **Türkçe (`tr-TR`)**.
 
 ---
 
-## 💻 System Requirements
+## System Requirements
 
-- **Operating System**: Windows 10 (version 1809 / build 17763 or higher) or Windows 11
-- **Architecture**: 64-bit (x64)
-- **Runtime**: Self-contained (no separate .NET runtime installation required)
-- **Permissions**: Requires Windows Notification Listener permission (`UserNotificationListener`) to read toast sender headers.
-
----
-
-## 🛡️ Privacy & Security (Local-First)
-
-NotiGlow is architected from the ground up to respect your privacy:
-
-- **100% Local In-Memory Processing**: When Windows receives a toast notification, NotiGlow inspects the sender application identifier and header in volatile RAM solely to trigger the associated color animation.
-- **No Data Retention**: Message bodies, sender names, and notification contents are **never written to disk**, never logged, and never transmitted over the network.
-- **Zero Telemetry**: No third-party analytics SDKs, tracking pixels, or remote crash reporting tools.
-- **Offline Operation**:
-  - The **Microsoft Store edition** is completely offline with zero outbound network calls.
-  - The **GitHub edition** only queries the public GitHub Releases API (`api.github.com`) to check for software updates if enabled in settings.
-
-📄 Read our full [Privacy Policy](https://owergungor.github.io/Notiglow/privacy-policy.html).
+- **Operating System**: Windows 10 (version 1809 / build `17763` or newer) or Windows 11
+- **Architecture**: 64-bit (`x64`)
+- **Permissions**: Windows Notification Listener access (`UserNotificationListener`) to detect incoming toast notification headers
+- **Runtime Dependencies**: **None required for end users** — NotiGlow v4.0 is distributed as a **self-contained** package bundling both **.NET 9.0** and **Windows App SDK 1.6** (`WindowsAppSDKSelfContained=true`).
 
 ---
 
-## 🛠️ Technologies
+## Download, Installation & Updating
 
-- **Language**: [C# 13](https://learn.microsoft.com/dotnet/csharp/)
-- **Runtime**: [.NET 9.0](https://dotnet.microsoft.com/) (`net9.0-windows10.0.19041.0`)
-- **UI Framework**: [WPF (Windows Presentation Foundation)](https://learn.microsoft.com/dotnet/desktop/wpf/)
-- **UI Styling**: [WPF-UI](https://github.com/lepoco/wpfui) (Fluent Design System)
-- **APIs**: Windows Runtime (WinRT) `Windows.UI.Notifications.Management.UserNotificationListener`
-- **Packaging**: MSIX (Microsoft Store) & Inno Setup 6 (Standalone Installer)
+### Direct MSIX Package (v4.0)
+- **Download MSIX (x64)**: [**NotiGlow-v4.0-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.msix)
+- **All Release Assets**: [GitHub Releases — v4.0](https://github.com/owergungor/Notiglow/releases/tag/v4.0)
+- **Microsoft Store**: [NotiGlow on Microsoft Store](https://apps.microsoft.com/detail/9P9L33HG5V64) (Package Identity: `crius.Notiglow`)
+
+### Installing or Updating via MSIX
+1. Download `NotiGlow-v4.0-x64.msix` from the [v4.0 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
+2. Double-click the `.msix` file to open Windows App Installer and click **Install** (or **Update** if a previous `crius.Notiglow` MSIX version is already installed — the package identity and publisher remain unchanged for in-place upgrades).
+3. Launch **NotiGlow** from the Start Menu and grant Windows Notification access when prompted.
+
+> **Note on Sideloading**: MSIX packages downloaded directly from GitHub are signed with the project's self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). If Windows App Installer asks to trust the certificate during manual sideloading, import the certificate into *Local Machine → Trusted People* or install via the Microsoft Store / standalone release builds.
+
+### Standalone Setup / Portable ZIP
+1. Download `NotiGlow-Setup-v4.0.exe` or `NotiGlow_4.0_win-x64.zip` from [GitHub Releases](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
+2. Run the setup installer or extract the ZIP archive and launch `NotiGlow.exe`.
+3. Your existing `%AppData%\NotiGlow\settings.json` and `profiles.json` are preserved automatically across updates (including automatic migration of legacy view settings).
 
 ---
 
-## 🧑‍💻 Building from Source
-
-To compile and run NotiGlow locally:
+## Building from Source
 
 ### Prerequisites
+- Windows 10/11 (x64)
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- Visual Studio 2022 (v17.12+) or Visual Studio Code with the C# Dev Kit
-- Windows 10/11 x64
+- Windows 10/11 SDK (`10.0.19041.0` or newer; `Microsoft.WindowsAppSDK 1.6` is restored automatically via NuGet)
 
-### Build & Run
+### Commands
 ```powershell
-# 1. Clone repository
+# Clone the repository
 git clone https://github.com/owergungor/Notiglow.git
 cd Notiglow
 
-# 2. Restore dependencies and build
+# Build Debug / Release
 dotnet build NotiGlow.sln -c Release
 
-# 3. Run unit tests
+# Run the full test suite
 dotnet test NotiGlow.sln -c Release
 
-# 4. Launch NotiGlow
-dotnet run --project NotiGlow.csproj -c Release
+# Build self-contained x64 MSIX package
+powershell -ExecutionPolicy Bypass -File Tools\build-msix.ps1
 ```
 
 ---
 
-## 📄 License & Credits
+## Privacy Policy
 
-- Distributed under the [MIT License](LICENSE).
-- Developed by **crius** / [owergungor](https://github.com/owergungor).
-- For questions, feedback, or feature suggestions, feel free to open an [Issue](https://github.com/owergungor/Notiglow/issues) or submit a Pull Request.
+NotiGlow processes incoming notification headers strictly in local memory and stores all settings and profiles locally on your device. There is no telemetry, no analytics, no advertising, and no user account system.
+
+Read the full Privacy Policy here:  
+**[https://owergungor.github.io/Notiglow/privacy-policy.html](https://owergungor.github.io/Notiglow/privacy-policy.html)**
+
+---
+
+## License & Contributing
+
+- **License**: Distributed under the [MIT License](LICENSE).
+- **Contributing**: Bug reports, feature suggestions, and pull requests are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue on [GitHub Issues](https://github.com/owergungor/Notiglow/issues).
 
 <div align="center">
-  <sub>Built with ❤️ for Windows enthusiasts. &bull; <a href="https://apps.microsoft.com/detail/9P9L33HG5V64">Microsoft Store</a> &bull; <a href="https://github.com/owergungor/Notiglow/releases">GitHub Releases</a> &bull; <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a></sub>
+  <sub>NotiGlow v4.0 &bull; <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.0">Releases</a> &bull; <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a> &bull; <a href="LICENSE">MIT License</a></sub>
 </div>

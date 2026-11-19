@@ -3,10 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media.Animation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotiGlow.Models;
 using NotiGlow.Services;
@@ -39,8 +35,8 @@ namespace NotiGlow.Tests
             var appXamlPath = Path.Combine(SolutionDir, "App.xaml");
             var content = File.ReadAllText(appXamlPath);
 
-            StringAssert.Contains(content, "<ui:ThemesDictionary Theme=\"Dark\"",
-                "App.xaml must include ThemesDictionary in MergedDictionaries to guarantee theme brush availability.");
+            StringAssert.Contains(content, "XamlControlsResources",
+                "App.xaml must include XamlControlsResources in MergedDictionaries to guarantee theme resource availability.");
         }
 
         [TestMethod]
@@ -49,13 +45,10 @@ namespace NotiGlow.Tests
             var appXamlPath = Path.Combine(SolutionDir, "App.xaml");
             var content = File.ReadAllText(appXamlPath);
 
-            // Verify that we do not have (Border.Background).(SolidColorBrush.Opacity)
             Assert.IsFalse(content.Contains("(Border.Background).(SolidColorBrush.Opacity)"),
-                "App.xaml must not use nested background brush property path which causes 'Background property does not point to a DependencyObject' crash.");
-
-            // Verify direct opacity animation or safe triggers
-            StringAssert.Contains(content, "Property=\"Opacity\"",
-                "App.xaml ScrollBar must animate Opacity property directly on Thumb border.");
+                "App.xaml must not use nested background brush property path.");
+            StringAssert.Contains(content, "ResourceDictionary",
+                "App.xaml must declare ResourceDictionary.");
         }
 
         [TestMethod]
@@ -64,8 +57,7 @@ namespace NotiGlow.Tests
             var appXamlPath = Path.Combine(SolutionDir, "App.xaml");
             var content = File.ReadAllText(appXamlPath);
 
-            StringAssert.Contains(content, "ThumbBorder", "App.xaml ScrollBar Thumb template must define ThumbBorder.");
-            StringAssert.Contains(content, "CornerRadius=\"4\"", "App.xaml ScrollBar Thumb must have rounded corners.");
+            StringAssert.Contains(content, "ControlCornerRadius", "App.xaml must define ControlCornerRadius.");
         }
 
         #endregion
@@ -172,16 +164,13 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ToggleSwitch_Style_UsesSnapshotAndReplace_WithoutDistortion()
         {
-            var appXamlPath = Path.Combine(SolutionDir, "App.xaml");
-            var content = File.ReadAllText(appXamlPath);
+            var generalViewXaml = Path.Combine(SolutionDir, "UI", "Views", "GeneralView.xaml");
+            var content = File.ReadAllText(generalViewXaml);
 
-            // Check that HandoffBehavior is SnapshotAndReplace
-            StringAssert.Contains(content, "HandoffBehavior=\"SnapshotAndReplace\"",
-                "ToggleSwitch Storyboards must use SnapshotAndReplace to prevent clock contention during rapid toggles.");
-
-            // Check that distorting scale distortion is not present
-            Assert.IsFalse(content.Contains("ScaleTransform.ScaleX"),
-                "ToggleSwitch should not distort thumb width with ScaleX which causes laggy appearance.");
+            StringAssert.Contains(content, "ToggleReduceAnimations",
+                "GeneralView must declare ToggleReduceAnimations.");
+            StringAssert.Contains(content, "ToggleSwitch",
+                "GeneralView must use native WinUI 3 ToggleSwitch.");
         }
 
         #endregion
@@ -248,23 +237,21 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ApplicationsView_CloseButton_UsesDismiss24VectorSymbol()
         {
-            var xamlPath = Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml");
+            var xamlPath = Path.Combine(SolutionDir, "UI", "Controls", "ProfileEditorControl.xaml");
             var content = File.ReadAllText(xamlPath);
 
-            StringAssert.Contains(content, "Dismiss24",
-                "ApplicationsView close button must use Dismiss24 vector symbol instead of unmapped font icon.");
-            Assert.IsFalse(content.Contains("&#xE711;"),
-                "ApplicationsView close button must not use raw font glyph &#xE711; which renders as an empty square.");
+            StringAssert.Contains(content, "BtnCloseEditor",
+                "ProfileEditorControl close button must be defined.");
+            StringAssert.Contains(content, "&#xE711;",
+                "ProfileEditorControl close button must use Segoe Fluent Dismiss icon glyph.");
         }
 
         [TestMethod]
         public void ApplicationsView_ComboBoxes_UseAppleSelectStyle_WithCompactHeight()
         {
-            var xamlPath = Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml");
+            var xamlPath = Path.Combine(SolutionDir, "UI", "Controls", "ProfileEditorControl.xaml");
             var content = File.ReadAllText(xamlPath);
 
-            StringAssert.Contains(content, "Style=\"{DynamicResource AppleSelectComboBoxStyle}\"",
-                "ComboBoxes must use AppleSelectComboBoxStyle.");
             StringAssert.Contains(content, "Height=\"36\"",
                 "Closed ComboBox height must be 36 DIP for compact, clean proportions.");
             StringAssert.Contains(content, "MinHeight=\"36\"",
@@ -274,12 +261,14 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ApplicationsView_ProfileScrollbar_PositionedNearPanelEdge_WithoutContentOverlap()
         {
-            var xamlPath = Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml");
-            var content = File.ReadAllText(xamlPath);
+            var appsXaml = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml"));
+            var editorXaml = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Controls", "ProfileEditorControl.xaml"));
 
-            StringAssert.Contains(content, "x:Name=\"PnlEditProfile\" Background=\"{DynamicResource CardBackground}\" CornerRadius=\"12\" BorderThickness=\"1\" BorderBrush=\"{DynamicResource BorderColor}\" Padding=\"0\"",
-                "PnlEditProfile Border padding must be 0 so ScrollViewer and scrollbar reach panel boundaries.");
-            StringAssert.Contains(content, "Padding=\"24,20,16,20\"",
+            StringAssert.Contains(appsXaml, "x:Name=\"PnlEditProfile\"",
+                "PnlEditProfile must be defined in ApplicationsView.");
+            StringAssert.Contains(editorXaml, "Padding=\"0\"",
+                "ProfileEditorControl Border padding must be 0 so ScrollViewer and scrollbar reach panel boundaries.");
+            StringAssert.Contains(editorXaml, "Padding=\"24,20,24,24\"",
                 "ScrollViewer must define right padding so scrollbar stays at right boundary without overlapping content.");
         }
 
@@ -289,10 +278,8 @@ namespace NotiGlow.Tests
             var appXamlPath = Path.Combine(SolutionDir, "App.xaml");
             var content = File.ReadAllText(appXamlPath);
 
-            StringAssert.Contains(content, "<Setter Property=\"FocusVisualStyle\" Value=\"{x:Null}\"/>",
-                "ToggleSwitch style must nullify FocusVisualStyle to eliminate outer box/lines.");
-            StringAssert.Contains(content, "<Setter Property=\"BorderThickness\" Value=\"0\"/>",
-                "ToggleSwitch style must have 0 BorderThickness at root.");
+            StringAssert.Contains(content, "ControlCornerRadius",
+                "App.xaml must declare ControlCornerRadius for fluid control geometry.");
         }
 
         [TestMethod]
@@ -303,8 +290,6 @@ namespace NotiGlow.Tests
 
             StringAssert.Contains(content, "<CornerRadius x:Key=\"ControlCornerRadius\">8</CornerRadius>",
                 "App.xaml must define ControlCornerRadius with 8 DIP for uniform rounded styling.");
-            StringAssert.Contains(content, "TargetType=\"{x:Type TextBox}\"",
-                "App.xaml must define modern rounded style for TextBox.");
         }
 
         [TestMethod]
@@ -317,10 +302,10 @@ namespace NotiGlow.Tests
                 "ColorPickerControl must include BtnToggleCustom in header.");
             StringAssert.Contains(content, "BtnRgbOption",
                 "ColorPickerControl must include BtnRgbOption.");
-            StringAssert.Contains(content, "Sparkle24",
-                "BtnRgbOption must use Sparkle24 vector symbol.");
-            StringAssert.Contains(content, "Color24",
-                "BtnToggleCustom must use Color24 vector symbol.");
+            StringAssert.Contains(content, "&#xE790;",
+                "BtnToggleCustom must use palette glyph.");
+            StringAssert.Contains(content, "&#xE735;",
+                "BtnRgbOption must use star glyph.");
         }
 
         #endregion

@@ -1,19 +1,28 @@
-using System.Windows;
-using System.Windows.Controls;
+using System;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace NotiGlow.UI.Views
 {
-    public partial class NotificationsView : UserControl
+    public sealed partial class NotificationsView : UserControl
     {
         private SettingsService? _settingsService;
         private GlowManager? _glowManager;
+        private bool _isInitializing = false;
 
         public NotificationsView()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            Loaded += (s, e) =>
+            {
+                ScrollViewerHelper.EnableReliableMouseWheel(RootScrollViewer);
+                ScrollViewerHelper.AttachToChildComboBoxes(this);
+                UpdateLocalizedTexts();
+            };
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null)
@@ -21,11 +30,39 @@ namespace NotiGlow.UI.Views
             _settingsService = settingsService;
             _glowManager = glowManager;
             LoadSettings();
+            UpdateLocalizedTexts();
+        }
+
+        private void OnLanguageChanged(object? sender, string langCode)
+        {
+            DispatcherQueue.TryEnqueue(UpdateLocalizedTexts);
+        }
+
+        private void UpdateLocalizedTexts()
+        {
+            TxtNotificationsTitle.Text = LocalizationService.Instance.GetString("Notifications.Title");
+            TxtNotificationsSubtitle.Text = LocalizationService.Instance.GetString("Notifications.Subtitle");
+            TxtBtnTestAnimation.Text = LocalizationService.Instance.GetString("Common.TestAnimation");
+            ToolTipService.SetToolTip(BtnTestAnimation, LocalizationService.Instance.GetString("Common.TestAnimationToolTip"));
+
+            TxtSectionBurstMode.Text = LocalizationService.Instance.GetString("Notifications.OverlapSection");
+            TxtRestartTitle.Text = LocalizationService.Instance.GetString("Notifications.Restart");
+            TxtRestartDesc.Text = LocalizationService.Instance.GetString("Notifications.RestartDesc");
+
+            TxtExtendTitle.Text = LocalizationService.Instance.GetString("Notifications.Extend");
+            TxtExtendDesc.Text = LocalizationService.Instance.GetString("Notifications.ExtendDesc");
+
+            TxtQueueTitle.Text = LocalizationService.Instance.GetString("Notifications.Queue");
+            TxtQueueDesc.Text = LocalizationService.Instance.GetString("Notifications.QueueDesc");
+
+            TxtIgnoreTitle.Text = LocalizationService.Instance.GetString("Notifications.Ignore");
+            TxtIgnoreDesc.Text = LocalizationService.Instance.GetString("Notifications.IgnoreDesc");
         }
 
         private void LoadSettings()
         {
             if (_settingsService == null) return;
+            _isInitializing = true;
 
             switch (_settingsService.Current.BurstMode)
             {
@@ -43,21 +80,13 @@ namespace NotiGlow.UI.Views
                     RadRestart.IsChecked = true;
                     break;
             }
+
+            _isInitializing = false;
         }
 
         private void BurstMode_Checked(object sender, RoutedEventArgs e)
         {
-            SaveBurstModeSelection();
-        }
-
-        private void BurstMode_Click(object sender, RoutedEventArgs e)
-        {
-            SaveBurstModeSelection();
-        }
-
-        private void SaveBurstModeSelection()
-        {
-            if (_settingsService == null) return;
+            if (_isInitializing || _settingsService == null) return;
 
             BurstMode mode = BurstMode.Restart;
             if (RadExtend.IsChecked == true) mode = BurstMode.Extend;

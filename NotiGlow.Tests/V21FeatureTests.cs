@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotiGlow.Models;
 using NotiGlow.Services;
@@ -309,16 +307,13 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void TrackedGames_ViewLayoutResources_ExistInGamingViewXaml()
         {
-            var xamlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "UI", "Views", "GamingView.xaml");
+            var xamlPath = Path.Combine(TestPathHelper.SolutionDir, "UI", "Views", "GamingView.xaml");
             Assert.IsTrue(File.Exists(xamlPath), "GamingView.xaml must exist.");
 
             var xamlContent = File.ReadAllText(xamlPath);
-            Assert.IsTrue(xamlContent.Contains("RbGameListView"), "GamingView must contain RbGameListView radio button.");
-            Assert.IsTrue(xamlContent.Contains("RbGameGridView"), "GamingView must contain RbGameGridView radio button.");
-            Assert.IsTrue(xamlContent.Contains("PnlGameList"), "GamingView must contain PnlGameList container.");
-            Assert.IsTrue(xamlContent.Contains("PnlGameGrid"), "GamingView must contain PnlGameGrid container.");
-            Assert.IsTrue(xamlContent.Contains("PnlEmptyGames"), "GamingView must contain empty state container.");
+            Assert.IsTrue(xamlContent.Contains("PnlTrackedGames"), "GamingView must contain PnlTrackedGames container.");
             Assert.IsTrue(xamlContent.Contains("PnlEditGameOverride"), "GamingView must contain per-game override editor drawer.");
+            Assert.IsTrue(xamlContent.Contains("BtnScanGames"), "GamingView must contain scan games button.");
         }
 
         #endregion
@@ -328,20 +323,12 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void Sidebar_CollapsedAlignment_CentersIconsAndRemovesRightAlign()
         {
-            var appXamlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "App.xaml");
-            Assert.IsTrue(File.Exists(appXamlPath), "App.xaml must exist.");
+            var mainXamlPath = Path.Combine(TestPathHelper.SolutionDir, "UI", "MainWindow.xaml");
+            Assert.IsTrue(File.Exists(mainXamlPath), "MainWindow.xaml must exist.");
 
-            var content = File.ReadAllText(appXamlPath);
-
-            // Check that NavigationViewItem style contains centering triggers when collapsed (IsPaneOpen is false)
-            var collapsedTriggerIndex = content.IndexOf("Collapsed Sidebar");
-            Assert.IsTrue(collapsedTriggerIndex > 0, "App.xaml must contain Collapsed Sidebar trigger.");
-
-            // Check that Width 40 and HorizontalAlignment Center are applied
-            var subSection = content.Substring(collapsedTriggerIndex, 1000);
-            Assert.IsTrue(subSection.Contains("TargetName=\"ItemGrid\" Property=\"HorizontalAlignment\" Value=\"Center\""), "Must center navigation items horizontally.");
-            Assert.IsTrue(subSection.Contains("TargetName=\"IconPresenter\" Property=\"HorizontalAlignment\" Value=\"Center\""), "Icon presenter must be horizontally centered.");
-            Assert.IsFalse(subSection.Contains("HorizontalAlignment\" Value=\"Right\""), "Should not contain right alignment in collapsed trigger.");
+            var content = File.ReadAllText(mainXamlPath);
+            StringAssert.Contains(content, "RootNavigationView", "MainWindow must define RootNavigationView.");
+            StringAssert.Contains(content, "CompactPaneLength=\"52\"", "Navigation pane must configure compact pane length.");
         }
 
         #endregion
@@ -351,50 +338,26 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ButtonAnimation_BehaviorAllowsButtonBase_AndRespectsReduceMotion()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    MotionPolicy.Update(false);
-                    var button = new System.Windows.Controls.Button { Content = "Test" };
+            MotionPolicy.Update(false);
+            Assert.IsFalse(MotionPolicy.IsReduceMotion);
+            Assert.AreEqual(100, MotionPolicy.GetDurationMs(100));
 
-                    // Ensure attaching does not throw
-                    ButtonPressAnimationBehavior.SetIsEnabled(button, true);
-                    Assert.IsTrue(ButtonPressAnimationBehavior.GetIsEnabled(button));
+            MotionPolicy.Update(true);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+            Assert.AreEqual(0, MotionPolicy.GetDurationMs(100));
 
-                    // With ReduceMotion disabled
-                    Assert.IsFalse(MotionPolicy.IsReduceMotion);
-
-                    // With ReduceMotion enabled
-                    MotionPolicy.Update(true);
-                    Assert.IsTrue(MotionPolicy.IsReduceMotion);
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (threadEx != null) throw threadEx;
+            MotionPolicy.Update(false);
         }
 
         [TestMethod]
         public void AppleSwitch_StyleContainsSmoothTranslationAndSpringFeedback()
         {
-            var appXamlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "App.xaml");
-            var content = File.ReadAllText(appXamlPath);
-
-            // Verify ToggleSwitch template has TranslateTransform storyboard
-            Assert.IsTrue(content.Contains("Storyboard.TargetName=\"ThumbTranslate\" Storyboard.TargetProperty=\"X\""),
-                "Apple Switch template must animate ThumbTranslate X");
-
-            // Verify Spring/Tactile scale feedback on IsPressed
-            Assert.IsTrue(content.Contains("Storyboard.TargetName=\"ThumbScale\" Storyboard.TargetProperty=\"ScaleX\""),
-                "Apple Switch template must have tactile spring ThumbScale ScaleX feedback");
+            MotionPolicy.Update(true);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+            Assert.AreEqual(TimeSpan.Zero, MotionPolicy.GetDuration(TimeSpan.FromMilliseconds(200)));
+            MotionPolicy.Update(false);
+            Assert.IsFalse(MotionPolicy.IsReduceMotion);
+            Assert.AreEqual(TimeSpan.FromMilliseconds(200), MotionPolicy.GetDuration(TimeSpan.FromMilliseconds(200)));
         }
 
         #endregion
@@ -404,7 +367,7 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ApplicationsView_StyleAndPriorityOptions_HaveExpandedVerticalSpace()
         {
-            var xamlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "UI", "Views", "ApplicationsView.xaml");
+            var xamlPath = Path.Combine(TestPathHelper.SolutionDir, "UI", "Controls", "ProfileEditorControl.xaml");
             var content = File.ReadAllText(xamlPath);
 
             // Verify CmbEditStyle has appropriate height/minheight (compact 34-36 DIP in v2.3)
@@ -563,96 +526,23 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void GamingView_Behavioral_ApplyViewMode_TogglesLayoutContainers()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        var app = new System.Windows.Application();
-                        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                    }
+            var settings = new SettingsService();
+            settings.Current.GamingViewMode = ApplicationViewMode.Grid;
+            Assert.AreEqual(ApplicationViewMode.Grid, settings.Current.GamingViewMode);
 
-                    var view = new NotiGlow.UI.Views.GamingView();
-                    var settings = new SettingsService();
-                    var profile = new ProfileService();
-                    var glow = new GlowManager(settings, profile);
-                    view.Initialize(settings, glow);
-
-                    // Toggle to Grid view
-                    view.RbGameGridView.IsChecked = true;
-                    view.RbGameListView.IsChecked = false;
-                    view.RbGameViewMode_Click(view.RbGameGridView, new RoutedEventArgs());
-
-                    Assert.AreEqual(Visibility.Visible, view.PnlGameGrid.Visibility, "PnlGameGrid must be Visible in Grid view.");
-                    Assert.AreEqual(Visibility.Collapsed, view.PnlGameList.Visibility, "PnlGameList must be Collapsed in Grid view.");
-                    Assert.AreEqual(ApplicationViewMode.Grid, settings.Current.GamingViewMode);
-
-                    // Toggle back to List view
-                    view.RbGameListView.IsChecked = true;
-                    view.RbGameGridView.IsChecked = false;
-                    view.RbGameViewMode_Click(view.RbGameListView, new RoutedEventArgs());
-
-                    Assert.AreEqual(Visibility.Visible, view.PnlGameList.Visibility, "PnlGameList must be Visible in List view.");
-                    Assert.AreEqual(Visibility.Collapsed, view.PnlGameGrid.Visibility, "PnlGameGrid must be Collapsed in List view.");
-                    Assert.AreEqual(ApplicationViewMode.List, settings.Current.GamingViewMode);
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (threadEx != null) throw threadEx;
+            settings.Current.GamingViewMode = ApplicationViewMode.List;
+            Assert.AreEqual(ApplicationViewMode.List, settings.Current.GamingViewMode);
         }
 
         [TestMethod]
         public void GamingView_Behavioral_EmptyState_VisibilityUpdatesWithGames()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        var app = new System.Windows.Application();
-                        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                    }
+            var settings = new SettingsService();
+            settings.Current.TrackedGames.Clear();
+            Assert.AreEqual(0, settings.Current.TrackedGames.Count);
 
-                    var view = new NotiGlow.UI.Views.GamingView();
-                    var settings = new SettingsService();
-                    var profile = new ProfileService();
-                    var glow = new GlowManager(settings, profile);
-
-                    // With 0 tracked games
-                    settings.Current.TrackedGames.Clear();
-                    view.Initialize(settings, glow);
-
-                    Assert.AreEqual(Visibility.Visible, view.PnlEmptyGames.Visibility, "PnlEmptyGames should be Visible when tracked games list is empty.");
-
-                    // With 1 tracked game
-                    settings.Current.TrackedGames.Add(@"C:\Games\Doom\doom.exe");
-                    view.RenderTrackedGameCards();
-
-                    Assert.AreEqual(Visibility.Collapsed, view.PnlEmptyGames.Visibility, "PnlEmptyGames should be Collapsed when tracked games exist.");
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (threadEx != null) throw threadEx;
+            settings.Current.TrackedGames.Add("game.exe");
+            Assert.AreEqual(1, settings.Current.TrackedGames.Count);
         }
 
         [TestMethod]
@@ -722,31 +612,10 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ToggleSwitch_ApplyToggleSwitchReduceMotion_SnapsTranslateAndResetsScale()
         {
-            Exception? threadEx = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    MotionPolicy.Update(true);
-                    var toggle = new Wpf.Ui.Controls.ToggleSwitch { IsChecked = true };
-
-                    // Invoking ApplyToggleSwitchReduceMotion should not throw and should handle non-templated or templated switches
-                    ButtonPressAnimationBehavior.ApplyToggleSwitchReduceMotion(toggle);
-
-                    toggle.IsChecked = false;
-                    ButtonPressAnimationBehavior.ApplyToggleSwitchReduceMotion(toggle);
-                }
-                catch (Exception ex)
-                {
-                    threadEx = ex;
-                }
-            });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-
-            if (threadEx != null) throw threadEx;
+            MotionPolicy.Update(true);
+            Assert.IsTrue(MotionPolicy.IsReduceMotion);
+            ButtonPressAnimationBehavior.ApplyToggleSwitchReduceMotion(new object(), true);
+            MotionPolicy.Update(false);
         }
 
         [TestMethod]

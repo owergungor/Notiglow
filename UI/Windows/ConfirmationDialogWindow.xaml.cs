@@ -1,48 +1,46 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
+using Windows.Graphics;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using NotiGlow.Core.Win32;
 using NotiGlow.Services;
-using Application = System.Windows.Application;
-using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using Key = System.Windows.Input.Key;
+using WinRT.Interop;
 
 namespace NotiGlow.UI.Dialogs
 {
-    public partial class ConfirmationDialogWindow : Window
+    public sealed partial class ConfirmationDialogWindow : Window
     {
         private bool _confirmed = false;
+        private bool _isOpen = true;
+        private readonly IntPtr _hwnd;
+        private readonly AppWindow _appWindow;
+
         public bool UserConfirmed => _confirmed;
 
         public ConfirmationDialogWindow()
         {
-            InitializeComponent();
-            HeaderGrid.MouseDown += (s, e) =>
-            {
-                if (e.LeftButton == MouseButtonState.Pressed)
-                {
-                    try { DragMove(); } catch { }
-                }
-            };
-        }
+            this.InitializeComponent();
+            _hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
 
-        private static void PositionDialog(ConfirmationDialogWindow dialog, Window? owner)
-        {
-            if (owner != null && owner.IsVisible)
+            _appWindow.Resize(new SizeInt32(480, 260));
+            _appWindow.IsShownInSwitchers = false;
+
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
             {
-                dialog.Owner = owner;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                presenter.IsAlwaysOnTop = true;
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsMaximizable = false;
             }
-            else if (Application.Current?.MainWindow != null && Application.Current.MainWindow.IsVisible)
+
+            Closed += (s, e) =>
             {
-                dialog.Owner = Application.Current.MainWindow;
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }
-            else
-            {
-                dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            }
+                _isOpen = false;
+            };
         }
 
         private void SetSingleButtonMode()
@@ -52,7 +50,31 @@ namespace NotiGlow.UI.Dialogs
             ColGap.Width = new GridLength(0);
             Grid.SetColumn(BtnConfirm, 0);
             Grid.SetColumnSpan(BtnConfirm, 3);
-            BtnConfirm.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
+            BtnConfirm.HorizontalAlignment = HorizontalAlignment.Stretch;
+        }
+
+        private void BtnConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            _confirmed = true;
+            _isOpen = false;
+            Close();
+        }
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            _confirmed = false;
+            _isOpen = false;
+            Close();
+        }
+
+        public void ShowModal()
+        {
+            Activate();
+            while (_isOpen && NativeMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0))
+            {
+                NativeMethods.TranslateMessage(ref msg);
+                NativeMethods.DispatchMessage(ref msg);
+            }
         }
 
         public static bool ShowConfirm(
@@ -61,25 +83,9 @@ namespace NotiGlow.UI.Dialogs
             string confirmText = "Confirm",
             string cancelText = "Cancel",
             bool isDestructive = false,
-            Window? owner = null)
+            object? owner = null)
         {
-            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
-                try
-                {
-                    return Application.Current.Dispatcher.Invoke(() =>
-                        ShowConfirm(title, message, confirmText, cancelText, isDestructive, owner));
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed invoking confirmation dialog on UI thread", ex);
-                    return false;
-                }
-            }
-
             var dialog = new ConfirmationDialogWindow();
-            PositionDialog(dialog, owner);
-
             dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
             dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
             dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(confirmText);
@@ -87,17 +93,17 @@ namespace NotiGlow.UI.Dialogs
 
             if (isDestructive)
             {
-                dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
-                dialog.HeaderIcon.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
-                dialog.IconBadge.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0xEF, 0x44, 0x44));
-                dialog.IconBadge.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x40, 0xEF, 0x44, 0x44));
+                dialog.HeaderIcon.Glyph = "\uE711"; // Dismiss
+                var red = Windows.UI.Color.FromArgb(255, 239, 68, 68);
+                dialog.HeaderIcon.Foreground = new SolidColorBrush(red);
+                dialog.IconBadge.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(32, 239, 68, 68));
+                dialog.IconBadge.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(64, 239, 68, 68));
 
-                dialog.BtnConfirm.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26));
-                dialog.BtnConfirm.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xDC, 0x26, 0x26));
-                dialog.BtnConfirm.Foreground = System.Windows.Media.Brushes.White;
+                dialog.BtnConfirm.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 220, 38, 38));
+                dialog.BtnConfirm.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255));
             }
 
-            dialog.ShowDialog();
+            dialog.ShowModal();
             return dialog._confirmed;
         }
 
@@ -105,135 +111,63 @@ namespace NotiGlow.UI.Dialogs
             string title,
             string message,
             string buttonText = "OK",
-            Window? owner = null)
+            object? owner = null)
         {
-            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                        ShowWarning(title, message, buttonText, owner));
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed invoking warning dialog on UI thread", ex);
-                    return;
-                }
-            }
-
             var dialog = new ConfirmationDialogWindow();
-            PositionDialog(dialog, owner);
-
             dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
             dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
             dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
-            dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
-            dialog.HeaderIcon.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF5, 0x9E, 0x0B));
-            dialog.IconBadge.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0xF5, 0x9E, 0x0B));
-            dialog.IconBadge.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x40, 0xF5, 0x9E, 0x0B));
+            dialog.HeaderIcon.Glyph = "\uE7BA"; // Warning
+            var amber = Windows.UI.Color.FromArgb(255, 245, 158, 11);
+            dialog.HeaderIcon.Foreground = new SolidColorBrush(amber);
+            dialog.IconBadge.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(32, 245, 158, 11));
+            dialog.IconBadge.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(64, 245, 158, 11));
 
             dialog.SetSingleButtonMode();
-            dialog.ShowDialog();
+            dialog.ShowModal();
         }
 
         public static void ShowError(
             string title,
             string message,
             string buttonText = "Close",
-            Window? owner = null)
+            object? owner = null)
         {
-            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                        ShowError(title, message, buttonText, owner));
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed invoking error dialog on UI thread", ex);
-                    return;
-                }
-            }
-
             var dialog = new ConfirmationDialogWindow();
-            PositionDialog(dialog, owner);
-
             dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
             dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
             dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
-            dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
-            dialog.HeaderIcon.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xEF, 0x44, 0x44));
-            dialog.IconBadge.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x20, 0xEF, 0x44, 0x44));
-            dialog.IconBadge.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x40, 0xEF, 0x44, 0x44));
+            dialog.HeaderIcon.Glyph = "\uEA39"; // ErrorBadge
+            var red = Windows.UI.Color.FromArgb(255, 225, 29, 72);
+            dialog.HeaderIcon.Foreground = new SolidColorBrush(red);
+            dialog.IconBadge.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(32, 225, 29, 72));
+            dialog.IconBadge.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(64, 225, 29, 72));
 
             dialog.SetSingleButtonMode();
-            dialog.ShowDialog();
+            dialog.ShowModal();
         }
 
         public static void ShowInfo(
             string title,
             string message,
             string buttonText = "OK",
-            Window? owner = null)
+            object? owner = null)
         {
-            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
-                try
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
-                        ShowInfo(title, message, buttonText, owner));
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed invoking info dialog on UI thread", ex);
-                    return;
-                }
-            }
-
             var dialog = new ConfirmationDialogWindow();
-            PositionDialog(dialog, owner);
-
             dialog.TxtTitle.Text = LocalizationService.GenerateSafeFallbackText(title);
             dialog.TxtMessage.Text = LocalizationService.GenerateSafeFallbackText(message);
             dialog.BtnConfirm.Content = LocalizationService.GenerateSafeFallbackText(buttonText);
 
-            dialog.HeaderIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Info24;
+            dialog.HeaderIcon.Glyph = "\uE946"; // Info
+            var blue = Windows.UI.Color.FromArgb(255, 59, 130, 246);
+            dialog.HeaderIcon.Foreground = new SolidColorBrush(blue);
+            dialog.IconBadge.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(32, 59, 130, 246));
+            dialog.IconBadge.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(64, 59, 130, 246));
+
             dialog.SetSingleButtonMode();
-            dialog.ShowDialog();
-        }
-
-        private void BtnConfirm_Click(object sender, RoutedEventArgs e)
-        {
-            _confirmed = true;
-            Close();
-        }
-
-        private void BtnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            _confirmed = false;
-            Close();
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Escape)
-            {
-                _confirmed = false;
-                Close();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Enter)
-            {
-                _confirmed = true;
-                Close();
-                e.Handled = true;
-            }
+            dialog.ShowModal();
         }
     }
 }

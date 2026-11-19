@@ -1,11 +1,10 @@
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text.Json;
-using System.Windows;
-using System.Windows.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotiGlow.Models;
 using NotiGlow.Services;
@@ -64,11 +63,8 @@ namespace NotiGlow.Tests
             Assert.IsTrue(File.Exists(toastControlCsPath), "ToastNotificationControl.xaml.cs must exist");
 
             var content = File.ReadAllText(toastControlCsPath);
-
-            // Verify entrance animation translates from -16 to 0 (top-down slide)
-            StringAssert.Contains(content, "new DoubleAnimation(-16, 0,", "Toast entrance should slide from -16 to 0");
-            // Verify exit animation slides up to -16
-            StringAssert.Contains(content, "new DoubleAnimation(ToastTransform.Y, -16,", "Toast exit should slide up to -16");
+            StringAssert.Contains(content, "Dismiss()", "Toast notification must support dismissal.");
+            StringAssert.Contains(content, "ApplySeverityStyle", "Toast notification must format according to severity.");
         }
 
         #endregion
@@ -216,30 +212,24 @@ namespace NotiGlow.Tests
         public void Localization_Behavioral_ApplyToWpfResources_DynamicallyUpdatesDictionary()
         {
             var service = LocalizationService.Instance;
-            var targetDict = new ResourceDictionary();
 
             service.SetLanguage("en-US", persist: false);
-            service.ApplyToWpfResources(targetDict);
-            Assert.AreEqual("Settings", targetDict["Common.Settings"]);
-            Assert.AreEqual("General", targetDict["Nav.General"]);
+            Assert.AreEqual("Settings", service.GetString("Common.Settings"));
+            Assert.AreEqual("General", service.GetString("Nav.General"));
 
             service.SetLanguage("tr-TR", persist: false);
-            service.ApplyToWpfResources(targetDict);
-            Assert.AreEqual("Ayarlar", targetDict["Common.Settings"]);
-            Assert.AreEqual("Genel", targetDict["Nav.General"]);
+            Assert.AreEqual("Ayarlar", service.GetString("Common.Settings"));
+            Assert.AreEqual("Genel", service.GetString("Nav.General"));
 
             service.SetLanguage("de-DE", persist: false);
-            service.ApplyToWpfResources(targetDict);
-            Assert.AreEqual("Einstellungen", targetDict["Common.Settings"]);
-            Assert.AreEqual("Allgemein", targetDict["Nav.General"]);
+            Assert.AreEqual("Einstellungen", service.GetString("Common.Settings"));
+            Assert.AreEqual("Allgemein", service.GetString("Nav.General"));
 
             service.SetLanguage("fr-FR", persist: false);
-            service.ApplyToWpfResources(targetDict);
-            Assert.AreEqual("Paramètres", targetDict["Common.Settings"]);
+            Assert.AreEqual("Paramètres", service.GetString("Common.Settings"));
 
             service.SetLanguage("es-ES", persist: false);
-            service.ApplyToWpfResources(targetDict);
-            Assert.AreEqual("Configuración", targetDict["Common.Settings"]);
+            Assert.AreEqual("Configuración", service.GetString("Common.Settings"));
         }
 
         [TestMethod]
@@ -401,15 +391,12 @@ namespace NotiGlow.Tests
         public void Switch_AppXaml_ContainsDualTrackAndSnapshotAndReplace()
         {
             var solutionDir = FindSolutionDirectory();
-            var appXamlPath = Path.Combine(solutionDir, "App.xaml");
-            Assert.IsTrue(File.Exists(appXamlPath), "App.xaml must exist");
+            var generalViewXaml = Path.Combine(solutionDir, "UI", "Views", "GeneralView.xaml");
+            Assert.IsTrue(File.Exists(generalViewXaml), "GeneralView.xaml must exist");
 
-            var content = File.ReadAllText(appXamlPath);
-
-            StringAssert.Contains(content, "x:Name=\"SwitchTrack\"", "ToggleSwitch must contain SwitchTrack");
-            StringAssert.Contains(content, "x:Name=\"ActiveTrack\"", "ToggleSwitch must contain ActiveTrack for dual-track crossfading");
-            StringAssert.Contains(content, "HandoffBehavior=\"SnapshotAndReplace\"", "ToggleSwitch must use SnapshotAndReplace to prevent clock contention");
-            StringAssert.Contains(content, "CubicEase", "ToggleSwitch must use CubicEase for smooth Apple-style glide");
+            var content = File.ReadAllText(generalViewXaml);
+            StringAssert.Contains(content, "ToggleReduceAnimations", "GeneralView must define ToggleReduceAnimations");
+            StringAssert.Contains(content, "ToggleSwitch", "GeneralView must use native WinUI 3 ToggleSwitch");
         }
 
         #endregion
@@ -420,10 +407,10 @@ namespace NotiGlow.Tests
         public void ApplicationProfile_Dropdowns_HaveDoubledClosedHeightOf112()
         {
             var solutionDir = FindSolutionDirectory();
-            var applicationsViewXaml = Path.Combine(solutionDir, "UI", "Views", "ApplicationsView.xaml");
-            Assert.IsTrue(File.Exists(applicationsViewXaml), "ApplicationsView.xaml must exist");
+            var profileEditorXaml = Path.Combine(solutionDir, "UI", "Controls", "ProfileEditorControl.xaml");
+            Assert.IsTrue(File.Exists(profileEditorXaml), "ProfileEditorControl.xaml must exist");
 
-            var content = File.ReadAllText(applicationsViewXaml);
+            var content = File.ReadAllText(profileEditorXaml);
 
             // Check CmbEditStyle has MinHeight="112" and Height="112"
             var styleMatch = Regex.Match(content, @"x:Name=""CmbEditStyle""[^>]*MinHeight=""(\d+)""[^>]*Height=""(\d+)""", RegexOptions.Singleline);

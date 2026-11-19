@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using NotiGlow.Services;
+using WinRT;
 
 namespace NotiGlow
 {
@@ -46,12 +47,27 @@ namespace NotiGlow
             }
         }
 
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetProcessDpiAwarenessContext(IntPtr dpiContext);
+        private static readonly IntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new IntPtr(-4);
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void RunApp(string[] args)
         {
-            var app = new App();
-            app.InitializeComponent();
-            app.Run();
+            try
+            {
+                SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+            catch { }
+
+            ComWrappersSupport.InitializeComWrappers();
+            Microsoft.UI.Xaml.Application.Start((p) =>
+            {
+                var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(
+                    Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+                System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+                new App(args);
+            });
         }
     }
 }
