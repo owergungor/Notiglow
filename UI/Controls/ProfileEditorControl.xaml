@@ -1,0 +1,218 @@
+<UserControl
+    x:Class="NotiGlow.UI.Controls.ProfileEditorControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:NotiGlow.UI.Controls"
+    Background="Transparent">
+
+    <Border Background="{ThemeResource CardBackground}"
+            CornerRadius="12"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource BorderColor}"
+            Padding="0"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch">
+        <ScrollViewer x:Name="EditorScrollViewer"
+                      Background="Transparent"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      HorizontalContentAlignment="Stretch"
+                      IsScrollInertiaEnabled="True"
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      Padding="24,20,24,24">
+            <StackPanel>
+                <!-- Header Row -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtEditorTitle"
+                                   Text="Edit Application Profile"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextPrimary}"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtEditorSubtitle"
+                                   Text="Customize glow color, animation style, and timing"
+                                   FontSize="12"
+                                   Foreground="{ThemeResource TextSecondary}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            x:Name="BtnCloseEditor"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Click="BtnCloseEditor_Click"
+                            Padding="8,6"
+                            AutomationProperties.Name="Close">
+                        <FontIcon Glyph="&#xE711;" FontSize="12"/>
+                    </Button>
+                </Grid>
+
+                <!-- 2-Column Content Layout -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column: Identity, Game Override Toggle, Category, Style, Priority & Sliders -->
+                    <StackPanel Grid.Column="0" Spacing="14">
+                        <!-- Game-Specific Custom Glow Override Toggle (Visible only in Gaming customize flow) -->
+                        <Border x:Name="PnlGameCustomToggle"
+                                Background="{ThemeResource CardBackgroundSecondary}"
+                                BorderBrush="{ThemeResource BorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="14,10"
+                                Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock x:Name="TxtCustomGameGlowTitle"
+                                               Text="Custom Game Glow"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{ThemeResource TextPrimary}"/>
+                                    <TextBlock x:Name="TxtCustomGameGlowDesc"
+                                               Text="Override global gaming glow settings for this game"
+                                               FontSize="11.5"
+                                               Foreground="{ThemeResource TextSecondary}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1"
+                                              x:Name="ToggleCustomGameGlow"
+                                              IsOn="True"
+                                              OnContent=""
+                                              OffContent=""
+                                              HorizontalAlignment="Right"
+                                              VerticalAlignment="Center"
+                                              AutomationProperties.Name="Custom Game Glow"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Application / Game Name Input -->
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblAppName" Text="Application Name" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBox x:Name="TxtEditAppName" PlaceholderText="e.g. Discord"/>
+                        </StackPanel>
+
+                        <!-- Executable / App ID Input & Browse Button -->
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblAppId" Text="Executable Path or App ID" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TxtEditAppId" Grid.Column="0" PlaceholderText="e.g. Discord.exe or AUMID"/>
+                                <Button x:Name="BtnBrowseAppId" Grid.Column="1" Margin="8,0,0,0" Click="BtnBrowseAppId_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xED25;" FontSize="12"/>
+                                        <TextBlock x:Name="TxtBtnBrowse" Text="Browse"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Animation Style -->
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblStyle" Text="Animation Style" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <ComboBox x:Name="CmbEditStyle" Height="36" MinHeight="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Pulse (Gentle heartbeat)" Tag="Pulse"/>
+                                <ComboBoxItem Content="Sweep (Screen beam sweep)" Tag="Sweep"/>
+                                <ComboBoxItem Content="Comet (Travelling head and trail)" Tag="Comet"/>
+                                <ComboBoxItem Content="Ripple (Radial expanding shockwave)" Tag="Ripple"/>
+                                <ComboBoxItem Content="Ambient (Steady soft glow)" Tag="Ambient"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Category Selector -->
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblCategory" Text="Category" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <ComboBox x:Name="CmbEditCategory" Height="36" MinHeight="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="General App" Tag="General"/>
+                                <ComboBoxItem Content="Gaming" Tag="Gaming"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Priority Selector -->
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="LblPriority" Text="Priority" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <ComboBox x:Name="CmbEditPriority" Height="36" MinHeight="36" SelectionChanged="EditControl_Changed" HorizontalAlignment="Stretch">
+                                <ComboBoxItem Content="Low" Tag="Low"/>
+                                <ComboBoxItem Content="Normal" Tag="Normal"/>
+                                <ComboBoxItem Content="High" Tag="High"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Duration Slider -->
+                        <StackPanel Spacing="6">
+                            <Grid>
+                                <TextBlock x:Name="LblDuration" Text="Duration" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtDurationVal" Text="4 s" HorizontalAlignment="Right" Foreground="{ThemeResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldDuration" Minimum="500" Maximum="15000" Value="4000" StepFrequency="500" ValueChanged="SldDuration_ValueChanged"/>
+                        </StackPanel>
+
+                        <!-- Intensity Slider -->
+                        <StackPanel Spacing="6">
+                            <Grid>
+                                <TextBlock x:Name="LblIntensity" Text="Intensity" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtIntensityVal" Text="80%" HorizontalAlignment="Right" Foreground="{ThemeResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldIntensity" Minimum="10" Maximum="100" Value="80" StepFrequency="1" ValueChanged="SldIntensity_ValueChanged"/>
+                        </StackPanel>
+
+                        <!-- Glow Size Slider -->
+                        <StackPanel Spacing="6">
+                            <Grid>
+                                <TextBlock x:Name="LblGlowSize" Text="Glow Size" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtGlowSizeVal" Text="32 px" HorizontalAlignment="Right" Foreground="{ThemeResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldGlowSize" Minimum="0" Maximum="256" Value="32" StepFrequency="1" ValueChanged="SldGlowSize_ValueChanged"/>
+                        </StackPanel>
+
+                        <!-- Corner Radius Slider -->
+                        <StackPanel Spacing="6">
+                            <Grid>
+                                <TextBlock x:Name="LblCornerRadius" Text="Corner Radius" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                                <TextBlock x:Name="TxtAppCornerVal" Text="0 px" HorizontalAlignment="Right" Foreground="{ThemeResource TextSecondary}"/>
+                            </Grid>
+                            <Slider x:Name="SldAppCorner" Minimum="0" Maximum="48" Value="0" StepFrequency="1" ValueChanged="SldAppCorner_ValueChanged"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Right Column: Color Picker, Live Preview & Save/Cancel -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Top" Spacing="16">
+                        <controls:ColorPickerControl x:Name="EditColorPicker" ColorChanged="EditColorPicker_ColorChanged"/>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="LblLivePreview" Text="Live Preview" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <controls:EdgePreviewControl x:Name="EditEdgePreview" Height="160" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,12,0,0">
+                            <Button x:Name="BtnSaveProfile"
+                                    Content="Save Profile"
+                                    Click="BtnSaveProfile_Click"
+                                    Style="{StaticResource HeroPrimaryButtonStyle}"
+                                    Padding="16,8"/>
+                            <Button x:Name="BtnCancelProfile"
+                                    Content="Cancel"
+                                    Click="BtnCloseEditor_Click"
+                                    Padding="16,8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

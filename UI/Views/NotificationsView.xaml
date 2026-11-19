@@ -1,88 +1,106 @@
-<UserControl x:Class="NotiGlow.UI.Views.NotificationsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="800">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24">
+<UserControl
+    x:Class="NotiGlow.UI.Views.NotificationsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+    <ScrollViewer x:Name="RootScrollViewer"
+                  Background="Transparent"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  IsScrollInertiaEnabled="True"
+                  ScrollViewer.VerticalScrollMode="Enabled">
+        <StackPanel Margin="32,20,32,48">
             <!-- Header Section with Top-Right Test Animation Button -->
-            <Grid Margin="0,0,0,24">
+            <Grid Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{DynamicResource Notifications.Title}" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="{DynamicResource Notifications.Subtitle}" Foreground="{DynamicResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock x:Name="TxtNotificationsTitle" Text="Notification Handling" FontSize="28" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                    <TextBlock x:Name="TxtNotificationsSubtitle" Text="Configure how multiple overlapping notifications are handled" Foreground="{ThemeResource TextSecondary}" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <ui:Button Grid.Column="1" x:Name="BtnTestAnimation" Appearance="Primary" Click="BtnTestAnimation_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Common.TestAnimationToolTip}" Foreground="{DynamicResource TextPrimary}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Play24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{DynamicResource Common.TestAnimation}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" x:Name="BtnTestAnimation" Click="BtnTestAnimation_Click" VerticalAlignment="Center" Padding="14,8">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon Glyph="&#xE768;" FontSize="14" Foreground="{ThemeResource TextPrimary}"/>
+                        <TextBlock x:Name="TxtBtnTestAnimation" Text="Test Animation" FontSize="13" FontWeight="SemiBold"/>
                     </StackPanel>
-                </ui:Button>
+                </Button>
             </Grid>
 
-            <RadioButton x:Name="RadRestart" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowClockwise24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{DynamicResource Notifications.Restart}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource Notifications.RestartDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
-                            </StackPanel>
+            <!-- Group: Burst Mode & Overlap Options -->
+            <TextBlock x:Name="TxtSectionBurstMode" Text="Burst Behavior &amp; Overlap Handling" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextSecondary}" Margin="0,8,0,8"/>
+            <Border Background="{ThemeResource CardBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,24">
+                <StackPanel>
+                    <!-- Option 1: Restart -->
+                    <Grid MinHeight="64" Padding="16,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE72C;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Name="TxtRestartTitle" Text="Restart Animation" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtRestartDesc" Text="Instantly restart the glow animation from the beginning on each new notification" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                    </ui:CardControl.Header>
-                </ui:CardControl>
-            </RadioButton>
+                        <RadioButton Grid.Column="2" x:Name="RadRestart" GroupName="BurstMode" Checked="BurstMode_Checked" VerticalAlignment="Center"/>
+                    </Grid>
 
-            <RadioButton x:Name="RadExtend" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Timer24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{DynamicResource Notifications.Extend}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource Notifications.ExtendDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
-                            </StackPanel>
-                        </StackPanel>
-                    </ui:CardControl.Header>
-                </ui:CardControl>
-            </RadioButton>
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
 
-            <RadioButton x:Name="RadQueue" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="SquareMultiple24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{DynamicResource Notifications.Queue}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource Notifications.QueueDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
-                            </StackPanel>
+                    <!-- Option 2: Extend -->
+                    <Grid MinHeight="64" Padding="16,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE916;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Name="TxtExtendTitle" Text="Extend Duration" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtExtendDesc" Text="Add more time to the running glow animation without interrupting its visual rhythm" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                    </ui:CardControl.Header>
-                </ui:CardControl>
-            </RadioButton>
+                        <RadioButton Grid.Column="2" x:Name="RadExtend" GroupName="BurstMode" Checked="BurstMode_Checked" VerticalAlignment="Center"/>
+                    </Grid>
 
-            <RadioButton x:Name="RadIgnore" GroupName="BurstMode" Checked="BurstMode_Checked" Click="BurstMode_Click" Margin="0,0,0,12" HorizontalAlignment="Stretch">
-                <ui:CardControl Padding="18" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="Transparent" IsHitTestVisible="False">
-                    <ui:CardControl.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="DismissCircle24" Foreground="{DynamicResource TextPrimary}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="{DynamicResource Notifications.Ignore}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                <TextBlock Text="{DynamicResource Notifications.IgnoreDesc}" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,3,0,0"/>
-                            </StackPanel>
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+
+                    <!-- Option 3: Queue -->
+                    <Grid MinHeight="64" Padding="16,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE8B9;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Name="TxtQueueTitle" Text="Queue Sequentially" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtQueueDesc" Text="Play animations back-to-back in the exact order notifications arrive" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
                         </StackPanel>
-                    </ui:CardControl.Header>
-                </ui:CardControl>
-            </RadioButton>
+                        <RadioButton Grid.Column="2" x:Name="RadQueue" GroupName="BurstMode" Checked="BurstMode_Checked" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Rectangle Height="1" Fill="{ThemeResource DividerColor}" Margin="50,0,16,0"/>
+
+                    <!-- Option 4: Ignore -->
+                    <Grid MinHeight="64" Padding="16,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Grid.Column="0" Glyph="&#xE711;" FontSize="18" Foreground="{ThemeResource TextPrimary}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
+                            <TextBlock x:Name="TxtIgnoreTitle" Text="Ignore Incoming" FontSize="14" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}"/>
+                            <TextBlock x:Name="TxtIgnoreDesc" Text="Maintain current animation uninterrupted and discard new ones until finished" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <RadioButton Grid.Column="2" x:Name="RadIgnore" GroupName="BurstMode" Checked="BurstMode_Checked" VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

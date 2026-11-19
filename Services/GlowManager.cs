@@ -224,6 +224,9 @@ namespace NotiGlow.Services
 
                     if (!string.IsNullOrWhiteSpace(gameOverride.ColorHex))
                         colorHex = gameOverride.ColorHex;
+
+                    if (gameOverride.Style.HasValue)
+                        style = gameOverride.Style.Value;
                 }
                 // Priority 2: Per-game Custom Glow OFF -> Global Gaming Settings
                 else
@@ -294,8 +297,7 @@ namespace NotiGlow.Services
             LastTriggeredProfile = profile;
 
             if (SuppressOverlayWindowsForTesting ||
-                System.Windows.Application.Current == null ||
-                System.Threading.Thread.CurrentThread.GetApartmentState() != System.Threading.ApartmentState.STA)
+                Microsoft.UI.Xaml.Application.Current == null)
             {
                 _isAnimating = false;
                 _activeProfile = null;

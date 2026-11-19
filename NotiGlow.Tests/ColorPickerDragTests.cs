@@ -1,4 +1,4 @@
-using System.Windows;
+using Windows.Foundation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NotiGlow.Tests

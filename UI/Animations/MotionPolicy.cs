@@ -12,6 +12,7 @@ namespace NotiGlow.UI.Animations
         private static bool _isReduceMotion = false;
 
         public static bool IsReduceMotion => _isReduceMotion;
+        public static bool IsReduceAnimations => _isReduceMotion;
 
         public static event EventHandler? PolicyChanged;
 

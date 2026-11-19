@@ -15,7 +15,7 @@ namespace NotiGlow.Models
 
         public bool CustomGlowEnabled
         {
-            get => _customGlowEnabled ?? (DurationMs.HasValue || Intensity.HasValue || GlowSize.HasValue || CornerRadius.HasValue || !string.IsNullOrWhiteSpace(ColorHex));
+            get => _customGlowEnabled ?? (DurationMs.HasValue || Intensity.HasValue || GlowSize.HasValue || CornerRadius.HasValue || Style.HasValue || !string.IsNullOrWhiteSpace(ColorHex));
             set => _customGlowEnabled = value;
         }
 
@@ -24,9 +24,10 @@ namespace NotiGlow.Models
         public double? GlowSize { get; set; }
         public double? CornerRadius { get; set; }
         public string? ColorHex { get; set; }
+        public GlowStyle? Style { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
-        public bool HasOverrides => CustomGlowEnabled || DurationMs.HasValue || Intensity.HasValue || GlowSize.HasValue || CornerRadius.HasValue || !string.IsNullOrWhiteSpace(ColorHex);
+        public bool HasOverrides => CustomGlowEnabled || DurationMs.HasValue || Intensity.HasValue || GlowSize.HasValue || CornerRadius.HasValue || Style.HasValue || !string.IsNullOrWhiteSpace(ColorHex);
 
         public static int ClampDuration(int durationMs) => Math.Clamp(durationMs, 500, 15000);
         public static double ClampIntensity(double intensity) => Math.Clamp(intensity, 0.1, 1.0);

@@ -1,13 +1,16 @@
-<UserControl x:Class="NotiGlow.UI.Controls.AppProfileCard"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="95" d:DesignWidth="750">
-    <ui:CardControl Margin="0,0,0,10" Padding="14,10" HorizontalAlignment="Stretch" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource BorderColor}">
-        <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+<UserControl
+    x:Class="NotiGlow.UI.Controls.AppProfileCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border x:Name="CardBorder"
+            Margin="0,0,0,8"
+            Padding="16,12"
+            HorizontalAlignment="Stretch"
+            Background="{ThemeResource CardBackground}"
+            BorderBrush="{ThemeResource BorderColor}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid VerticalAlignment="Center">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -25,41 +28,49 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- App Icon with Fluent Fallback -->
-                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Margin="0,0,12,0" VerticalAlignment="Center" Background="{DynamicResource ControlBackground}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1" ClipToBounds="True">
+                <!-- App Icon with Fallback -->
+                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Margin="0,0,12,0" VerticalAlignment="Center" Background="{ThemeResource ControlBackground}" BorderBrush="{ThemeResource BorderColor}" BorderThickness="1">
                     <Grid>
-                        <Image x:Name="ImgAppIcon" Width="30" Height="30" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <ui:SymbolIcon x:Name="FallbackAppIcon" Symbol="Apps24" FontSize="22" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                        <Image x:Name="ImgAppIcon" Width="30" Height="30" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <FontIcon x:Name="FallbackAppIcon" Glyph="&#xE71D;" FontSize="22" Foreground="{ThemeResource TextSecondary}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue='Application'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="TxtDetails" Text="4000 ms • 80% • Pulse" Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtAppName" Text="{Binding Name, FallbackValue=Application}" FontSize="15" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="TxtDetails" Text="4000 ms • 80% • Pulse" Foreground="{ThemeResource TextSecondary}" FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
             </Grid>
 
             <!-- Column 1: Color Swatch -->
-            <Border Grid.Column="1" x:Name="ColorBadge" Width="18" Height="18" CornerRadius="5" Margin="0,0,16,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" ToolTip="{DynamicResource Applications.CardColorToolTip}">
+            <Border Grid.Column="1" x:Name="ColorBadge" Width="18" Height="18" CornerRadius="5" Margin="0,0,16,0" VerticalAlignment="Center" BorderThickness="1" BorderBrush="{ThemeResource BorderColor}">
                 <Border.Background>
                     <SolidColorBrush x:Name="ColorBadgeBrush" Color="#FF5865F2"/>
                 </Border.Background>
             </Border>
 
             <!-- Column 2: Preview Button -->
-            <ui:Button Grid.Column="2" x:Name="BtnPreview" Content="{DynamicResource Applications.CardPreview}" Icon="{ui:SymbolIcon Play24}" Appearance="Secondary" Click="BtnPreview_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardPreview}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <Button Grid.Column="2" x:Name="BtnPreview" Click="BtnPreview_Click" Margin="0,0,6,0" VerticalAlignment="Center" Padding="8,6">
+                <FontIcon Glyph="&#xE768;" FontSize="12"/>
+            </Button>
 
             <!-- Column 3: Edit Button -->
-            <ui:Button Grid.Column="3" x:Name="BtnEdit" Content="{DynamicResource Applications.CardEdit}" Icon="{ui:SymbolIcon Edit24}" Appearance="Secondary" Click="BtnEdit_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardEdit}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <Button Grid.Column="3" x:Name="BtnEdit" Click="BtnEdit_Click" Margin="0,0,6,0" VerticalAlignment="Center" Padding="8,6">
+                <FontIcon Glyph="&#xE70F;" FontSize="12"/>
+            </Button>
 
             <!-- Column 4: Copy Button -->
-            <ui:Button Grid.Column="4" x:Name="BtnDuplicate" Content="{DynamicResource Applications.CardCopy}" Icon="{ui:SymbolIcon Copy24}" Appearance="Secondary" Click="BtnDuplicate_Click" Margin="0,0,6,0" ToolTip="{DynamicResource Applications.CardCopy}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <Button Grid.Column="4" x:Name="BtnDuplicate" Click="BtnDuplicate_Click" Margin="0,0,6,0" VerticalAlignment="Center" Padding="8,6">
+                <FontIcon Glyph="&#xE8C8;" FontSize="12"/>
+            </Button>
 
             <!-- Column 5: Delete Button -->
-            <ui:Button Grid.Column="5" x:Name="BtnDelete" Content="{DynamicResource Applications.CardDelete}" Icon="{ui:SymbolIcon Delete24}" Appearance="Secondary" Click="BtnDelete_Click" Margin="0,0,12,0" ToolTip="{DynamicResource Applications.CardDelete}" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+            <Button Grid.Column="5" x:Name="BtnDelete" Click="BtnDelete_Click" Margin="0,0,12,0" VerticalAlignment="Center" Padding="8,6">
+                <FontIcon Glyph="&#xE74D;" FontSize="12"/>
+            </Button>
 
             <!-- Column 6: Toggle Enabled -->
-            <ui:ToggleSwitch Grid.Column="6" x:Name="ToggleEnabled" IsChecked="True" Click="ToggleEnabled_Click" VerticalAlignment="Center" ToolTip="{DynamicResource Applications.CardToggleToolTip}"/>
+            <ToggleSwitch Grid.Column="6" x:Name="ToggleEnabled" IsOn="True" OnContent="" OffContent="" HorizontalAlignment="Right" Toggled="ToggleEnabled_Toggled" VerticalAlignment="Center" AutomationProperties.Name="Enable App Profile"/>
         </Grid>
-    </ui:CardControl>
+    </Border>
 </UserControl>

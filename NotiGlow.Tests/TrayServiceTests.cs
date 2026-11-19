@@ -28,10 +28,6 @@ namespace NotiGlow.Tests
             {
                 try
                 {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        _ = new System.Windows.Application();
-                    }
 
                     var settingsService = new SettingsService();
                     using var trayService = new TrayService(
@@ -77,8 +73,7 @@ namespace NotiGlow.Tests
             {
                 try
                 {
-                    if (System.Windows.Application.Current == null) _ = new System.Windows.Application();
-                    var settings = new SettingsService(settingsPath);
+                                        var settings = new SettingsService(settingsPath);
                     using var tray = new TrayService(settings, () => { }, () => { }, () => { });
                     settings.Current.ThemeMode = NotiGlow.Models.ThemeMode.Light;
                     settings.Save(settings.Current);
@@ -105,10 +100,6 @@ namespace NotiGlow.Tests
             {
                 try
                 {
-                    if (System.Windows.Application.Current == null)
-                    {
-                        _ = new System.Windows.Application();
-                    }
 
                     var settingsService = new SettingsService();
                     var trayService = new TrayService(

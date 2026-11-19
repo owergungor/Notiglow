@@ -13,52 +13,79 @@ namespace NotiGlow.Models
                 string? str = reader.GetString();
                 if (string.IsNullOrWhiteSpace(str))
                 {
-                    return ColorTheme.Vercel;
+                    return ColorTheme.Windows;
                 }
 
-                // Vercel / Standard
-                if (string.Equals(str, "Vercel", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(str, "Standard", StringComparison.OrdinalIgnoreCase))
+                string trimmed = str.Trim();
+
+                // Windows / System
+                if (string.Equals(trimmed, "Windows", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "System", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "System Accent", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "SystemAccent", StringComparison.OrdinalIgnoreCase))
+                {
+                    return ColorTheme.Windows;
+                }
+
+                // Standard / Vercel legacy compatibility
+                if (string.Equals(trimmed, "Standard", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(trimmed, "Vercel", StringComparison.OrdinalIgnoreCase))
                 {
                     return ColorTheme.Vercel;
                 }
 
-                // Legacy Nubank maps to new Amethyst
-                if (string.Equals(str, "Nubank", StringComparison.OrdinalIgnoreCase))
+                // Legacy Nubank
+                if (string.Equals(trimmed, "Nubank", StringComparison.OrdinalIgnoreCase))
                 {
                     return ColorTheme.Amethyst;
                 }
 
-                // Amethyst (legacy or new) safely resolves to Amethyst (with Nubank palette)
-                if (string.Equals(str, "Amethyst", StringComparison.OrdinalIgnoreCase))
+                // Legacy Indigo completely removed -> migrate to Windows
+                if (string.Equals(trimmed, "Indigo", StringComparison.OrdinalIgnoreCase))
                 {
-                    return ColorTheme.Amethyst;
+                    return ColorTheme.Windows;
                 }
 
-                if (Enum.TryParse<ColorTheme>(str, true, out var result))
+                if (Enum.TryParse<ColorTheme>(trimmed, true, out var result))
                 {
                     return result;
                 }
 
-                return ColorTheme.Vercel;
+                return ColorTheme.Windows;
             }
 
             if (reader.TokenType == JsonTokenType.Number)
             {
                 int val = reader.GetInt32();
+                if (val == 0)
+                {
+                    // Legacy v1.x/v2.x numeric 0 was Standard
+                    return ColorTheme.Standard;
+                }
                 if (Enum.IsDefined(typeof(ColorTheme), val))
                 {
                     return (ColorTheme)val;
                 }
-                return ColorTheme.Vercel;
+                return ColorTheme.Windows;
             }
 
-            return ColorTheme.Vercel;
+            return ColorTheme.Windows;
         }
 
         public override void Write(Utf8JsonWriter writer, ColorTheme value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString());
+            if (value == ColorTheme.Windows)
+            {
+                writer.WriteStringValue("Windows");
+            }
+            else if (value == ColorTheme.Standard)
+            {
+                writer.WriteStringValue("Vercel");
+            }
+            else
+            {
+                writer.WriteStringValue(value.ToString());
+            }
         }
     }
 }

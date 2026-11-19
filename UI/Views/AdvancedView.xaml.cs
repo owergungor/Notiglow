@@ -1,13 +1,14 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using Microsoft.Win32;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using NotiGlow.Core.Helpers;
+using NotiGlow.Models;
 using NotiGlow.Services;
-using UserControl = System.Windows.Controls.UserControl;
+using NotiGlow.UI.Dialogs;
 
 namespace NotiGlow.UI.Views
 {
-    public partial class AdvancedView : UserControl
+    public sealed partial class AdvancedView : UserControl
     {
         private SettingsService _settingsService = null!;
         private ProfileService _profileService = null!;
@@ -17,31 +18,92 @@ namespace NotiGlow.UI.Views
 
         public AdvancedView()
         {
-            InitializeComponent();
-            ApplyComboBoxItemTexts();
+            this.InitializeComponent();
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Loaded += (s, e) =>
             {
-                ApplyComboBoxItemTexts();
+                ScrollViewerHelper.EnableReliableMouseWheel(RootScrollViewer);
+                ScrollViewerHelper.AttachToChildComboBoxes(this);
+                UpdateLocalizedTexts();
                 UpdateStatusText();
             };
         }
 
-        private void OnLanguageChanged(object? sender, string lang)
+        public void Initialize(SettingsService settingsService, ProfileService profileService, GlowManager? glowManager = null)
         {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
-            if (Dispatcher.Thread != null && !Dispatcher.Thread.IsAlive) return;
-            try
+            _settingsService = settingsService;
+            _profileService = profileService;
+            _glowManager = glowManager;
+            _importExportService = new SettingsImportExportService(settingsService, profileService);
+
+            _settingsService.SettingsChanged += OnSettingsChanged;
+            LoadSettings();
+            UpdateLocalizedTexts();
+        }
+
+        private void OnLanguageChanged(object? sender, string langCode)
+        {
+            DispatcherQueue.TryEnqueue(() =>
             {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    ApplyComboBoxItemTexts();
-                    UpdateStatusText();
-                    BtnCheckUpdates.Content = LocalizationService.Instance.GetString(PackageService.IsPackaged ? "Advanced.UpdateInStore" : "Advanced.CheckForUpdates");
-                    if (PackageService.IsPackaged) BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
-                });
+                UpdateLocalizedTexts();
+                UpdateStatusText();
+            });
+        }
+
+        private void OnSettingsChanged(object? sender, EventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(LoadSettings);
+        }
+
+        private void UpdateLocalizedTexts()
+        {
+            TxtTitle.Text = LocalizationService.Instance.GetString("Advanced.Title");
+            TxtSubtitle.Text = LocalizationService.Instance.GetString("Advanced.Subtitle");
+            TxtBtnTestAnimation.Text = LocalizationService.Instance.GetString("Common.TestAnimation");
+            ToolTipService.SetToolTip(BtnTestAnimation, LocalizationService.Instance.GetString("Common.TestAnimationToolTip"));
+
+            TxtAutoUpdateSection.Text = LocalizationService.Instance.GetString("Advanced.AutoUpdate");
+            TxtAutomaticUpdates.Text = LocalizationService.Instance.GetString("Advanced.AutomaticUpdates");
+            ToolTipService.SetToolTip(ToggleAutoUpdates, LocalizationService.Instance.GetString("Advanced.AutoCheckUpdatesToolTip"));
+
+            TxtCheckFrequency.Text = LocalizationService.Instance.GetString("Advanced.CheckFrequency");
+            TxtCheckFrequencyDesc.Text = LocalizationService.Instance.GetString("Advanced.CheckFrequencyDesc");
+
+            CbiFreqStartup.Content = LocalizationService.Instance.GetString("Advanced.FreqStartup");
+            CbiFreqDaily.Content = LocalizationService.Instance.GetString("Advanced.FreqDaily");
+            CbiFreqWeekly.Content = LocalizationService.Instance.GetString("Advanced.FreqWeekly");
+            CbiFreqMonthly.Content = LocalizationService.Instance.GetString("Advanced.FreqMonthly");
+
+            TxtAccessibilitySection.Text = LocalizationService.Instance.GetString("Advanced.Accessibility");
+            TxtOledMode.Text = LocalizationService.Instance.GetString("Advanced.OledMode");
+            TxtOledModeDesc.Text = LocalizationService.Instance.GetString("Advanced.OledModeDesc");
+
+            TxtReduceMotion.Text = LocalizationService.Instance.GetString("Advanced.ReduceMotion");
+            TxtReduceMotionDesc.Text = LocalizationService.Instance.GetString("Advanced.ReduceMotionDesc");
+
+            TxtReduceGlow.Text = LocalizationService.Instance.GetString("Advanced.ReduceGlow");
+            TxtReduceGlowDesc.Text = LocalizationService.Instance.GetString("Advanced.ReduceGlowDesc");
+
+            TxtBackupRestoreSection.Text = LocalizationService.Instance.GetString("Advanced.BackupRestore");
+            TxtConfigManagement.Text = LocalizationService.Instance.GetString("Advanced.ConfigManagement");
+            TxtConfigManagementDesc.Text = LocalizationService.Instance.GetString("Advanced.ConfigManagementDesc");
+
+            TxtBtnExport.Text = LocalizationService.Instance.GetString("Advanced.ExportSettings");
+            TxtBtnImport.Text = LocalizationService.Instance.GetString("Advanced.ImportSettings");
+            TxtBtnReset.Text = LocalizationService.Instance.GetString("Advanced.FactoryReset");
+
+            TxtDiagnosticsSection.Text = LocalizationService.Instance.GetString("Advanced.Diagnostics");
+            TxtDebugLogging.Text = LocalizationService.Instance.GetString("Advanced.DebugLogging");
+            TxtDebugLoggingDesc.Text = LocalizationService.Instance.GetString("Advanced.DebugLoggingDesc");
+
+            TxtIdentityDebug.Text = LocalizationService.Instance.GetString("Advanced.IdentityDebug");
+            TxtIdentityDebugDesc.Text = LocalizationService.Instance.GetString("Advanced.IdentityDebugDesc");
+
+            TxtBtnCheckUpdates.Text = LocalizationService.Instance.GetString(PackageService.IsPackaged ? "Advanced.UpdateInStore" : "Advanced.CheckForUpdates");
+            if (PackageService.IsPackaged)
+            {
+                ToolTipService.SetToolTip(BtnCheckUpdates, LocalizationService.Instance.GetString("Advanced.StoreManaged"));
             }
-            catch { }
         }
 
         private void UpdateStatusText()
@@ -72,71 +134,37 @@ namespace NotiGlow.UI.Views
             }
         }
 
-        private void ApplyComboBoxItemTexts()
-        {
-            if (CmbUpdateFrequency == null) return;
-            foreach (var item in CmbUpdateFrequency.Items)
-            {
-                if (item is ComboBoxItem cbi && cbi.Tag is string tag)
-                {
-                    string key = tag switch
-                    {
-                        "OnStartup" => "Advanced.FreqStartup",
-                        "Daily" => "Advanced.FreqDaily",
-                        "Weekly" => "Advanced.FreqWeekly",
-                        "Monthly" => "Advanced.FreqMonthly",
-                        _ => ""
-                    };
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        cbi.Content = LocalizationService.Instance.GetString(key);
-                    }
-                }
-            }
-        }
-
-        public void Initialize(SettingsService settingsService, ProfileService profileService, GlowManager? glowManager = null)
-        {
-            _settingsService = settingsService;
-            _profileService = profileService;
-            _glowManager = glowManager;
-            _importExportService = new SettingsImportExportService(settingsService, profileService);
-
-            _settingsService.SettingsChanged += OnSettingsChanged;
-            LoadSettings();
-        }
-
         private void LoadSettings()
         {
             if (_settingsService == null) return;
             _isInitializing = true;
 
             var settings = _settingsService.Current;
-            ToggleOledMode.IsChecked = settings.OledMode;
-            ToggleReduceMotion.IsChecked = settings.ReduceMotion;
-            ToggleReduceGlow.IsChecked = settings.ReduceGlow;
-            ToggleDebugLogging.IsChecked = settings.DebugLogging;
-            ToggleIdentityDebug.IsChecked = settings.ShowIdentityDebugInfo;
+            ToggleOledMode.IsOn = settings.OledMode;
+            ToggleReduceMotion.IsOn = settings.ReduceMotion;
+            ToggleReduceGlow.IsOn = settings.ReduceGlow;
+            ToggleDebugLogging.IsOn = settings.DebugLogging;
+            ToggleIdentityDebug.IsOn = settings.ShowIdentityDebugInfo;
 
             // Auto Update Settings
             if (PackageService.IsPackaged)
             {
-                ToggleAutoUpdates.IsChecked = true;
+                ToggleAutoUpdates.IsOn = true;
                 ToggleAutoUpdates.IsEnabled = false;
-                ToggleAutoUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
+                ToolTipService.SetToolTip(ToggleAutoUpdates, LocalizationService.Instance.GetString("Advanced.StoreManaged"));
                 if (CardCheckFrequency != null) CardCheckFrequency.Visibility = Visibility.Collapsed;
                 if (CardAutoUpdates != null) CardAutoUpdates.Margin = new Thickness(0, 0, 0, 24);
                 CmbUpdateFrequency.IsEnabled = false;
-                BtnCheckUpdates.ToolTip = LocalizationService.Instance.GetString("Advanced.StoreManaged");
-                BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.UpdateInStore");
+                ToolTipService.SetToolTip(BtnCheckUpdates, LocalizationService.Instance.GetString("Advanced.StoreManaged"));
+                TxtBtnCheckUpdates.Text = LocalizationService.Instance.GetString("Advanced.UpdateInStore");
             }
             else
             {
                 if (CardCheckFrequency != null) CardCheckFrequency.Visibility = Visibility.Visible;
                 if (CardAutoUpdates != null) CardAutoUpdates.Margin = new Thickness(0, 0, 0, 12);
-                BtnCheckUpdates.Content = LocalizationService.Instance.GetString("Advanced.CheckForUpdates");
-                BtnCheckUpdates.ToolTip = null;
-                ToggleAutoUpdates.IsChecked = settings.AutoCheckUpdates;
+                TxtBtnCheckUpdates.Text = LocalizationService.Instance.GetString("Advanced.CheckForUpdates");
+                ToolTipService.SetToolTip(BtnCheckUpdates, null);
+                ToggleAutoUpdates.IsOn = settings.AutoCheckUpdates;
                 CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
                 SelectUpdateFrequencyItem(settings.UpdateFrequency);
             }
@@ -145,38 +173,26 @@ namespace NotiGlow.UI.Views
             _isInitializing = false;
         }
 
-        private void SelectUpdateFrequencyItem(NotiGlow.Models.UpdateCheckFrequency frequency)
+        private void SelectUpdateFrequencyItem(UpdateCheckFrequency frequency)
         {
             string tag = frequency.ToString();
             foreach (var item in CmbUpdateFrequency.Items)
             {
-                if (item is ComboBoxItem cbi)
+                if (item is ComboBoxItem cbi && string.Equals(cbi.Tag?.ToString(), tag, StringComparison.OrdinalIgnoreCase))
                 {
-                    string itemTag = cbi.Tag?.ToString() ?? "";
-                    string itemContent = cbi.Content?.ToString() ?? "";
-                    if (string.Equals(itemTag, tag, StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(itemContent, tag, StringComparison.OrdinalIgnoreCase) ||
-                        (frequency == NotiGlow.Models.UpdateCheckFrequency.OnStartup &&
-                         (string.Equals(itemTag, "Startup", StringComparison.OrdinalIgnoreCase) ||
-                          string.Equals(itemContent, "On Startup", StringComparison.OrdinalIgnoreCase) ||
-                          string.Equals(itemContent, "Açılışta", StringComparison.OrdinalIgnoreCase))))
-                    {
-                        CmbUpdateFrequency.SelectedItem = cbi;
-                        return;
-                    }
+                    CmbUpdateFrequency.SelectedItem = cbi;
+                    return;
                 }
             }
-            // Fallback default
             if (CmbUpdateFrequency.Items.Count > 0)
                 CmbUpdateFrequency.SelectedIndex = 0;
         }
 
-        private void ToggleAutoUpdates_Click(object sender, RoutedEventArgs e)
+        private void ToggleAutoUpdates_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing || _settingsService == null) return;
-            if (PackageService.IsPackaged) return;
+            if (_isInitializing || _settingsService == null || PackageService.IsPackaged) return;
             var settings = _settingsService.Current;
-            settings.AutoCheckUpdates = ToggleAutoUpdates.IsChecked == true;
+            settings.AutoCheckUpdates = ToggleAutoUpdates.IsOn;
             CmbUpdateFrequency.IsEnabled = settings.AutoCheckUpdates;
             _settingsService.Save(settings);
         }
@@ -184,12 +200,9 @@ namespace NotiGlow.UI.Views
         private void CmbUpdateFrequency_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_isInitializing || _settingsService == null) return;
-            if (CmbUpdateFrequency.SelectedItem is ComboBoxItem item)
+            if (CmbUpdateFrequency.SelectedItem is ComboBoxItem item && item.Tag is string tag)
             {
-                string tag = item.Tag?.ToString() ?? item.Content?.ToString() ?? "";
-                if (Enum.TryParse<NotiGlow.Models.UpdateCheckFrequency>(tag, true, out var freq) ||
-                    (string.Equals(tag, "On Startup", StringComparison.OrdinalIgnoreCase) && (freq = NotiGlow.Models.UpdateCheckFrequency.OnStartup) == NotiGlow.Models.UpdateCheckFrequency.OnStartup) ||
-                    (string.Equals(tag, "Açılışta", StringComparison.OrdinalIgnoreCase) && (freq = NotiGlow.Models.UpdateCheckFrequency.OnStartup) == NotiGlow.Models.UpdateCheckFrequency.OnStartup))
+                if (Enum.TryParse<UpdateCheckFrequency>(tag, true, out var freq))
                 {
                     var settings = _settingsService.Current;
                     if (settings.UpdateFrequency != freq)
@@ -220,7 +233,7 @@ namespace NotiGlow.UI.Views
                 var updater = new UpdateService(_settingsService);
                 updater.StatusChanged += (s, ev) =>
                 {
-                    Dispatcher?.Invoke(() =>
+                    DispatcherQueue.TryEnqueue(() =>
                     {
                         TxtUpdateStatus.Text = ev.Message;
                         if (ev.Status == UpdateStatus.Downloading)
@@ -235,7 +248,7 @@ namespace NotiGlow.UI.Views
 
                 if (info.IsUpdateAvailable)
                 {
-                    bool confirmed = NotiGlow.UI.Dialogs.UpdateConfirmDialogWindow.ShowUpdateConfirm(info, Window.GetWindow(this));
+                    bool confirmed = UpdateConfirmDialogWindow.ShowUpdateConfirm(info);
 
                     if (confirmed)
                     {
@@ -256,27 +269,22 @@ namespace NotiGlow.UI.Views
                             string installBtn = LocalizationService.Instance.GetString("Advanced.InstallNow");
                             string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
 
-                            bool installConfirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
+                            bool installConfirmed = ConfirmationDialogWindow.ShowConfirm(
                                 string.IsNullOrEmpty(readyTitle) ? "Install Update" : readyTitle,
                                 string.IsNullOrEmpty(readyMsg) ? $"Ready to install NotiGlow {info.LatestVersion}. The application will restart." : readyMsg,
                                 confirmText: string.IsNullOrEmpty(installBtn) ? "Install & Restart" : installBtn,
                                 cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
-                                isDestructive: false,
-                                owner: Window.GetWindow(this));
+                                isDestructive: false);
 
                             if (installConfirmed)
                             {
                                 bool launched = UpdateService.ExecuteUpdateAndRestart(packagePath, () =>
                                 {
-                                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                    DispatcherQueue.TryEnqueue(() =>
                                     {
-                                        if (System.Windows.Application.Current is App myApp)
+                                        if (Microsoft.UI.Xaml.Application.Current is App myApp)
                                         {
                                             myApp.ExitApplication();
-                                        }
-                                        else
-                                        {
-                                            System.Windows.Application.Current.Shutdown();
                                         }
                                     });
                                 });
@@ -314,100 +322,111 @@ namespace NotiGlow.UI.Views
             }
         }
 
-        private void OnSettingsChanged(object? sender, EventArgs e)
+        private void ToggleOledMode_Toggled(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(LoadSettings);
-        }
-
-        private void ToggleOledMode_Click(object sender, RoutedEventArgs e)
-        {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
-            settings.OledMode = ToggleOledMode.IsChecked ?? false;
+            settings.OledMode = ToggleOledMode.IsOn;
             _settingsService.Save(settings);
         }
 
-        private void ToggleReduceMotion_Click(object sender, RoutedEventArgs e)
+        private void ToggleReduceMotion_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
-            settings.ReduceMotion = ToggleReduceMotion.IsChecked ?? false;
+            settings.ReduceMotion = ToggleReduceMotion.IsOn;
             _settingsService.Save(settings);
             NotiGlow.UI.Animations.MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
         }
 
-        private void ToggleReduceGlow_Click(object sender, RoutedEventArgs e)
+        private void ToggleReduceGlow_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
-            settings.ReduceGlow = ToggleReduceGlow.IsChecked ?? false;
+            settings.ReduceGlow = ToggleReduceGlow.IsOn;
             _settingsService.Save(settings);
         }
 
-        private void ToggleDebugLogging_Click(object sender, RoutedEventArgs e)
+        private void ToggleDebugLogging_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
-            settings.DebugLogging = ToggleDebugLogging.IsChecked ?? true;
+            settings.DebugLogging = ToggleDebugLogging.IsOn;
             _settingsService.Save(settings);
         }
 
-        private void ToggleIdentityDebug_Click(object sender, RoutedEventArgs e)
+        private void ToggleIdentityDebug_Toggled(object sender, RoutedEventArgs e)
         {
-            if (_isInitializing) return;
+            if (_isInitializing || _settingsService == null) return;
             var settings = _settingsService.Current;
-            settings.ShowIdentityDebugInfo = ToggleIdentityDebug.IsChecked ?? false;
+            settings.ShowIdentityDebugInfo = ToggleIdentityDebug.IsOn;
             _settingsService.Save(settings);
         }
 
         private void BtnExport_Click(object sender, RoutedEventArgs e)
         {
-            var sfd = new Microsoft.Win32.SaveFileDialog
+            try
             {
-                Filter = "JSON Files (*.json)|*.json",
-                FileName = "NotiGlow-Settings.json"
-            };
+                using var sfd = new System.Windows.Forms.SaveFileDialog
+                {
+                    Filter = "JSON Files (*.json)|*.json",
+                    FileName = "NotiGlow-Settings.json",
+                    Title = LocalizationService.Instance.GetString("Advanced.ExportSettings")
+                };
 
-            if (sfd.ShowDialog() == true)
+                if (sfd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    bool success = _importExportService.ExportSettings(sfd.FileName);
+                    if (success)
+                    {
+                        ToastNotificationService.Instance.ShowSuccess(
+                            LocalizationService.Instance.GetString("Advanced.ExportSuccessMsg"),
+                            LocalizationService.Instance.GetString("Advanced.ExportSuccessTitle"));
+                    }
+                    else
+                    {
+                        ToastNotificationService.Instance.ShowError(
+                            LocalizationService.Instance.GetString("Advanced.ExportFailMsg"),
+                            LocalizationService.Instance.GetString("Advanced.ExportFailTitle"));
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                bool success = _importExportService.ExportSettings(sfd.FileName);
-                if (success)
-                {
-                    ToastNotificationService.Instance.ShowSuccess(
-                        LocalizationService.Instance.GetString("Advanced.ExportSuccessMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ExportSuccessTitle"));
-                }
-                else
-                {
-                    ToastNotificationService.Instance.ShowError(
-                        LocalizationService.Instance.GetString("Advanced.ExportFailMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ExportFailTitle"));
-                }
+                LoggerService.LogError("Export settings failed", ex);
             }
         }
 
         private void BtnImport_Click(object sender, RoutedEventArgs e)
         {
-            var ofd = new Microsoft.Win32.OpenFileDialog
+            try
             {
-                Filter = "JSON Files (*.json)|*.json"
-            };
+                using var ofd = new System.Windows.Forms.OpenFileDialog
+                {
+                    Filter = "JSON Files (*.json)|*.json",
+                    Title = LocalizationService.Instance.GetString("Advanced.ImportSettings")
+                };
 
-            if (ofd.ShowDialog() == true)
+                if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    bool success = _importExportService.ImportSettings(ofd.FileName);
+                    if (success)
+                    {
+                        ToastNotificationService.Instance.ShowSuccess(
+                            LocalizationService.Instance.GetString("Advanced.ImportSuccessMsg"),
+                            LocalizationService.Instance.GetString("Advanced.ImportSuccessTitle"));
+                    }
+                    else
+                    {
+                        ToastNotificationService.Instance.ShowError(
+                            LocalizationService.Instance.GetString("Advanced.ImportFailMsg"),
+                            LocalizationService.Instance.GetString("Advanced.ImportFailTitle"));
+                    }
+                }
+            }
+            catch (Exception ex)
             {
-                bool success = _importExportService.ImportSettings(ofd.FileName);
-                if (success)
-                {
-                    ToastNotificationService.Instance.ShowSuccess(
-                        LocalizationService.Instance.GetString("Advanced.ImportSuccessMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ImportSuccessTitle"));
-                }
-                else
-                {
-                    ToastNotificationService.Instance.ShowError(
-                        LocalizationService.Instance.GetString("Advanced.ImportFailMsg"),
-                        LocalizationService.Instance.GetString("Advanced.ImportFailTitle"));
-                }
+                LoggerService.LogError("Import settings failed", ex);
             }
         }
 
@@ -418,13 +437,12 @@ namespace NotiGlow.UI.Views
             string resetBtn = LocalizationService.Instance.GetString("Advanced.ResetToDefaults");
             string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
 
-            bool confirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
+            bool confirmed = ConfirmationDialogWindow.ShowConfirm(
                 string.IsNullOrEmpty(resetTitle) ? "Reset Settings" : resetTitle,
                 string.IsNullOrEmpty(resetMsg) ? "Are you sure you want to reset all settings to defaults?" : resetMsg,
                 confirmText: string.IsNullOrEmpty(resetBtn) ? "Reset" : resetBtn,
                 cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
-                isDestructive: true,
-                owner: Window.GetWindow(this));
+                isDestructive: true);
 
             if (confirmed)
             {
@@ -438,7 +456,7 @@ namespace NotiGlow.UI.Views
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null || _settingsService == null) return;
-            var testProfile = new NotiGlow.Models.AppProfile
+            var testProfile = new AppProfile
             {
                 AppId = "TestApp",
                 Name = "NotiGlow Test",

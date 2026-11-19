@@ -42,7 +42,7 @@ jobs:
         run: dotnet test NotiGlow.Tests/NotiGlow.Tests.csproj -c Release --no-restore
 
       - name: Publish NotiGlow (win-x64 Self-Contained)
-        run: dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+        run: dotnet publish NotiGlow.csproj -c Release -r win-x64 --self-contained true
 
       - name: Validate Tag Format & Publish Output
         shell: pwsh

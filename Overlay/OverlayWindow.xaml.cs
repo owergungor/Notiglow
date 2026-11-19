@@ -1,60 +1,74 @@
 using System;
 using System.Drawing;
-using System.Windows;
-using System.Windows.Interop;
-using NotiGlow.Core.Helpers;
+using Windows.Graphics;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using NotiGlow.Core.Win32;
 using NotiGlow.Models;
+using WinRT.Interop;
 
 namespace NotiGlow.Overlay
 {
-    public partial class OverlayWindow : Window
+    public sealed partial class OverlayWindow : Window
     {
-        private Screen _targetScreen;
+        private System.Windows.Forms.Screen _targetScreen;
+        private IntPtr _hwnd;
+        private AppWindow _appWindow;
 
-        public OverlayWindow(Screen targetScreen)
+        public OverlayWindow(System.Windows.Forms.Screen targetScreen)
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            this.SystemBackdrop = new TransparentBackdrop();
             _targetScreen = targetScreen;
 
+            _hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+
+            ConfigureWindow();
             UpdatePosition();
         }
 
-        protected override void OnSourceInitialized(EventArgs e)
+        private void ConfigureWindow()
         {
-            base.OnSourceInitialized(e);
+            _appWindow.IsShownInSwitchers = false;
 
-            IntPtr hwnd = new WindowInteropHelper(this).Handle;
-            NativeMethods.MakeWindowClickThroughAndNoActivate(hwnd);
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsAlwaysOnTop = true;
+                presenter.SetBorderAndTitleBar(false, false);
+                presenter.IsResizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsMaximizable = false;
+            }
+
+            try
+            {
+                var margins = new NativeMethods.MARGINS { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
+                NativeMethods.DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+            }
+            catch { }
+
+            NativeMethods.MakeWindowClickThroughAndNoActivate(_hwnd);
         }
 
         public void UpdatePosition()
         {
             Rectangle bounds = _targetScreen.Bounds;
-            
-            // Adjust bounds based on DPI scale factors
-            DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
-            double scaleX = dpi.DpiScaleX > 0 ? 1.0 / dpi.DpiScaleX : 1.0;
-            double scaleY = dpi.DpiScaleY > 0 ? 1.0 / dpi.DpiScaleY : 1.0;
-
-            Left = bounds.X * scaleX;
-            Top = bounds.Y * scaleY;
-            Width = bounds.Width * scaleX;
-            Height = bounds.Height * scaleY;
+            _appWindow.MoveAndResize(new RectInt32(bounds.X, bounds.Y, bounds.Width, bounds.Height));
         }
 
         public void PlayGlow(AppProfile profile, Action? onFinished = null)
         {
-            Dispatcher.Invoke(() =>
+            DispatcherQueue.TryEnqueue(() =>
             {
                 UpdatePosition();
-                Show();
-                IntPtr hwnd = new WindowInteropHelper(this).Handle;
-                NativeMethods.MakeWindowClickThroughAndNoActivate(hwnd);
+                _appWindow.Show();
+                NativeMethods.MakeWindowClickThroughAndNoActivate(_hwnd);
 
                 GlowControl.ApplyProfile(profile, () =>
                 {
-                    Hide();
+                    _appWindow.Hide();
                     onFinished?.Invoke();
                 });
             });
@@ -62,10 +76,10 @@ namespace NotiGlow.Overlay
 
         public void StopGlow()
         {
-            Dispatcher.Invoke(() =>
+            DispatcherQueue.TryEnqueue(() =>
             {
                 GlowControl.StopAnimation();
-                Hide();
+                _appWindow.Hide();
             });
         }
     }

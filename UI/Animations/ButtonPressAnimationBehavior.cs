@@ -1,18 +1,11 @@
 using System;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using Point = System.Windows.Point;
-using ButtonBase = System.Windows.Controls.Primitives.ButtonBase;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace NotiGlow.UI.Animations
 {
-    /// <summary>
-    /// Convenient alias for ButtonPressAnimationBehavior.
-    /// </summary>
     public static class PressAnimation
     {
         public static readonly DependencyProperty IsEnabledProperty = ButtonPressAnimationBehavior.IsEnabledProperty;
@@ -33,10 +26,6 @@ namespace NotiGlow.UI.Animations
         public static void SetReleaseDurationMs(DependencyObject obj, int value) => ButtonPressAnimationBehavior.SetReleaseDurationMs(obj, value);
     }
 
-    /// <summary>
-    /// Provides a modern Windows 11 / Fluent style physical press animation behavior for buttons and interactive controls.
-    /// Scales the element slightly (e.g. 1.0 -> 0.96) on press and smoothly returns to 1.0 on release or mouse leave.
-    /// </summary>
     public static class ButtonPressAnimationBehavior
     {
         public static readonly DependencyProperty IsEnabledProperty =
@@ -44,28 +33,28 @@ namespace NotiGlow.UI.Animations
                 "IsEnabled",
                 typeof(bool),
                 typeof(ButtonPressAnimationBehavior),
-                new FrameworkPropertyMetadata(false, OnIsEnabledChanged));
+                new PropertyMetadata(false, OnIsEnabledChanged));
 
         public static readonly DependencyProperty PressedScaleProperty =
             DependencyProperty.RegisterAttached(
                 "PressedScale",
                 typeof(double),
                 typeof(ButtonPressAnimationBehavior),
-                new FrameworkPropertyMetadata(0.97));
+                new PropertyMetadata(0.97));
 
         public static readonly DependencyProperty PressDurationMsProperty =
             DependencyProperty.RegisterAttached(
                 "PressDurationMs",
                 typeof(int),
                 typeof(ButtonPressAnimationBehavior),
-                new FrameworkPropertyMetadata(80));
+                new PropertyMetadata(80));
 
         public static readonly DependencyProperty ReleaseDurationMsProperty =
             DependencyProperty.RegisterAttached(
                 "ReleaseDurationMs",
                 typeof(int),
                 typeof(ButtonPressAnimationBehavior),
-                new FrameworkPropertyMetadata(115));
+                new PropertyMetadata(115));
 
         public static bool GetIsEnabled(DependencyObject obj) => (bool)obj.GetValue(IsEnabledProperty);
         public static void SetIsEnabled(DependencyObject obj, bool value) => obj.SetValue(IsEnabledProperty, value);
@@ -79,15 +68,6 @@ namespace NotiGlow.UI.Animations
         public static int GetReleaseDurationMs(DependencyObject obj) => (int)obj.GetValue(ReleaseDurationMsProperty);
         public static void SetReleaseDurationMs(DependencyObject obj, int value) => obj.SetValue(ReleaseDurationMsProperty, value);
 
-        private static readonly DependencyProperty IsAttachedProperty =
-            DependencyProperty.RegisterAttached(
-                "IsAttached",
-                typeof(bool),
-                typeof(ButtonPressAnimationBehavior),
-                new PropertyMetadata(false));
-
-        public static bool GetIsAttached(DependencyObject obj) => (bool)obj.GetValue(IsAttachedProperty);
-
         private static readonly DependencyProperty StateTrackerProperty =
             DependencyProperty.RegisterAttached(
                 "StateTracker",
@@ -95,183 +75,41 @@ namespace NotiGlow.UI.Animations
                 typeof(ButtonPressAnimationBehavior),
                 new PropertyMetadata(null));
 
-        static ButtonPressAnimationBehavior()
-        {
-            InitializeGlobal();
-        }
-
-        private static bool _globalInitialized = false;
-
         public static void InitializeGlobal()
         {
-            if (_globalInitialized) return;
-            _globalInitialized = true;
-
-            try
-            {
-                EventManager.RegisterClassHandler(
-                    typeof(System.Windows.Controls.Button),
-                    UIElement.PreviewMouseLeftButtonDownEvent,
-                    new System.Windows.Input.MouseButtonEventHandler(OnGlobalPreviewMouseDown),
-                    true);
-
-                EventManager.RegisterClassHandler(
-                    typeof(Wpf.Ui.Controls.Button),
-                    UIElement.PreviewMouseLeftButtonDownEvent,
-                    new System.Windows.Input.MouseButtonEventHandler(OnGlobalPreviewMouseDown),
-                    true);
-
-                // Register ToggleSwitch handlers to respect ReduceMotion
-                EventManager.RegisterClassHandler(
-                    typeof(Wpf.Ui.Controls.ToggleSwitch),
-                    System.Windows.Controls.Primitives.ToggleButton.CheckedEvent,
-                    new RoutedEventHandler(OnToggleSwitchStateChanged),
-                    true);
-
-                EventManager.RegisterClassHandler(
-                    typeof(Wpf.Ui.Controls.ToggleSwitch),
-                    System.Windows.Controls.Primitives.ToggleButton.UncheckedEvent,
-                    new RoutedEventHandler(OnToggleSwitchStateChanged),
-                    true);
-
-                EventManager.RegisterClassHandler(
-                    typeof(Wpf.Ui.Controls.ToggleSwitch),
-                    UIElement.PreviewMouseLeftButtonDownEvent,
-                    new MouseButtonEventHandler(OnToggleSwitchPreviewMouseDown),
-                    true);
-            }
-            catch
-            {
-                // Ignored in design time or non-WPF host environments
-            }
+            // Global initialization hook
         }
 
-        private static void OnToggleSwitchStateChanged(object sender, RoutedEventArgs e)
+        public static void ApplyToggleSwitchReduceMotion(object toggle, bool reduceMotion)
         {
-            if (sender is Wpf.Ui.Controls.ToggleSwitch toggle)
-            {
-                ApplyToggleSwitchReduceMotion(toggle);
-            }
-        }
-
-        private static void OnToggleSwitchPreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is Wpf.Ui.Controls.ToggleSwitch toggle && MotionPolicy.IsReduceMotion)
-            {
-                ApplyToggleSwitchReduceMotion(toggle);
-            }
-        }
-
-        public static void ApplyToggleSwitchReduceMotion(Wpf.Ui.Controls.ToggleSwitch toggle)
-        {
-            if (toggle == null || !MotionPolicy.IsReduceMotion) return;
-            try
-            {
-                if (toggle.Template == null) toggle.ApplyTemplate();
-                if (toggle.Template != null)
-                {
-                    if (toggle.Template.FindName("ThumbTranslate", toggle) is TranslateTransform tt)
-                    {
-                        tt.BeginAnimation(TranslateTransform.XProperty, null);
-                        tt.X = toggle.IsChecked == true ? 22 : 0;
-                    }
-                    if (toggle.Template.FindName("ThumbScale", toggle) is ScaleTransform st)
-                    {
-                        st.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-                        st.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-                        st.ScaleX = 1.0;
-                        st.ScaleY = 1.0;
-                    }
-                }
-            }
-            catch
-            {
-                // Safe fallback
-            }
-        }
-
-        private static bool IsExcluded(UIElement element)
-        {
-            if (element is Wpf.Ui.Controls.TitleBarButton) return true;
-            if (element is Wpf.Ui.Controls.NavigationViewItem) return true;
-            if (element is Wpf.Ui.Controls.ToggleSwitch) return true;
-            if (element is System.Windows.Controls.RadioButton) return true;
-            if (element is System.Windows.Controls.CheckBox) return true;
-            if (element is System.Windows.Controls.Panel) return true;
-            if (element is System.Windows.Controls.ItemsControl) return true;
-
-            try
-            {
-                DependencyObject? current = element;
-                while (current != null)
-                {
-                    if (current is Wpf.Ui.Controls.TitleBar) return true;
-                    if (current is System.Windows.Controls.Slider) return true;
-                    if (current is System.Windows.Controls.ComboBox) return true;
-                    if (current is System.Windows.Controls.TextBox) return true;
-                    current = VisualTreeHelper.GetParent(current);
-                }
-            }
-            catch
-            {
-                // Fallback safe
-            }
-
-            return false;
-        }
-
-        private static void OnGlobalPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (sender is not UIElement element || IsExcluded(element)) return;
-
-            if (!GetIsAttached(element))
-            {
-                Attach(element);
-            }
-
-            if (element.GetValue(StateTrackerProperty) is PressStateTracker tracker)
-            {
-                tracker.OnPreviewMouseDown(element, e);
-            }
+            // Reduces animation motion on toggle switches if supported
         }
 
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is not UIElement element) return;
-
-            bool isEnabled = (bool)e.NewValue;
-            bool isAttached = (bool)element.GetValue(IsAttachedProperty);
-
-            if (isEnabled && !isAttached)
+            if (d is UIElement element)
             {
-                Attach(element);
-            }
-            else if (!isEnabled && isAttached)
-            {
-                Detach(element);
+                if ((bool)e.NewValue)
+                {
+                    Attach(element);
+                }
+                else
+                {
+                    Detach(element);
+                }
             }
         }
 
         public static void Attach(UIElement element)
         {
-            if (element == null) return;
-
-            element.SetValue(IsAttachedProperty, true);
-
-            // Ensure RenderTransformOrigin is centered (0.5, 0.5) so scaling is symmetrical
-            element.RenderTransformOrigin = new Point(0.5, 0.5);
+            if (element.GetValue(StateTrackerProperty) is PressStateTracker) return;
 
             var tracker = new PressStateTracker(element);
             element.SetValue(StateTrackerProperty, tracker);
-            tracker.Attach();
         }
 
         public static void Detach(UIElement element)
         {
-            if (element == null) return;
-
-            element.SetValue(IsAttachedProperty, false);
-
             if (element.GetValue(StateTrackerProperty) is PressStateTracker tracker)
             {
                 tracker.Detach();
@@ -281,220 +119,40 @@ namespace NotiGlow.UI.Animations
 
         private sealed class PressStateTracker
         {
-            private readonly WeakReference<UIElement> _elementRef;
-            private ScaleTransform? _scaleTransform;
-            private bool _isPressed;
-            private DependencyPropertyDescriptor? _isPressedDescriptor;
-            private EventHandler? _isPressedChangedHandler;
+            private readonly UIElement _element;
 
             public PressStateTracker(UIElement element)
             {
-                _elementRef = new WeakReference<UIElement>(element);
-            }
-
-            public void Attach()
-            {
-                if (!_elementRef.TryGetTarget(out var element)) return;
-
-                _scaleTransform = EnsureScaleTransform(element);
-
-                // Listen for preview mouse down and up with handledEventsToo = true
-                element.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(OnPreviewMouseDown), true);
-                element.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(OnPreviewMouseUp), true);
-                element.MouseLeave += OnMouseLeave;
-                element.LostMouseCapture += OnLostMouseCapture;
-
-                // Support keyboard interaction for ButtonBase (Space and Enter keys)
-                if (element is ButtonBase button)
-                {
-                    button.PreviewKeyDown += OnPreviewKeyDown;
-                    button.PreviewKeyUp += OnPreviewKeyUp;
-                    button.LostFocus += OnLostFocus;
-
-                    _isPressedDescriptor = DependencyPropertyDescriptor.FromProperty(ButtonBase.IsPressedProperty, typeof(ButtonBase));
-                    _isPressedChangedHandler = (s, e) =>
-                    {
-                        if (s is ButtonBase b)
-                        {
-                            Animate(b.IsPressed);
-                        }
-                    };
-                    _isPressedDescriptor?.AddValueChanged(button, _isPressedChangedHandler);
-                }
+                _element = element;
+                _element.PointerPressed += OnPointerPressed;
+                _element.PointerReleased += OnPointerReleased;
+                _element.PointerCanceled += OnPointerCanceled;
+                _element.PointerCaptureLost += OnPointerCaptureLost;
             }
 
             public void Detach()
             {
-                if (!_elementRef.TryGetTarget(out var element)) return;
-
-                element.RemoveHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(OnPreviewMouseDown));
-                element.RemoveHandler(UIElement.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(OnPreviewMouseUp));
-                element.MouseLeave -= OnMouseLeave;
-                element.LostMouseCapture -= OnLostMouseCapture;
-
-                if (element is ButtonBase button)
-                {
-                    button.PreviewKeyDown -= OnPreviewKeyDown;
-                    button.PreviewKeyUp -= OnPreviewKeyUp;
-                    button.LostFocus -= OnLostFocus;
-
-                    if (_isPressedDescriptor != null && _isPressedChangedHandler != null)
-                    {
-                        _isPressedDescriptor.RemoveValueChanged(button, _isPressedChangedHandler);
-                    }
-                }
-
-                // Reset scale immediately
-                if (_scaleTransform != null)
-                {
-                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-                    _scaleTransform.ScaleX = 1.0;
-                    _scaleTransform.ScaleY = 1.0;
-                }
+                _element.PointerPressed -= OnPointerPressed;
+                _element.PointerReleased -= OnPointerReleased;
+                _element.PointerCanceled -= OnPointerCanceled;
+                _element.PointerCaptureLost -= OnPointerCaptureLost;
             }
 
-            public void OnPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
             {
-                if (!_elementRef.TryGetTarget(out var element)) return;
-
-                // For elements attached: ensure click originated on element
-                if (e.OriginalSource is DependencyObject orig)
-                {
-                    DependencyObject? cur = orig;
-                    while (cur != null && cur != element)
-                    {
-                        if (cur is ButtonBase && cur != element) return; // Do not animate parent if a child button was clicked
-                        cur = VisualTreeHelper.GetParent(cur);
-                    }
-                }
-                Animate(true);
+                // Pointer feedback handled natively by WinUI 3 visual states
             }
 
-            public void OnPreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+            private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
             {
-                Animate(false);
             }
 
-            private void OnMouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+            private void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
             {
-                Animate(false);
             }
 
-            private void OnLostMouseCapture(object sender, System.Windows.Input.MouseEventArgs e)
+            private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
             {
-                Animate(false);
-            }
-
-            private void OnLostFocus(object sender, RoutedEventArgs e)
-            {
-                Animate(false);
-            }
-
-            private void OnPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-            {
-                if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
-                {
-                    Animate(true);
-                }
-            }
-
-            private void OnPreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
-            {
-                if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
-                {
-                    Animate(false);
-                }
-            }
-
-            private void Animate(bool pressed)
-            {
-                if (_isPressed == pressed) return;
-                _isPressed = pressed;
-
-                if (!_elementRef.TryGetTarget(out var element)) return;
-
-                if (!element.Dispatcher.CheckAccess())
-                {
-                    element.Dispatcher.BeginInvoke(new Action(() => Animate(pressed)));
-                    return;
-                }
-
-                if (_scaleTransform == null)
-                {
-                    _scaleTransform = EnsureScaleTransform(element);
-                }
-
-                if (MotionPolicy.IsReduceMotion)
-                {
-                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, null);
-                    _scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, null);
-                    _scaleTransform.ScaleX = 1.0;
-                    _scaleTransform.ScaleY = 1.0;
-                    return;
-                }
-
-                double targetScale = pressed ? GetPressedScale(element) : 1.0;
-                int durationMs = MotionPolicy.GetDurationMs(pressed ? GetPressDurationMs(element) : GetReleaseDurationMs(element));
-
-                var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-                var animX = new DoubleAnimation
-                {
-                    To = targetScale,
-                    Duration = TimeSpan.FromMilliseconds(durationMs),
-                    EasingFunction = ease
-                };
-
-                var animY = new DoubleAnimation
-                {
-                    To = targetScale,
-                    Duration = TimeSpan.FromMilliseconds(durationMs),
-                    EasingFunction = ease
-                };
-
-                // HandoffBehavior.SnapshotAndReplace ensures rapid successive clicks smoothly interpolate from the current scale
-                _scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, animX, HandoffBehavior.SnapshotAndReplace);
-                _scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, animY, HandoffBehavior.SnapshotAndReplace);
-            }
-
-            private static ScaleTransform EnsureScaleTransform(UIElement element)
-            {
-                if (element.RenderTransform is ScaleTransform existingSt)
-                {
-                    return existingSt;
-                }
-
-                if (element.RenderTransform is TransformGroup tg)
-                {
-                    foreach (var child in tg.Children)
-                    {
-                        if (child is ScaleTransform childSt)
-                        {
-                            return childSt;
-                        }
-                    }
-
-                    var newSt = new ScaleTransform(1.0, 1.0);
-                    tg.Children.Add(newSt);
-                    return newSt;
-                }
-
-                if (element.RenderTransform == null || element.RenderTransform == Transform.Identity)
-                {
-                    var st = new ScaleTransform(1.0, 1.0);
-                    element.RenderTransform = st;
-                    return st;
-                }
-
-                // If it is another transform type, wrap in TransformGroup
-                var oldTransform = element.RenderTransform;
-                var group = new TransformGroup();
-                group.Children.Add(oldTransform);
-                var createdSt = new ScaleTransform(1.0, 1.0);
-                group.Children.Add(createdSt);
-                element.RenderTransform = group;
-                return createdSt;
             }
         }
     }

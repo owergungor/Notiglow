@@ -1,51 +1,135 @@
 using System;
-using System.ComponentModel;
-using System.Windows;
+using Windows.Graphics;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using NotiGlow.Core.Win32;
+using NotiGlow.Models;
 using NotiGlow.Services;
-using Wpf.Ui.Controls;
+using WinRT.Interop;
 
 namespace NotiGlow.UI
 {
-    public partial class MainWindow : FluentWindow
+    public sealed partial class MainWindow : Window
     {
         private SettingsService? _settingsService;
         private ProfileService? _profileService;
         private NotificationService? _notificationService;
         private GlowManager? _glowManager;
+
         private bool _isExplicitExit = false;
+        private bool _isGeometryInitialized = false;
+        private readonly IntPtr _hwnd;
+        private readonly AppWindow _appWindow;
+        private readonly NativeMethods.SubclassProc _subclassProc;
+        private string _currentTag = "General";
+
+        public IntPtr Hwnd => _hwnd;
 
         public MainWindow()
         {
-            InitializeComponent();
-            EnsureNavigationViewItemTemplate();
-            UpdateAppTitle();
-            InitializeTitleBarIcon();
+            this.InitializeComponent();
+
+            _hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+            _appWindow = AppWindow.GetFromWindowId(windowId);
+
+            // Set Title & Initial Geometry (~1550 x 950 physical px default)
+            Title = "NotiGlow";
+            _appWindow.Title = "NotiGlow";
+            ApplyWindowGeometry(null);
+
+            // Track size and position changes for persistence
+            _appWindow.Changed += (s, args) =>
+            {
+                if (args.DidSizeChange || args.DidPositionChange)
+                {
+                    OnWindowGeometryChanged();
+                }
+            };
+
+            // Custom TitleBar & DesktopAcrylic Backdrop (Default)
+            try
+            {
+                SystemBackdrop = new DesktopAcrylicBackdrop();
+            }
+            catch { }
+
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
+
+            // Hook close event to minimize to tray
+            _appWindow.Closing += (s, e) =>
+            {
+                OnWindowGeometryChanged();
+                if (_settingsService != null)
+                {
+                    _settingsService.Save(_settingsService.Current);
+                }
+
+                if (!_isExplicitExit)
+                {
+                    e.Cancel = true;
+                    _appWindow.Hide();
+                }
+            };
+
+            // Hook WM_SHOW_NOTIGLOW via subclassing
+            _subclassProc = new NativeMethods.SubclassProc(WndProcSubclass);
+            NativeMethods.SetWindowSubclass(_hwnd, _subclassProc, (UIntPtr)101, IntPtr.Zero);
+            NativeMethods.AllowMessageInUIPI(_hwnd, NativeMethods.WM_SHOW_NOTIGLOW);
+
+            // Toast Notifications Hook
             ToastNotificationService.Instance.ToastRequested += OnToastRequested;
-            Closed += (s, e) => ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
+            Closed += (s, e) =>
+            {
+                ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
+                NativeMethods.RemoveWindowSubclass(_hwnd, _subclassProc, (UIntPtr)101);
+            };
+
+            // Language & Localization Hook
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            UpdateLocalizedTexts();
+            UpdateLanguageButtonVisuals();
         }
 
-        private void EnsureNavigationViewItemTemplate()
+        private IntPtr WndProcSubclass(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, UIntPtr uIdSubclass, IntPtr dwRefData)
         {
-            if (RootNavigationView != null && RootNavigationView.ItemTemplate == null)
+            if (uMsg == NativeMethods.WM_SHOW_NOTIGLOW)
             {
-                if (TryFindResource("NotiGlowNavigationViewItemTemplate") is System.Windows.Controls.ControlTemplate customTemplate)
+                LoggerService.LogInfo("Received WM_SHOW_NOTIGLOW signal. Restoring and activating MainWindow.");
+                DispatcherQueue.TryEnqueue(() =>
                 {
-                    RootNavigationView.ItemTemplate = customTemplate;
-                }
+                    _appWindow.Show();
+                    if (_appWindow.Presenter is OverlappedPresenter presenter)
+                    {
+                        if (presenter.State == OverlappedPresenterState.Minimized)
+                        {
+                            presenter.Restore();
+                        }
+                    }
+                    NativeMethods.SetForegroundWindow(_hwnd);
+                    Activate();
+                });
+                return IntPtr.Zero;
             }
+
+            return NativeMethods.DefSubclassProc(hWnd, uMsg, wParam, lParam);
         }
 
         private void OnToastRequested(ToastItem item)
         {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
-            Dispatcher.BeginInvoke(new Action(() =>
+            DispatcherQueue.TryEnqueue(() =>
             {
                 if (ToastContainer == null) return;
                 var control = new NotiGlow.UI.Controls.ToastNotificationControl(item);
                 control.Dismissed += c =>
                 {
-                    Dispatcher.BeginInvoke(new Action(() => ToastContainer.Children.Remove(c)));
+                    DispatcherQueue.TryEnqueue(() => ToastContainer.Children.Remove(c));
                 };
+
                 if (ToastContainer.Children.Count >= 4)
                 {
                     if (ToastContainer.Children[0] is NotiGlow.UI.Controls.ToastNotificationControl oldest)
@@ -54,74 +138,225 @@ namespace NotiGlow.UI
                     }
                 }
                 ToastContainer.Children.Add(control);
-            }));
+            });
         }
 
-        private void UpdateAppTitle()
+        public void Initialize(
+            SettingsService settingsService,
+            ProfileService profileService,
+            NotificationService notificationService,
+            GlowManager glowManager)
         {
-            Title = "NotiGlow";
-            if (AppTitleBar != null)
+            _settingsService = settingsService;
+            _profileService = profileService;
+            _notificationService = notificationService;
+            _glowManager = glowManager;
+
+            ViewGeneral.Initialize(_settingsService, _glowManager, _notificationService);
+
+            // Taskbar Visibility
+            _appWindow.IsShownInSwitchers = _settingsService.Current.ShowInTaskbar;
+
+            _settingsService.SettingsChanged += (s, e) =>
             {
-                AppTitleBar.Title = "NotiGlow";
-            }
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    _appWindow.IsShownInSwitchers = _settingsService.Current.ShowInTaskbar;
+                    if (Microsoft.UI.Xaml.Application.Current is App app)
+                    {
+                        app.ApplyCurrentSettingsTheme();
+                    }
+                    ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+                    ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+                });
+            };
+
+            ThemeService.ThemeChanged += (s, e) =>
+            {
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_settingsService != null)
+                    {
+                        ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+                        ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+                    }
+                });
+            };
+
+            ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+            ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+            ApplyWindowGeometry(_settingsService.Current);
+            NavigateToTag("General");
         }
 
-        private void InitializeTitleBarIcon()
+        public void ApplyWindowGeometry(AppSettings? settings)
         {
             try
             {
-                var assembly = typeof(MainWindow).Assembly;
-                using var resourceStream = assembly.GetManifestResourceStream("NotiGlow.g.resources");
-                if (resourceStream != null)
-                {
-                    using var reader = new System.Resources.ResourceReader(resourceStream);
-                    reader.GetResourceData("assets/notiglowlogo.png", out _, out byte[] data);
-                    if (data != null && data.Length > 4)
-                    {
-                        int len = BitConverter.ToInt32(data, 0);
-                        using var ms = new System.IO.MemoryStream(data, 4, len);
-                        var frame = System.Windows.Media.Imaging.BitmapFrame.Create(
-                            ms,
-                            System.Windows.Media.Imaging.BitmapCreateOptions.None,
-                            System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
-                        frame.Freeze();
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(_hwnd);
+                var displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
+                if (displayArea == null) return;
 
-                        if (AppTitleBarIcon != null)
+                uint dpi = NativeMethods.GetDpiForWindow(_hwnd);
+                if (dpi == 0) dpi = 96;
+                double dpiScale = dpi / 96.0;
+
+                // 1. If saved geometry exists and is valid
+                if (settings?.WindowWidth.HasValue == true && settings?.WindowHeight.HasValue == true &&
+                    settings.WindowWidth.Value >= 600 && settings.WindowHeight.Value >= 400)
+                {
+                    int savedW = settings.WindowWidth.Value;
+                    int savedH = settings.WindowHeight.Value;
+
+                    // Clamp to work area so previous oversized runs don't lock the window
+                    int clampedW = Math.Min(savedW, displayArea.WorkArea.Width);
+                    int clampedH = Math.Min(savedH, displayArea.WorkArea.Height);
+                    _appWindow.Resize(new SizeInt32(clampedW, clampedH));
+
+                    if (settings.WindowX.HasValue && settings.WindowY.HasValue)
+                    {
+                        int x = settings.WindowX.Value;
+                        int y = settings.WindowY.Value;
+                        if (x >= displayArea.WorkArea.X - 100 &&
+                            x < displayArea.WorkArea.X + displayArea.WorkArea.Width - 100 &&
+                            y >= displayArea.WorkArea.Y &&
+                            y < displayArea.WorkArea.Y + displayArea.WorkArea.Height - 100)
                         {
-                            AppTitleBarIcon.Source = frame;
+                            _appWindow.Move(new PointInt32(x, y));
                         }
-                        Icon = frame;
+                        else
+                        {
+                            CenterWindow(displayArea, clampedW, clampedH);
+                        }
                     }
+                    else
+                    {
+                        CenterWindow(displayArea, clampedW, clampedH);
+                    }
+
+                    if (settings.WindowMaximized && _appWindow.Presenter is OverlappedPresenter op)
+                    {
+                        op.Maximize();
+                    }
+
+                    _isGeometryInitialized = true;
+                    return;
+                }
+
+                // 2. Default comfortable launch size: approximately 1550 x 950 physical pixels
+                // AppWindow.Resize directly operates in physical screen pixels
+                int targetPhysicalW = 1550;
+                int targetPhysicalH = 950;
+
+                // Ensure the window fits comfortably within the current monitor's work area
+                // Maintain safety margins so it never touches or overflows the taskbar or screen edges
+                int maxAllowedW = Math.Max(700, displayArea.WorkArea.Width - 48);
+                int maxAllowedH = Math.Max(500, displayArea.WorkArea.Height - 48);
+
+                // Do not exceed 92% of the work area so it does not open looking maximized on any screen
+                maxAllowedW = Math.Min(maxAllowedW, (int)Math.Round(displayArea.WorkArea.Width * 0.92));
+                maxAllowedH = Math.Min(maxAllowedH, (int)Math.Round(displayArea.WorkArea.Height * 0.92));
+
+                int finalW = Math.Min(targetPhysicalW, maxAllowedW);
+                int finalH = Math.Min(targetPhysicalH, maxAllowedH);
+
+                _appWindow.Resize(new SizeInt32(finalW, finalH));
+                CenterWindow(displayArea, finalW, finalH);
+                _isGeometryInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"ApplyWindowGeometry warning: {ex.Message}");
+                _isGeometryInitialized = true;
+            }
+        }
+
+        private void CenterWindow(DisplayArea displayArea, int width, int height)
+        {
+            int posX = displayArea.WorkArea.X + (displayArea.WorkArea.Width - width) / 2;
+            int posY = displayArea.WorkArea.Y + (displayArea.WorkArea.Height - height) / 2;
+            _appWindow.Move(new PointInt32(Math.Max(displayArea.WorkArea.X, posX), Math.Max(displayArea.WorkArea.Y, posY)));
+        }
+
+        private void OnWindowGeometryChanged()
+        {
+            if (!_isGeometryInitialized || _settingsService == null || _appWindow == null) return;
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                if (presenter.State == OverlappedPresenterState.Maximized)
+                {
+                    _settingsService.Current.WindowMaximized = true;
+                    return;
+                }
+                if (presenter.State == OverlappedPresenterState.Minimized)
+                {
+                    return;
+                }
+                _settingsService.Current.WindowMaximized = false;
+                _settingsService.Current.WindowWidth = _appWindow.Size.Width;
+                _settingsService.Current.WindowHeight = _appWindow.Size.Height;
+                _settingsService.Current.WindowX = _appWindow.Position.X;
+                _settingsService.Current.WindowY = _appWindow.Position.Y;
+            }
+        }
+
+        public void ApplyBackdropMaterial(WindowMaterial material)
+        {
+            try
+            {
+                switch (material)
+                {
+                    case WindowMaterial.Mica:
+                        SystemBackdrop = new MicaBackdrop { Kind = MicaKind.Base };
+                        break;
+                    case WindowMaterial.MicaAlt:
+                        SystemBackdrop = new MicaBackdrop { Kind = MicaKind.BaseAlt };
+                        break;
+                    case WindowMaterial.Acrylic:
+                    default:
+                        SystemBackdrop = new DesktopAcrylicBackdrop();
+                        break;
                 }
             }
             catch (Exception ex)
             {
-                LoggerService.LogWarning($"TitleBar icon resource loading fallback: {ex.Message}");
+                LoggerService.LogWarning($"ApplyBackdropMaterial warning: {ex.Message}");
+                try
+                {
+                    SystemBackdrop = new DesktopAcrylicBackdrop();
+                }
+                catch { }
             }
         }
 
-        protected override void OnSourceInitialized(EventArgs e)
+        public void ApplyThemeVisuals(ColorTheme colorTheme, ThemeMode mode)
         {
-            base.OnSourceInitialized(e);
-
-            var helper = new System.Windows.Interop.WindowInteropHelper(this);
-            var source = System.Windows.Interop.HwndSource.FromHwnd(helper.Handle);
-            source?.AddHook(WndProc);
-            NotiGlow.Core.Win32.NativeMethods.AllowMessageInUIPI(helper.Handle, NotiGlow.Core.Win32.NativeMethods.WM_SHOW_NOTIGLOW);
-        }
-
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (msg == (int)NotiGlow.Core.Win32.NativeMethods.WM_SHOW_NOTIGLOW)
+            try
             {
-                LoggerService.LogInfo("Received WM_SHOW_NOTIGLOW signal. Restoring and activating MainWindow.");
-                Show();
-                WindowState = WindowState.Normal;
-                Activate();
-                Focus();
-                handled = true;
+                bool isDark = ThemeService.GetIsDark(mode);
+                if (this.Content is FrameworkElement rootElement)
+                {
+                    rootElement.RequestedTheme = mode switch
+                    {
+                        ThemeMode.Light => ElementTheme.Light,
+                        ThemeMode.Dark => ElementTheme.Dark,
+                        _ => ElementTheme.Default
+                    };
+                }
+
+                if (_appWindow?.TitleBar != null)
+                {
+                    _appWindow.TitleBar.ButtonForegroundColor = isDark ? Windows.UI.Color.FromArgb(255, 237, 237, 237) : Windows.UI.Color.FromArgb(255, 15, 15, 15);
+                    _appWindow.TitleBar.ButtonHoverForegroundColor = isDark ? Windows.UI.Color.FromArgb(255, 255, 255, 255) : Windows.UI.Color.FromArgb(255, 0, 0, 0);
+                    _appWindow.TitleBar.ButtonHoverBackgroundColor = isDark ? Windows.UI.Color.FromArgb(30, 255, 255, 255) : Windows.UI.Color.FromArgb(30, 0, 0, 0);
+                    _appWindow.TitleBar.ButtonPressedBackgroundColor = isDark ? Windows.UI.Color.FromArgb(50, 255, 255, 255) : Windows.UI.Color.FromArgb(50, 0, 0, 0);
+                    _appWindow.TitleBar.ButtonInactiveForegroundColor = isDark ? Windows.UI.Color.FromArgb(120, 237, 237, 237) : Windows.UI.Color.FromArgb(120, 15, 15, 15);
+                }
             }
-            return IntPtr.Zero;
+            catch (Exception ex)
+            {
+                LoggerService.LogWarning($"ApplyThemeVisuals warning: {ex.Message}");
+            }
         }
 
         private Views.ApplicationsView? _viewApplications;
@@ -131,11 +366,12 @@ namespace NotiGlow.UI
             {
                 if (_viewApplications == null)
                 {
-                    _viewApplications = new Views.ApplicationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewApplications = new Views.ApplicationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_profileService != null && _glowManager != null)
                     {
                         _viewApplications.Initialize(_profileService, _glowManager, _settingsService);
                     }
+                    _viewApplications.NavigateToCategoryRequested += OnCategoryNavigationRequested;
                     RootContentGrid.Children.Add(_viewApplications);
                 }
                 return _viewApplications;
@@ -149,7 +385,7 @@ namespace NotiGlow.UI
             {
                 if (_viewAppearance == null)
                 {
-                    _viewAppearance = new Views.AppearanceView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewAppearance = new Views.AppearanceView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_settingsService != null)
                     {
                         _viewAppearance.Initialize(_settingsService, _glowManager);
@@ -167,7 +403,7 @@ namespace NotiGlow.UI
             {
                 if (_viewDisplay == null)
                 {
-                    _viewDisplay = new Views.DisplayView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewDisplay = new Views.DisplayView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_settingsService != null && _glowManager != null)
                     {
                         _viewDisplay.Initialize(_settingsService, _glowManager);
@@ -185,14 +421,31 @@ namespace NotiGlow.UI
             {
                 if (_viewGaming == null)
                 {
-                    _viewGaming = new Views.GamingView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewGaming = new Views.GamingView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_settingsService != null && _glowManager != null)
                     {
-                        _viewGaming.Initialize(_settingsService, _glowManager, _glowManager.GameDetectionService);
+                        _viewGaming.Initialize(_settingsService, _glowManager, _glowManager.GameDetectionService, _profileService);
                     }
+                    _viewGaming.NavigateToCategoryRequested += OnCategoryNavigationRequested;
                     RootContentGrid.Children.Add(_viewGaming);
                 }
                 return _viewGaming;
+            }
+        }
+
+        private void OnCategoryNavigationRequested(object? sender, Core.Helpers.CategoryNavigationEventArgs e)
+        {
+            if (Core.Helpers.AppCategoryHelper.IsGamingCategory(e.TargetCategory))
+            {
+                _viewApplications?.RefreshAppCards();
+                NavigateToTag("Gaming");
+                ViewGaming.RefreshAndHighlightGame(e.TargetIdentifier);
+            }
+            else
+            {
+                _viewGaming?.RenderTrackedGameCards();
+                NavigateToTag("Applications");
+                ViewApplications.RefreshAndHighlightProfile(e.TargetIdentifier);
             }
         }
 
@@ -203,7 +456,7 @@ namespace NotiGlow.UI
             {
                 if (_viewNotifications == null)
                 {
-                    _viewNotifications = new Views.NotificationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewNotifications = new Views.NotificationsView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_settingsService != null && _glowManager != null)
                     {
                         _viewNotifications.Initialize(_settingsService, _glowManager);
@@ -221,7 +474,7 @@ namespace NotiGlow.UI
             {
                 if (_viewAdvanced == null)
                 {
-                    _viewAdvanced = new Views.AdvancedView { Visibility = Visibility.Collapsed, HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch };
+                    _viewAdvanced = new Views.AdvancedView { Visibility = Visibility.Collapsed, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                     if (_settingsService != null && _profileService != null && _glowManager != null)
                     {
                         _viewAdvanced.Initialize(_settingsService, _profileService, _glowManager);
@@ -232,299 +485,22 @@ namespace NotiGlow.UI
             }
         }
 
-        public void Initialize(
-            SettingsService settingsService,
-            ProfileService profileService,
-            NotificationService notificationService,
-            GlowManager glowManager)
+        private void RootNavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            _settingsService = settingsService;
-            _profileService = profileService;
-            _notificationService = notificationService;
-            _glowManager = glowManager;
-
-            ViewGeneral.Initialize(_settingsService, _glowManager, _notificationService);
-
-            if (System.Windows.Application.Current is App app)
-            {
-                app.ApplyCurrentSettingsTheme();
-            }
-
-            ShowInTaskbar = _settingsService.Current.ShowInTaskbar;
-            _settingsService.SettingsChanged += (s, e) =>
-            {
-                if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    ShowInTaskbar = _settingsService.Current.ShowInTaskbar;
-                    if (System.Windows.Application.Current is App app)
-                    {
-                        app.ApplyCurrentSettingsTheme();
-                    }
-                }));
-            };
-
-            NavigateToTag("General");
-        }
-
-        private System.Windows.Media.ScaleTransform? _activeSelectionBoxScale;
-
-        private void InitializeActiveSelectionBoxTransform()
-        {
-            if (ActiveSelectionBox == null || _activeSelectionBoxScale != null) return;
-            ActiveSelectionBox.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
-            _activeSelectionBoxScale = new System.Windows.Media.ScaleTransform(1.0, 1.0);
-            ActiveSelectionBox.RenderTransform = _activeSelectionBoxScale;
-
-            if (RootNavigationView != null)
-            {
-                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) =>
-                {
-                    if (e.OriginalSource is DependencyObject dep)
-                    {
-                        var navItem = FindVisualParent<NavigationViewItem>(dep);
-                        if (navItem != null && navItem.Tag is string tag && !string.Equals(tag, _currentTag, StringComparison.OrdinalIgnoreCase))
-                        {
-                            NavigateToTag(tag);
-                        }
-                    }
-                    AnimateActiveSelectionBoxPress(true);
-                }), true);
-                RootNavigationView.AddHandler(UIElement.PreviewMouseLeftButtonUpEvent, new System.Windows.Input.MouseButtonEventHandler((s, e) => AnimateActiveSelectionBoxPress(false)), true);
-                RootNavigationView.MouseLeave += (s, e) => AnimateActiveSelectionBoxPress(false);
-                RootNavigationView.LostMouseCapture += (s, e) => AnimateActiveSelectionBoxPress(false);
-            }
-        }
-
-        private static T? FindVisualParent<T>(DependencyObject? child) where T : DependencyObject
-        {
-            while (child != null)
-            {
-                if (child is T parent) return parent;
-                child = System.Windows.Media.VisualTreeHelper.GetParent(child);
-            }
-            return null;
-        }
-
-        private void AnimateActiveSelectionBoxPress(bool pressed)
-        {
-            if (_activeSelectionBoxScale == null) return;
-            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
-            {
-                _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
-                _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
-                _activeSelectionBoxScale.ScaleX = 1.0;
-                _activeSelectionBoxScale.ScaleY = 1.0;
-                return;
-            }
-            double targetScale = pressed ? 0.97 : 1.0;
-            int duration = NotiGlow.UI.Animations.MotionPolicy.GetDurationMs(pressed ? 80 : 115);
-            var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
-            var anim = new System.Windows.Media.Animation.DoubleAnimation
-            {
-                To = targetScale,
-                Duration = TimeSpan.FromMilliseconds(duration),
-                EasingFunction = ease
-            };
-            _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, anim, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
-            _activeSelectionBoxScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, anim, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (System.Windows.Application.Current is App app)
-            {
-                app.ApplyCurrentSettingsTheme();
-            }
-            InitializeActiveSelectionBoxTransform();
-            if (RootNavigationView != null)
-            {
-                RootNavigationView.PaneOpened += (s, e) =>
-                {
-                    UpdateNavSelectionVisuals(_currentTag);
-                    UpdateLanguageButtonDisplay(true);
-                };
-                RootNavigationView.PaneClosed += (s, e) =>
-                {
-                    UpdateNavSelectionVisuals(_currentTag);
-                    UpdateLanguageButtonDisplay(false);
-                };
-                UpdateLanguageButtonDisplay(RootNavigationView.IsPaneOpen);
-            }
-            UpdateNavSelectionVisuals(_currentTag);
-            UpdateLanguageButtonVisuals();
-            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-        }
-
-        private void OnLanguageChanged(object? sender, string langCode)
-        {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive)
-            {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-                return;
-            }
-
-            try
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    UpdateLanguageButtonVisuals();
-                    UpdateAppTitle();
-                    UpdateNavSelectionVisuals(_currentTag);
-                });
-            }
-            catch (InvalidOperationException)
-            {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-            }
-        }
-
-        public void UpdateLanguageButtonDisplay(bool isPaneOpen)
-        {
-            if (BtnLanguage == null) return;
-
-            if (isPaneOpen)
-            {
-                if (TxtLanguageLabel != null) TxtLanguageLabel.Visibility = Visibility.Visible;
-                if (PnlLanguageBadge != null) PnlLanguageBadge.Visibility = Visibility.Visible;
-                BtnLanguage.Width = double.NaN;
-                BtnLanguage.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
-                if (PopupLanguage != null)
-                {
-                    PopupLanguage.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
-                }
-            }
-            else
-            {
-                if (TxtLanguageLabel != null) TxtLanguageLabel.Visibility = Visibility.Collapsed;
-                if (PnlLanguageBadge != null) PnlLanguageBadge.Visibility = Visibility.Collapsed;
-                BtnLanguage.Width = 38;
-                BtnLanguage.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
-                if (PopupLanguage != null)
-                {
-                    PopupLanguage.Placement = System.Windows.Controls.Primitives.PlacementMode.Right;
-                }
-            }
-        }
-
-        public void UpdateLanguageButtonVisuals()
-        {
-            string currentLang = LocalizationService.Instance.CurrentLanguage;
-            var langItem = LocalizationService.Instance.CurrentLanguageItem;
-
-            if (TxtCurrentLangCode != null)
-            {
-                TxtCurrentLangCode.Text = langItem.ShortCode;
-            }
-
-            if (TxtCurrentLangFlag != null)
-            {
-                TxtCurrentLangFlag.Text = langItem.FlagEmoji;
-            }
-
-            if (BtnLanguage != null)
-            {
-                string langName = LocalizationService.Instance.GetString("Language.Language");
-                BtnLanguage.ToolTip = $"{langName}: {langItem.DisplayName} ({langItem.ShortCode})";
-                System.Windows.Automation.AutomationProperties.SetName(BtnLanguage, $"{langName}: {langItem.DisplayName}");
-            }
-
-            if (CheckLangEn != null) CheckLangEn.Visibility = string.Equals(currentLang, "en-US", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            if (CheckLangEs != null) CheckLangEs.Visibility = string.Equals(currentLang, "es-ES", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            if (CheckLangFr != null) CheckLangFr.Visibility = string.Equals(currentLang, "fr-FR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            if (CheckLangDe != null) CheckLangDe.Visibility = string.Equals(currentLang, "de-DE", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-            if (CheckLangTr != null) CheckLangTr.Visibility = string.Equals(currentLang, "tr-TR", StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void BtnLanguage_Click(object sender, RoutedEventArgs e)
-        {
-            if (PopupLanguage == null) return;
-
-            if (NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion)
-            {
-                PopupLanguage.PopupAnimation = System.Windows.Controls.Primitives.PopupAnimation.None;
-            }
-            else
-            {
-                PopupLanguage.PopupAnimation = System.Windows.Controls.Primitives.PopupAnimation.Fade;
-            }
-
-            PopupLanguage.IsOpen = !PopupLanguage.IsOpen;
-        }
-
-        private void BtnLanguage_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Down || e.Key == System.Windows.Input.Key.Up || e.Key == System.Windows.Input.Key.Enter || e.Key == System.Windows.Input.Key.Space)
-            {
-                if (PopupLanguage != null && !PopupLanguage.IsOpen)
-                {
-                    PopupLanguage.IsOpen = true;
-                    e.Handled = true;
-                }
-            }
-        }
-
-        private void PopupLanguage_Opened(object sender, EventArgs e)
-        {
-            string current = LocalizationService.Instance.CurrentLanguage;
-            System.Windows.Controls.Button? buttonToFocus = current switch
-            {
-                "es-ES" => BtnLangEs,
-                "fr-FR" => BtnLangFr,
-                "de-DE" => BtnLangDe,
-                "tr-TR" => BtnLangTr,
-                _ => BtnLangEn
-            };
-            buttonToFocus?.Focus();
-        }
-
-        private void PopupLanguage_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Escape)
-            {
-                if (PopupLanguage != null)
-                {
-                    PopupLanguage.IsOpen = false;
-                }
-                BtnLanguage?.Focus();
-                e.Handled = true;
-            }
-        }
-
-        private void BtnSelectLanguage_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.Button btn && btn.Tag is string langCode)
-            {
-                LocalizationService.Instance.SetLanguage(langCode, persist: true);
-                if (PopupLanguage != null)
-                {
-                    PopupLanguage.IsOpen = false;
-                }
-                BtnLanguage?.Focus();
-            }
-        }
-
-        private void RootNavigationView_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateNavSelectionVisuals(_currentTag);
-        }
-
-        private string _currentTag = "General";
-
-        private void NavItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is NavigationViewItem navItem && navItem.Tag is string tag)
+            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is string tag)
             {
                 NavigateToTag(tag);
             }
         }
 
-        private void RootNavigationView_SelectionChanged(NavigationView sender, RoutedEventArgs args)
+        private void RootNavigationView_PaneOpened(NavigationView sender, object args)
         {
-            if (sender.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is string tag)
-            {
-                NavigateToTag(tag);
-            }
+            UpdateLanguageButtonDisplay(true);
+        }
+
+        private void RootNavigationView_PaneClosed(NavigationView sender, object args)
+        {
+            UpdateLanguageButtonDisplay(false);
         }
 
         public void NavigateToTag(string tag)
@@ -579,126 +555,84 @@ namespace NotiGlow.UI
             }
         }
 
-        public void UpdateNavSelectionVisuals(string tag)
+        private void UpdateNavSelectionVisuals(string tag)
         {
-            if (RootNavigationView == null || RootNavigationView.MenuItems == null) return;
+            if (RootNavigationView == null) return;
 
-            NavigationViewItem? activeItem = null;
-            foreach (var menuItem in RootNavigationView.MenuItems)
+            foreach (var item in RootNavigationView.MenuItems)
             {
-                if (menuItem is NavigationViewItem navItem)
+                if (item is NavigationViewItem navItem && string.Equals(navItem.Tag as string, tag, StringComparison.OrdinalIgnoreCase))
                 {
-                    bool isActive = string.Equals(navItem.Tag as string, tag, StringComparison.OrdinalIgnoreCase);
-                    navItem.IsActive = isActive;
-                    if (isActive)
-                    {
-                        activeItem = navItem;
-                        navItem.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, "AccentColor");
-                        navItem.FontWeight = FontWeights.SemiBold;
-                    }
-                    else
-                    {
-                        navItem.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, "TextSecondary");
-                        navItem.FontWeight = FontWeights.Normal;
-                    }
+                    RootNavigationView.SelectedItem = navItem;
+                    break;
                 }
-            }
-
-            if (activeItem != null)
-            {
-                PositionSelectionOverlay(activeItem);
             }
         }
 
-        private void PositionSelectionOverlay(NavigationViewItem activeItem)
+        private void OnLanguageChanged(object? sender, string langCode)
         {
-            if (SidebarOverlayCanvas == null || ActiveSelectionBox == null) return;
-
-            if (!activeItem.IsLoaded)
+            DispatcherQueue.TryEnqueue(() =>
             {
-                RoutedEventHandler? loadedHandler = null;
-                loadedHandler = (s, e) =>
-                {
-                    activeItem.Loaded -= loadedHandler;
-                    PositionSelectionOverlay(activeItem);
-                };
-                activeItem.Loaded += loadedHandler;
-                return;
-            }
-
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                try
-                {
-                    if (activeItem.ActualHeight <= 0 || activeItem.ActualWidth <= 0)
-                    {
-                        activeItem.UpdateLayout();
-                    }
-
-                    if (activeItem.ActualHeight <= 0 || activeItem.ActualWidth <= 0) return;
-
-                    var transform = activeItem.TransformToVisual(SidebarOverlayCanvas);
-                    System.Windows.Point origin = transform.Transform(new System.Windows.Point(0, 0));
-
-                    double targetTop = origin.Y;
-                    double targetLeft = 6;
-                    double targetWidth = (RootNavigationView != null && !RootNavigationView.IsPaneOpen)
-                        ? 40
-                        : Math.Max(36, activeItem.ActualWidth - 12);
-                    double targetHeight = Math.Max(32, activeItem.ActualHeight);
-
-                    double currentTop = System.Windows.Controls.Canvas.GetTop(ActiveSelectionBox);
-                    bool wasVisible = ActiveSelectionBox.Visibility == Visibility.Visible && !double.IsNaN(currentTop) && currentTop >= 0;
-
-                    ActiveSelectionBox.Width = targetWidth;
-                    ActiveSelectionBox.Height = targetHeight;
-                    System.Windows.Controls.Canvas.SetLeft(ActiveSelectionBox, targetLeft);
-
-                    if (wasVisible && !NotiGlow.UI.Animations.MotionPolicy.IsReduceMotion && Math.Abs(currentTop - targetTop) > 1)
-                    {
-                        var anim = new System.Windows.Media.Animation.DoubleAnimation
-                        {
-                            To = targetTop,
-                            Duration = TimeSpan.FromMilliseconds(NotiGlow.UI.Animations.MotionPolicy.GetDurationMs(140)),
-                            EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-                        };
-                        ActiveSelectionBox.BeginAnimation(System.Windows.Controls.Canvas.TopProperty, anim, System.Windows.Media.Animation.HandoffBehavior.SnapshotAndReplace);
-                    }
-                    else
-                    {
-                        ActiveSelectionBox.BeginAnimation(System.Windows.Controls.Canvas.TopProperty, null);
-                        System.Windows.Controls.Canvas.SetTop(ActiveSelectionBox, targetTop);
-                    }
-
-                    ActiveSelectionBox.Visibility = Visibility.Visible;
-                }
-                catch (Exception ex)
-                {
-                    LoggerService.LogError("Failed positioning selection overlay", ex);
-                }
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
+                UpdateLocalizedTexts();
+                UpdateLanguageButtonVisuals();
+            });
         }
 
-        public System.Windows.Controls.Canvas? SelectionOverlayCanvas => SidebarOverlayCanvas;
-        public System.Windows.Controls.Border? SelectionBox => ActiveSelectionBox;
+        private void UpdateLocalizedTexts()
+        {
+            NavItemGeneral.Content = LocalizationService.Instance.GetString("Nav.General");
+            NavItemApplications.Content = LocalizationService.Instance.GetString("Nav.Applications");
+            NavItemAppearance.Content = LocalizationService.Instance.GetString("Nav.Appearance");
+            NavItemDisplay.Content = LocalizationService.Instance.GetString("Nav.Display");
+            NavItemGaming.Content = LocalizationService.Instance.GetString("Nav.Gaming");
+            NavItemNotifications.Content = LocalizationService.Instance.GetString("Nav.Notifications");
+            NavItemAdvanced.Content = LocalizationService.Instance.GetString("Nav.Advanced");
+            TxtLanguageLabel.Text = LocalizationService.Instance.GetString("Language.Language");
+        }
+
+        public void UpdateLanguageButtonDisplay(bool isPaneOpen)
+        {
+            if (BtnLanguage == null) return;
+            if (isPaneOpen)
+            {
+                TxtLanguageLabel.Visibility = Visibility.Visible;
+                PnlLanguageBadge.Visibility = Visibility.Visible;
+                BtnLanguage.Width = double.NaN;
+                BtnLanguage.HorizontalAlignment = HorizontalAlignment.Stretch;
+            }
+            else
+            {
+                TxtLanguageLabel.Visibility = Visibility.Collapsed;
+                PnlLanguageBadge.Visibility = Visibility.Collapsed;
+                BtnLanguage.Width = 38;
+                BtnLanguage.HorizontalAlignment = HorizontalAlignment.Center;
+            }
+        }
+
+        public void UpdateLanguageButtonVisuals()
+        {
+            var langItem = LocalizationService.Instance.CurrentLanguageItem;
+            if (TxtCurrentLangCode != null) TxtCurrentLangCode.Text = langItem.ShortCode;
+            if (TxtCurrentLangFlag != null) TxtCurrentLangFlag.Text = langItem.FlagEmoji;
+            if (BtnLanguage != null)
+            {
+                string langName = LocalizationService.Instance.GetString("Language.Language");
+                ToolTipService.SetToolTip(BtnLanguage, $"{langName}: {langItem.DisplayName} ({langItem.ShortCode})");
+            }
+        }
+
+        private void LanguageItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item && item.Tag is string langCode)
+            {
+                LocalizationService.Instance.SetLanguage(langCode, persist: true);
+            }
+        }
 
         public void ForceExit()
         {
             _isExplicitExit = true;
             Close();
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            if (!_isExplicitExit)
-            {
-                e.Cancel = true;
-                Hide();
-            }
-            else
-            {
-                base.OnClosing(e);
-            }
         }
     }
 }

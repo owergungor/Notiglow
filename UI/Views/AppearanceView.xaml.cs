@@ -1,42 +1,57 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace NotiGlow.UI.Views
 {
-    public partial class AppearanceView : UserControl
+    public sealed partial class AppearanceView : UserControl
     {
         private SettingsService? _settingsService;
         private GlowManager? _glowManager;
         private bool _isLoading = false;
-
-        private System.Windows.Threading.DispatcherTimer? _saveDebounceTimer;
+        private DispatcherTimer? _saveDebounceTimer;
 
         public AppearanceView()
         {
-            InitializeComponent();
+            this.InitializeComponent();
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-            Unloaded += (s, e) => FlushPendingSave();
-            IsVisibleChanged += (s, e) =>
+            Loaded += (s, e) =>
             {
-                if (!IsVisible)
-                {
-                    FlushPendingSave();
-                }
+                ScrollViewerHelper.EnableReliableMouseWheel(RootScrollViewer);
+                ScrollViewerHelper.AttachToChildComboBoxes(this);
             };
+            Unloaded += (s, e) => FlushPendingSave();
         }
 
         private void OnLanguageChanged(object? sender, string lang)
         {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
-            try
+            DispatcherQueue.TryEnqueue(() =>
             {
-                Dispatcher.BeginInvoke(RefreshStyleComboBox);
-            }
-            catch { }
+                RefreshStyleComboBox();
+                UpdateLocalizedTexts();
+            });
+        }
+
+        private void UpdateLocalizedTexts()
+        {
+            TxtAppearanceTitle.Text = LocalizationService.Instance.GetString("Appearance.Title");
+            TxtAppearanceSubtitle.Text = LocalizationService.Instance.GetString("Appearance.Subtitle");
+            TxtBtnTestAnimation.Text = LocalizationService.Instance.GetString("Common.TestAnimation");
+            TxtSectionAnimation.Text = LocalizationService.Instance.GetString("Appearance.AnimationSection");
+            TxtDefaultStyle.Text = LocalizationService.Instance.GetString("Appearance.DefaultStyle");
+            TxtDefaultStyleDesc.Text = LocalizationService.Instance.GetString("Appearance.DefaultStyleDesc");
+            TxtDuration.Text = LocalizationService.Instance.GetString("Appearance.Duration");
+            TxtIntensity.Text = LocalizationService.Instance.GetString("Appearance.Intensity");
+            TxtSectionGeometry.Text = LocalizationService.Instance.GetString("Appearance.GeometrySection");
+            TxtThickness.Text = LocalizationService.Instance.GetString("Appearance.Thickness");
+            TxtGlowSize.Text = LocalizationService.Instance.GetString("Appearance.GlowSize");
+            TxtCornerRounding.Text = LocalizationService.Instance.GetString("Appearance.CornerRounding");
+            TxtSectionColorPreview.Text = LocalizationService.Instance.GetString("Appearance.ColorSection");
+            TxtLivePreview.Text = LocalizationService.Instance.GetString("Applications.LivePreview");
         }
 
         private void RefreshStyleComboBox()
@@ -86,7 +101,7 @@ namespace NotiGlow.UI.Views
 
             if (_saveDebounceTimer == null)
             {
-                _saveDebounceTimer = new System.Windows.Threading.DispatcherTimer
+                _saveDebounceTimer = new DispatcherTimer
                 {
                     Interval = TimeSpan.FromMilliseconds(300)
                 };
@@ -108,26 +123,27 @@ namespace NotiGlow.UI.Views
         {
             _settingsService = settingsService;
             _glowManager = glowManager;
-            LoadDefaults();
+            LoadSettings();
+            UpdateLocalizedTexts();
         }
 
-        private void LoadDefaults()
+        private void LoadSettings()
         {
             if (_settingsService == null) return;
             _isLoading = true;
 
-            var current = _settingsService.Current;
-            SldDefDuration.Value = current.DefaultDurationMs;
-            SldDefIntensity.Value = Math.Round(current.DefaultIntensity * 100);
-            SldDefGlowSize.Value = Math.Clamp(Math.Round(current.DefaultGlowSize), 0.0, 256.0);
-            SldCornerRounding.Value = Math.Clamp(Math.Round(current.CornerRadius), 0.0, 48.0);
-            TxtCornerRoundingVal.Text = $"{SldCornerRounding.Value:0} px";
-            DefColorPicker.SelectedColorHex = current.DefaultColorHex;
-            RefreshStyleComboBox();
+            var settings = _settingsService.Current;
+
+            SldDefaultDuration.Value = settings.DefaultDurationMs;
+            SldDefaultIntensity.Value = settings.DefaultIntensity * 100.0;
+            SldDefaultThickness.Value = settings.DefaultThickness;
+            SldDefaultGlowSize.Value = settings.DefaultGlowSize;
+            SldCornerRounding.Value = settings.CornerRadius;
+            DefaultColorPicker.SelectedColorHex = settings.DefaultColorHex;
 
             foreach (ComboBoxItem item in CmbDefaultStyle.Items)
             {
-                if (item.Tag?.ToString() == current.DefaultStyle.ToString())
+                if (string.Equals(item.Tag?.ToString(), settings.DefaultStyle.ToString(), StringComparison.OrdinalIgnoreCase))
                 {
                     CmbDefaultStyle.SelectedItem = item;
                     break;
@@ -138,65 +154,87 @@ namespace NotiGlow.UI.Views
             UpdatePreview();
         }
 
-        private void UpdatePreview()
+        private void Default_Changed(object sender, object e)
         {
-            if (_settingsService == null || _isLoading) return;
-
-            double sec = SldDefDuration.Value / 1000.0;
-            TxtDefDurationVal.Text = $"{sec:0.#} s";
-            TxtDefIntensityVal.Text = $"{Math.Round(SldDefIntensity.Value):0}%";
-            TxtDefGlowSizeVal.Text = $"{Math.Round(SldDefGlowSize.Value):0} px";
+            if (_isLoading || _settingsService == null) return;
 
             var settings = _settingsService.Current;
-            settings.DefaultDurationMs = (int)SldDefDuration.Value;
-            settings.DefaultIntensity = Math.Round(SldDefIntensity.Value) / 100.0;
-            settings.DefaultGlowSize = Math.Round(SldDefGlowSize.Value);
-            settings.DefaultColorHex = DefColorPicker.SelectedColorHex;
 
-            if (CmbDefaultStyle.SelectedItem is ComboBoxItem item && Enum.TryParse<GlowStyle>(item.Tag?.ToString(), out var style))
+            settings.DefaultDurationMs = (int)SldDefaultDuration.Value;
+            settings.DefaultIntensity = Math.Round(SldDefaultIntensity.Value) / 100.0;
+            settings.DefaultThickness = Math.Round(SldDefaultThickness.Value);
+            settings.DefaultGlowSize = Math.Round(SldDefaultGlowSize.Value);
+            settings.CornerRadius = Math.Round(SldCornerRounding.Value);
+
+            if (CmbDefaultStyle.SelectedItem is ComboBoxItem styleItem &&
+                Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
             {
                 settings.DefaultStyle = style;
             }
 
-            ScheduleSettingsSave();
+            ThemeService.ApplyCornerRadius(settings.CornerRadius);
 
-            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle, settings.CornerRadius);
+            ScheduleSettingsSave();
+            UpdatePreview();
         }
 
-        private void Default_Changed(object sender, SelectionChangedEventArgs e) => UpdatePreview();
-        private void Default_Changed(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdatePreview();
-        private void DefColorPicker_ColorChanged(object? sender, string e) => UpdatePreview();
-
-        private void SldCornerRounding_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void DefaultColorPicker_ColorChanged(object? sender, string colorHex)
         {
-            if (TxtCornerRoundingVal != null)
-            {
-                TxtCornerRoundingVal.Text = $"{e.NewValue:0} px";
-            }
-            if (_settingsService == null || _isLoading) return;
+            if (_isLoading || _settingsService == null) return;
 
-            var settings = _settingsService.Current;
-            settings.CornerRadius = Math.Clamp(Math.Round(e.NewValue), 0.0, 48.0);
-            ThemeService.ApplyCornerRadius(settings.CornerRadius);
-            AppearanceEdgePreview.UpdatePreview(settings.DefaultColorHex, settings.DefaultThickness, settings.DefaultGlowSize, settings.DefaultIntensity, settings.DefaultStyle, settings.CornerRadius);
+            _settingsService.Current.DefaultColorHex = colorHex;
             ScheduleSettingsSave();
+            UpdatePreview();
+        }
+
+        private void UpdatePreview()
+        {
+            double sec = SldDefaultDuration.Value / 1000.0;
+            TxtDurationVal.Text = $"{sec:0.#} s";
+            TxtIntensityVal.Text = $"{Math.Round(SldDefaultIntensity.Value):0}%";
+            TxtThicknessVal.Text = $"{Math.Round(SldDefaultThickness.Value):0} px";
+            TxtGlowSizeVal.Text = $"{Math.Round(SldDefaultGlowSize.Value):0} px";
+            TxtCornerRoundingVal.Text = $"{Math.Round(SldCornerRounding.Value):0} px";
+
+            GlowStyle currentStyle = GlowStyle.Pulse;
+            if (CmbDefaultStyle.SelectedItem is ComboBoxItem styleItem &&
+                Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
+            {
+                currentStyle = style;
+            }
+
+            AppearancePreview.UpdatePreview(
+                DefaultColorPicker.SelectedColorHex,
+                SldDefaultThickness.Value,
+                SldDefaultGlowSize.Value,
+                SldDefaultIntensity.Value / 100.0,
+                currentStyle,
+                SldCornerRounding.Value);
         }
 
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null || _settingsService == null) return;
-            var testProfile = new AppProfile
+
+            var profile = new AppProfile
             {
-                AppId = "TestApp",
+                AppId = "AppearanceTest",
                 Name = "NotiGlow Test",
-                ColorHex = _settingsService.Current.DefaultColorHex,
-                DurationMs = _settingsService.Current.DefaultDurationMs,
-                Intensity = _settingsService.Current.DefaultIntensity,
-                Style = _settingsService.Current.DefaultStyle,
-                Thickness = _settingsService.Current.DefaultThickness,
-                GlowSize = _settingsService.Current.DefaultGlowSize
+                ColorHex = DefaultColorPicker.SelectedColorHex,
+                DurationMs = (int)SldDefaultDuration.Value,
+                Intensity = SldDefaultIntensity.Value / 100.0,
+                Thickness = SldDefaultThickness.Value,
+                GlowSize = SldDefaultGlowSize.Value,
+                CornerRadius = SldCornerRounding.Value
             };
-            _glowManager.TriggerProfile(testProfile);
+
+            if (CmbDefaultStyle.SelectedItem is ComboBoxItem styleItem &&
+                Enum.TryParse<GlowStyle>(styleItem.Tag?.ToString(), true, out var style))
+            {
+                profile.Style = style;
+            }
+
+            _glowManager.TriggerProfile(profile);
         }
     }
 }

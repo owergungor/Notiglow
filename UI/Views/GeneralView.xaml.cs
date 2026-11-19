@@ -1,49 +1,32 @@
 using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
+using Windows.UI.Notifications.Management;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
-using NotiGlow.UI.Animations;
-using UserControl = System.Windows.Controls.UserControl;
 using ThemeMode = NotiGlow.Models.ThemeMode;
-using RadioButton = System.Windows.Controls.RadioButton;
-using Point = System.Windows.Point;
 
 namespace NotiGlow.UI.Views
 {
-    public partial class GeneralView : UserControl
+    public sealed partial class GeneralView : UserControl
     {
         private SettingsService? _settingsService;
         private GlowManager? _glowManager;
         private NotificationService? _notificationService;
+        private bool _isUpdatingLanguageSelection = false;
 
         public GeneralView()
         {
-            InitializeComponent();
-            EnsureColorThemeComboBoxStyle();
+            this.InitializeComponent();
+            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
             Loaded += (s, e) =>
             {
-                EnsureColorThemeComboBoxStyle();
-                Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate: true)));
+                ScrollViewerHelper.EnableReliableMouseWheel(RootScrollViewer);
+                ScrollViewerHelper.AttachToChildComboBoxes(this);
+                UpdateLocalizedTexts();
             };
-            SizeChanged += (s, e) => UpdateThemeIndicator(immediate: true);
-        }
-
-        private void EnsureColorThemeComboBoxStyle()
-        {
-            if (CmbColorTheme != null)
-            {
-                if (TryFindResource("ColorThemeComboBoxStyle") is Style style && CmbColorTheme.Style != style)
-                {
-                    CmbColorTheme.Style = style;
-                }
-                CmbColorTheme.MaxDropDownHeight = 550;
-                ScrollViewer.SetVerticalScrollBarVisibility(CmbColorTheme, ScrollBarVisibility.Disabled);
-                ScrollViewer.SetHorizontalScrollBarVisibility(CmbColorTheme, ScrollBarVisibility.Disabled);
-                ScrollViewer.SetCanContentScroll(CmbColorTheme, false);
-            }
         }
 
         public void Initialize(SettingsService settingsService, GlowManager glowManager, NotificationService? notificationService = null)
@@ -58,268 +41,277 @@ namespace NotiGlow.UI.Views
                 UpdateListenerStatus(_notificationService.CurrentAccessStatus);
             }
 
-            LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
-
             LoadSettings();
+            UpdateLocalizedTexts();
         }
 
-        private void OnAccessStatusChanged(object? sender, Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
+        private void OnAccessStatusChanged(object? sender, UserNotificationListenerAccessStatus status)
         {
-            if (!TryPostToDispatcher(() => UpdateListenerStatus(status)) &&
-                (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive))
-            {
-                if (_notificationService != null)
-                    _notificationService.AccessStatusChanged -= OnAccessStatusChanged;
-            }
+            DispatcherQueue.TryEnqueue(() => UpdateListenerStatus(status));
         }
 
         private void OnLanguageChanged(object? sender, string languageCode)
         {
-            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished || !Dispatcher.Thread.IsAlive)
-            {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-                return;
-            }
-
-            TryPostToDispatcher(() =>
+            DispatcherQueue.TryEnqueue(() =>
             {
                 if (_notificationService != null)
+                {
                     UpdateListenerStatus(_notificationService.CurrentAccessStatus);
+                }
                 UpdateLanguageSelection(languageCode);
-                UpdateThemeIndicator(immediate: true);
+                UpdateLocalizedTexts();
             });
         }
 
-        private bool TryPostToDispatcher(Action action)
+        public void UpdateLocalizedTexts()
         {
-            var dispatcher = Dispatcher;
-            if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished || !dispatcher.Thread.IsAlive)
-                return false;
-
-            try
-            {
-                dispatcher.BeginInvoke(action);
-                return true;
-            }
-            catch (InvalidOperationException)
-            {
-                return false;
-            }
+            TxtGeneralTitle.Text = LocalizationService.Instance.GetString("General.Title");
+            TxtGeneralSubtitle.Text = LocalizationService.Instance.GetString("General.Subtitle");
+            TxtBtnTestAnimation.Text = LocalizationService.Instance.GetString("Common.TestAnimation");
+            TxtSectionSystem.Text = LocalizationService.Instance.GetString("General.SystemSection");
+            TxtActivation.Text = LocalizationService.Instance.GetString("General.Activation");
+            TxtActivationDesc.Text = LocalizationService.Instance.GetString("General.ActivationDesc");
+            TxtSectionPermissions.Text = LocalizationService.Instance.GetString("General.PermissionsSection");
+            TxtListener.Text = LocalizationService.Instance.GetString("General.Listener");
+            TxtListenerDesc.Text = LocalizationService.Instance.GetString("General.ListenerDesc");
+            TxtStartWithWindows.Text = LocalizationService.Instance.GetString("General.StartWithWindows");
+            TxtStartWithWindowsDesc.Text = LocalizationService.Instance.GetString("General.StartWithWindowsDesc");
+            TxtShowInTaskbar.Text = LocalizationService.Instance.GetString("General.ShowInTaskbar");
+            TxtShowInTaskbarDesc.Text = LocalizationService.Instance.GetString("General.ShowInTaskbarDesc");
+            TxtSectionPersonalization.Text = LocalizationService.Instance.GetString("General.PersonalizationSection");
+            TxtReduceAnimations.Text = LocalizationService.Instance.GetString("General.ReduceAnimations");
+            TxtReduceAnimationsDesc.Text = LocalizationService.Instance.GetString("General.ReduceAnimationsDesc");
+            TxtThemeMode.Text = LocalizationService.Instance.GetString("General.ThemeMode");
+            TxtThemeModeDesc.Text = LocalizationService.Instance.GetString("General.ThemeModeDesc");
+            BtnModeSystem.Content = LocalizationService.Instance.GetString("General.ThemeSystem");
+            BtnModeLight.Content = LocalizationService.Instance.GetString("General.ThemeLight");
+            BtnModeDark.Content = LocalizationService.Instance.GetString("General.ThemeDark");
+            TxtColorTheme.Text = LocalizationService.Instance.GetString("General.ColorTheme");
+            TxtColorThemeDesc.Text = LocalizationService.Instance.GetString("General.ColorThemeDesc");
+            TxtWindowMaterial.Text = LocalizationService.Instance.GetString("General.WindowMaterial");
+            TxtWindowMaterialDesc.Text = LocalizationService.Instance.GetString("General.WindowMaterialDesc");
+            TxtMatAcrylic.Text = LocalizationService.Instance.GetString("Material.Acrylic");
+            TxtMatMica.Text = LocalizationService.Instance.GetString("Material.Mica");
+            TxtMatMicaAlt.Text = LocalizationService.Instance.GetString("Material.MicaAlt");
+            TxtLanguage.Text = LocalizationService.Instance.GetString("General.Language");
+            TxtLanguageDesc.Text = LocalizationService.Instance.GetString("General.LanguageDesc");
         }
 
-        private bool _isUpdatingLanguage = false;
+        private void LoadSettings()
+        {
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+
+            MasterToggle.IsOn = settings.MasterEnabled;
+            ToggleStartWithWindows.IsOn = settings.StartWithWindows;
+            ToggleShowInTaskbar.IsOn = settings.ShowInTaskbar;
+            ToggleReduceAnimations.IsOn = settings.ReduceAnimations;
+
+            switch (settings.ThemeMode)
+            {
+                case ThemeMode.Light:
+                    BtnModeLight.IsChecked = true;
+                    break;
+                case ThemeMode.Dark:
+                    BtnModeDark.IsChecked = true;
+                    break;
+                default:
+                    BtnModeSystem.IsChecked = true;
+                    break;
+            }
+
+            string themeName = settings.ColorTheme.ToString();
+            bool themeMatched = false;
+            foreach (ComboBoxItem item in CmbColorTheme.Items)
+            {
+                string tag = item.Tag?.ToString() ?? "";
+                if (string.Equals(tag, themeName, StringComparison.OrdinalIgnoreCase) ||
+                    (string.Equals(themeName, "Windows", StringComparison.OrdinalIgnoreCase) && string.Equals(tag, "Windows", StringComparison.OrdinalIgnoreCase)) ||
+                    (string.Equals(themeName, "System", StringComparison.OrdinalIgnoreCase) && string.Equals(tag, "Windows", StringComparison.OrdinalIgnoreCase)) ||
+                    (string.Equals(themeName, "Standard", StringComparison.OrdinalIgnoreCase) && string.Equals(tag, "Blue", StringComparison.OrdinalIgnoreCase)) ||
+                    (string.Equals(themeName, "Vercel", StringComparison.OrdinalIgnoreCase) && string.Equals(tag, "Blue", StringComparison.OrdinalIgnoreCase)) ||
+                    (string.Equals(themeName, "Blue", StringComparison.OrdinalIgnoreCase) && string.Equals(tag, "Blue", StringComparison.OrdinalIgnoreCase)))
+                {
+                    CmbColorTheme.SelectedItem = item;
+                    themeMatched = true;
+                    break;
+                }
+            }
+            if (!themeMatched && CmbColorTheme.Items.Count > 0)
+            {
+                CmbColorTheme.SelectedIndex = 0; // Default to Windows (System Accent)
+            }
+
+            string matName = settings.WindowMaterial.ToString();
+            foreach (ComboBoxItem item in CmbWindowMaterial.Items)
+            {
+                if (item.Tag?.ToString() == matName)
+                {
+                    CmbWindowMaterial.SelectedItem = item;
+                    break;
+                }
+            }
+
+            UpdateLanguageSelection(settings.AppLanguage);
+        }
 
         private void UpdateLanguageSelection(string languageCode)
         {
-            if (CmbLanguage == null) return;
-            _isUpdatingLanguage = true;
+            _isUpdatingLanguageSelection = true;
             try
             {
-                string norm = LocalizationService.NormalizeLanguageCode(languageCode);
-                foreach (var item in CmbLanguage.Items)
+                foreach (ComboBoxItem item in CmbLanguage.Items)
                 {
-                    if (item is ComboBoxItem cbi && cbi.Tag is string tag && string.Equals(LocalizationService.NormalizeLanguageCode(tag), norm, StringComparison.OrdinalIgnoreCase))
+                    if (item.Tag is string tag && tag.Equals(languageCode, StringComparison.OrdinalIgnoreCase))
                     {
-                        CmbLanguage.SelectedItem = cbi;
+                        CmbLanguage.SelectedItem = item;
                         break;
                     }
                 }
             }
             finally
             {
-                _isUpdatingLanguage = false;
+                _isUpdatingLanguageSelection = false;
             }
         }
 
-        private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void UpdateListenerStatus(UserNotificationListenerAccessStatus status)
         {
-            if (_isUpdatingLanguage || CmbLanguage?.SelectedItem is not ComboBoxItem item || item.Tag is not string tag) return;
-            LocalizationService.Instance.SetLanguage(tag, persist: true);
-        }
-
-        private void UpdateListenerStatus(global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus status)
-        {
-            if (status == global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Allowed)
+            if (status == UserNotificationListenerAccessStatus.Allowed)
             {
-                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
-                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
+                IconListenerStatus.Glyph = "\uE73E"; // Checkmark
+                IconListenerStatus.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 37, 211, 102));
                 TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerActive");
-                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF25D366"));
+                TxtListenerStatus.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 37, 211, 102));
                 BtnFixAccess.Visibility = Visibility.Collapsed;
-            }
-            else if (status == global::Windows.UI.Notifications.Management.UserNotificationListenerAccessStatus.Denied)
-            {
-                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.DismissCircle24;
-                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
-                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerPermissionRequired");
-                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFF5409"));
-                BtnFixAccess.Visibility = Visibility.Visible;
             }
             else
             {
-                IconListenerStatus.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
-                IconListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
-                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerPermissionRequired");
-                TxtListenerStatus.Foreground = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFFFD32A"));
+                IconListenerStatus.Glyph = "\uE7BA"; // Warning
+                IconListenerStatus.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 239, 68, 68));
+                TxtListenerStatus.Text = LocalizationService.Instance.GetString("General.ListenerDenied");
+                TxtListenerStatus.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 239, 68, 68));
                 BtnFixAccess.Visibility = Visibility.Visible;
             }
         }
 
-        private void BtnFixAccess_Click(object sender, RoutedEventArgs e)
-        {
-            NotificationService.OpenWindowsNotificationSettings();
-        }
-
-        private void LoadSettings()
+        private void MasterToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (_settingsService == null) return;
-
-            var current = _settingsService.Current;
-            MasterToggle.IsChecked = current.MasterEnabled;
-            ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
-            ToggleShowInTaskbar.IsChecked = current.ShowInTaskbar;
-            ToggleReduceAnimations.IsChecked = current.ReduceAnimations;
-            MotionPolicy.Update(current.ReduceMotion, current.ReduceAnimations);
-
-            // Load Theme Mode
-            BtnModeSystem.IsChecked = (current.ThemeMode == ThemeMode.System);
-            BtnModeLight.IsChecked = (current.ThemeMode == ThemeMode.Light);
-            BtnModeDark.IsChecked = (current.ThemeMode == ThemeMode.Dark);
-            Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate: true)));
-
-            // Load Color Theme
-            UpdateColorThemeSelection(current.ColorTheme);
-
-            // Load Language Selection
-            UpdateLanguageSelection(current.AppLanguage);
+            var settings = _settingsService.Current;
+            if (settings.MasterEnabled != MasterToggle.IsOn)
+            {
+                settings.MasterEnabled = MasterToggle.IsOn;
+                _settingsService.Save(settings);
+            }
         }
 
-        private void UpdateColorThemeSelection(ColorTheme colorTheme)
+        private void ToggleStartWithWindows_Toggled(object sender, RoutedEventArgs e)
         {
-            if (CmbColorTheme == null) return;
-
-            string targetTag = colorTheme.ToString();
-            ComboBoxItem? matchingItem = null;
-            ComboBoxItem? standardItem = null;
-
-            foreach (var item in CmbColorTheme.Items)
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+            if (settings.StartWithWindows != ToggleStartWithWindows.IsOn)
             {
-                if (item is ComboBoxItem cbi && cbi.Tag is string tag)
+                settings.StartWithWindows = ToggleStartWithWindows.IsOn;
+                _settingsService.Save(settings);
+                AutoStartHelper.SetAutoStart(settings.StartWithWindows);
+            }
+        }
+
+        private void ToggleShowInTaskbar_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+            if (settings.ShowInTaskbar != ToggleShowInTaskbar.IsOn)
+            {
+                settings.ShowInTaskbar = ToggleShowInTaskbar.IsOn;
+                _settingsService.Save(settings);
+
+                if (App.CurrentMainWindow != null)
                 {
-                    if (string.Equals(tag, targetTag, StringComparison.OrdinalIgnoreCase) ||
-                        ((string.Equals(targetTag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(targetTag, "Vercel", StringComparison.OrdinalIgnoreCase)) &&
-                         (string.Equals(tag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(tag, "Vercel", StringComparison.OrdinalIgnoreCase))))
-                    {
-                        matchingItem = cbi;
-                        break;
-                    }
-                    if (string.Equals(tag, "Standard", StringComparison.OrdinalIgnoreCase) || string.Equals(tag, "Vercel", StringComparison.OrdinalIgnoreCase))
-                    {
-                        standardItem = cbi;
-                    }
+                    App.CurrentMainWindow.AppWindow.IsShownInSwitchers = settings.ShowInTaskbar;
                 }
             }
+        }
 
-            // Fallback safely to Standard if tag is unknown
-            CmbColorTheme.SelectedItem = matchingItem ?? standardItem;
+        private void ToggleReduceAnimations_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (_settingsService == null) return;
+            var settings = _settingsService.Current;
+            if (settings.ReduceAnimations != ToggleReduceAnimations.IsOn)
+            {
+                settings.ReduceAnimations = ToggleReduceAnimations.IsOn;
+                _settingsService.Save(settings);
+                NotiGlow.UI.Animations.MotionPolicy.Update(settings.ReduceAnimations);
+            }
         }
 
         private void ThemeMode_Click(object sender, RoutedEventArgs e)
         {
             if (_settingsService == null) return;
-
-            ThemeMode selectedMode = ThemeMode.System;
-            if (BtnModeLight.IsChecked == true)
-                selectedMode = ThemeMode.Light;
-            else if (BtnModeDark.IsChecked == true)
-                selectedMode = ThemeMode.Dark;
-            else if (BtnModeSystem.IsChecked == true)
-                selectedMode = ThemeMode.System;
-
-            UpdateThemeIndicator(immediate: false);
+            ThemeMode mode = ThemeMode.System;
+            if (BtnModeLight.IsChecked == true) mode = ThemeMode.Light;
+            else if (BtnModeDark.IsChecked == true) mode = ThemeMode.Dark;
 
             var settings = _settingsService.Current;
-            if (settings.ThemeMode != selectedMode)
+            if (settings.ThemeMode != mode)
             {
-                settings.ThemeMode = selectedMode;
+                settings.ThemeMode = mode;
                 _settingsService.Save(settings);
-                ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
-            }
-        }
-
-        private void UpdateThemeIndicator(bool immediate = false)
-        {
-            if (ThemeIndicatorPill == null || ThemeIndicatorTranslate == null || ThemeSegmentedContainer == null) return;
-
-            RadioButton? selectedBtn = null;
-            if (BtnModeSystem?.IsChecked == true) selectedBtn = BtnModeSystem;
-            else if (BtnModeLight?.IsChecked == true) selectedBtn = BtnModeLight;
-            else if (BtnModeDark?.IsChecked == true) selectedBtn = BtnModeDark;
-
-            if (selectedBtn == null || selectedBtn.ActualWidth <= 0)
-            {
-                Dispatcher.BeginInvoke(new Action(() => UpdateThemeIndicator(immediate)), System.Windows.Threading.DispatcherPriority.Loaded);
-                return;
-            }
-
-            try
-            {
-                var transform = selectedBtn.TransformToVisual(ThemeSegmentedContainer);
-                var pt = transform.Transform(new Point(0, 0));
-                double targetX = pt.X;
-                double targetWidth = selectedBtn.ActualWidth;
-
-                bool reduceMotion = _settingsService?.Current.ReduceAnimations == true || MotionPolicy.IsReduceMotion;
-
-                if (immediate || reduceMotion)
-                {
-                    ThemeIndicatorTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, null);
-                    ThemeIndicatorTranslate.X = targetX;
-                    ThemeIndicatorPill.BeginAnimation(FrameworkElement.WidthProperty, null);
-                    ThemeIndicatorPill.Width = targetWidth;
-                    ThemeIndicatorPill.Opacity = 1;
-                }
-                else
-                {
-                    var animX = new System.Windows.Media.Animation.DoubleAnimation(targetX, TimeSpan.FromMilliseconds(180))
-                    {
-                        EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-                    };
-                    var animWidth = new System.Windows.Media.Animation.DoubleAnimation(targetWidth, TimeSpan.FromMilliseconds(180))
-                    {
-                        EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-                    };
-                    ThemeIndicatorTranslate.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, animX);
-                    ThemeIndicatorPill.BeginAnimation(FrameworkElement.WidthProperty, animWidth);
-                    ThemeIndicatorPill.Opacity = 1;
-                }
-            }
-            catch
-            {
-                // Visual tree not yet ready
+                ThemeService.ApplyTheme(settings.ColorTheme, mode);
+                App.CurrentMainWindow?.ApplyThemeVisuals(settings.ColorTheme, mode);
             }
         }
 
         private void CmbColorTheme_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_settingsService == null || CmbColorTheme.SelectedItem is not ComboBoxItem item || item.Tag is not string tag) return;
-
-            if (Enum.TryParse<ColorTheme>(tag, out var selectedTheme))
+            if (_settingsService == null) return;
+            if (CmbColorTheme.SelectedItem is ComboBoxItem item && item.Tag is string tag)
             {
-                var settings = _settingsService.Current;
-                if (settings.ColorTheme != selectedTheme)
+                if (Enum.TryParse<ColorTheme>(tag, out var parsedTheme))
                 {
-                    settings.ColorTheme = selectedTheme;
-                    _settingsService.Save(settings);
-                    ThemeService.ApplyTheme(settings.ColorTheme, settings.ThemeMode);
+                    var settings = _settingsService.Current;
+                    if (settings.ColorTheme != parsedTheme)
+                    {
+                        settings.ColorTheme = parsedTheme;
+                        _settingsService.Save(settings);
+                        ThemeService.ApplyTheme(parsedTheme, settings.ThemeMode);
+                        App.CurrentMainWindow?.ApplyThemeVisuals(parsedTheme, settings.ThemeMode);
+                    }
                 }
+            }
+        }
+
+        private void CmbWindowMaterial_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_settingsService == null) return;
+            if (CmbWindowMaterial.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+            {
+                if (Enum.TryParse<WindowMaterial>(tag, out var parsedMaterial))
+                {
+                    var settings = _settingsService.Current;
+                    if (settings.WindowMaterial != parsedMaterial)
+                    {
+                        settings.WindowMaterial = parsedMaterial;
+                        _settingsService.Save(settings);
+                        App.CurrentMainWindow?.ApplyBackdropMaterial(parsedMaterial);
+                    }
+                }
+            }
+        }
+
+        private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isUpdatingLanguageSelection) return;
+            if (CmbLanguage.SelectedItem is ComboBoxItem item && item.Tag is string lang)
+            {
+                LocalizationService.Instance.SetLanguage(lang, persist: true);
             }
         }
 
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
-            if (_settingsService == null || _glowManager == null) return;
-
+            if (_glowManager == null || _settingsService == null) return;
             var testProfile = new AppProfile
             {
                 AppId = "TestApp",
@@ -327,45 +319,20 @@ namespace NotiGlow.UI.Views
                 ColorHex = _settingsService.Current.DefaultColorHex,
                 DurationMs = _settingsService.Current.DefaultDurationMs,
                 Intensity = _settingsService.Current.DefaultIntensity,
+                Style = _settingsService.Current.DefaultStyle,
                 Thickness = _settingsService.Current.DefaultThickness,
-                GlowSize = _settingsService.Current.DefaultGlowSize,
-                Style = _settingsService.Current.DefaultStyle
+                GlowSize = _settingsService.Current.DefaultGlowSize
             };
-
             _glowManager.TriggerProfile(testProfile);
         }
 
-        private void MasterToggle_Click(object sender, RoutedEventArgs e)
+        private async void BtnFixAccess_Click(object sender, RoutedEventArgs e)
         {
-            if (_settingsService == null) return;
-            var settings = _settingsService.Current;
-            settings.MasterEnabled = MasterToggle.IsChecked == true;
-            _settingsService.Save(settings);
-        }
-
-        private void ToggleStartWithWindows_Click(object sender, RoutedEventArgs e)
-        {
-            bool enable = ToggleStartWithWindows.IsChecked == true;
-            AutoStartHelper.SetAutoStart(enable);
-            ToggleStartWithWindows.IsChecked = AutoStartHelper.IsAutoStartEnabled();
-        }
-
-        private void ToggleShowInTaskbar_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settingsService == null) return;
-            var settings = _settingsService.Current;
-            settings.ShowInTaskbar = ToggleShowInTaskbar.IsChecked == true;
-            _settingsService.Save(settings);
-        }
-
-        private void ToggleReduceAnimations_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settingsService == null) return;
-            var settings = _settingsService.Current;
-            settings.ReduceAnimations = ToggleReduceAnimations.IsChecked == true;
-            _settingsService.Save(settings);
-            MotionPolicy.Update(settings.ReduceMotion, settings.ReduceAnimations);
-            UpdateThemeIndicator(immediate: true);
+            try
+            {
+                await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:notifications"));
+            }
+            catch { }
         }
     }
 }

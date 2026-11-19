@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Windows;
+using Microsoft.UI.Xaml;
 using NotiGlow.Models;
 
 namespace NotiGlow.Services
@@ -35,6 +35,7 @@ namespace NotiGlow.Services
         private CultureInfo _currentCulture = new(DefaultLanguage);
 
         public string CurrentLanguage => _currentLanguage;
+        public string CurrentLanguageCode => _currentLanguage;
         public CultureInfo CurrentCulture => _currentCulture;
         public LanguageItem CurrentLanguageItem =>
             SupportedLanguages.FirstOrDefault(l => l.Code.Equals(_currentLanguage, StringComparison.OrdinalIgnoreCase))
@@ -156,10 +157,15 @@ namespace NotiGlow.Services
 
         private ResourceDictionary? _activeLocalizationDictionary;
 
+        public void ApplyToResources(ResourceDictionary? target = null) => ApplyToWpfResources(target);
+
         public void ApplyToWpfResources(ResourceDictionary? target = null)
         {
             try
             {
+                if (target == null && Microsoft.UI.Xaml.Application.Current == null)
+                    return;
+
                 var currentDict = GetRawDictionary(_currentLanguage);
                 var fallbackDict = _translations[DefaultLanguage];
 
@@ -177,63 +183,34 @@ namespace NotiGlow.Services
 
                 if (target != null)
                 {
-                    foreach (System.Collections.DictionaryEntry entry in newDict)
+                    foreach (var kvp in newDict)
                     {
-                        target[entry.Key] = entry.Value;
+                        target[kvp.Key] = kvp.Value;
                     }
                     return;
                 }
 
-                var app = System.Windows.Application.Current;
+                var app = Microsoft.UI.Xaml.Application.Current;
                 if (app == null) return;
 
-                if (app.Dispatcher != null)
+                // Swap MergedDictionaries entry to trigger comprehensive visual tree resource invalidation
+                if (_activeLocalizationDictionary != null)
                 {
-                    if (app.Dispatcher.HasShutdownStarted || app.Dispatcher.HasShutdownFinished) return;
-                    if (app.Dispatcher.Thread != null && !app.Dispatcher.Thread.IsAlive) return;
-
-                    if (!app.Dispatcher.CheckAccess())
-                    {
-                        try
-                        {
-                            app.Dispatcher.BeginInvoke(() => ApplyToWpfResources(null));
-                        }
-                        catch { }
-                        return;
-                    }
+                    app.Resources.MergedDictionaries.Remove(_activeLocalizationDictionary);
                 }
 
-                if (app != null)
+                _activeLocalizationDictionary = newDict;
+                app.Resources.MergedDictionaries.Add(_activeLocalizationDictionary);
+
+                // Also mirror directly onto app.Resources for direct lookups
+                foreach (var kvp in newDict)
                 {
-                    // Swap MergedDictionaries entry to trigger comprehensive visual tree DynamicResource invalidation
-                    if (_activeLocalizationDictionary != null)
-                    {
-                        app.Resources.MergedDictionaries.Remove(_activeLocalizationDictionary);
-                    }
-
-                    _activeLocalizationDictionary = newDict;
-                    app.Resources.MergedDictionaries.Add(_activeLocalizationDictionary);
-
-                    // Also mirror directly onto app.Resources for direct lookups
-                    foreach (System.Collections.DictionaryEntry entry in newDict)
-                    {
-                        app.Resources[entry.Key] = entry.Value;
-                    }
-
-                    // Invalidate visual roots for any open windows to guarantee redraw
-                    foreach (System.Windows.Window window in app.Windows)
-                    {
-                        try
-                        {
-                            window.InvalidateVisual();
-                        }
-                        catch { }
-                    }
+                    app.Resources[kvp.Key] = kvp.Value;
                 }
             }
             catch (Exception ex)
             {
-                LoggerService.LogWarning($"Failed applying localized strings to WPF resources: {ex.Message}");
+                LoggerService.LogWarning($"Failed applying localized strings to application resources: {ex.Message}");
             }
         }
 
@@ -373,6 +350,9 @@ namespace NotiGlow.Services
                 // General View
                 ["General.Title"] = "General Settings",
                 ["General.Subtitle"] = "Control how NotiGlow behaves and handles ambient animations.",
+                ["General.SystemSection"] = "System & Startup",
+                ["General.PermissionsSection"] = "Permissions & Status",
+                ["General.PersonalizationSection"] = "Personalization & Behavior",
                 ["General.Activation"] = "NotiGlow Activation",
                 ["General.ActivationDesc"] = "Enables or disables NotiGlow notification effects.",
                 ["General.Listener"] = "Notification Listener",
@@ -396,13 +376,21 @@ namespace NotiGlow.Services
                 ["General.ThemeLightToolTip"] = "Force Light mode",
                 ["General.ThemeDarkToolTip"] = "Force Dark mode",
                 ["General.ColorTheme"] = "Color Theme",
-                ["General.ColorThemeDesc"] = "Curated color systems with tailored Light and Dark variants.",
+                ["General.ColorThemeDesc"] = "Select an accent color. Default follows the Windows system accent color.",
+                ["General.WindowMaterial"] = "Window Material",
+                ["General.WindowMaterialDesc"] = "Choose the window background material effect.",
+                ["Material.Acrylic"] = "Acrylic (Recommended)",
+                ["Material.Mica"] = "Mica",
+                ["Material.MicaAlt"] = "Mica Alt",
                 ["General.Language"] = "Language",
                 ["General.LanguageDesc"] = "Choose the display language for NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Appearance",
                 ["Appearance.Subtitle"] = "Configure global default animation parameters and preview screen glow.",
+                ["Appearance.AnimationSection"] = "Animation Style & Timing",
+                ["Appearance.GeometrySection"] = "Geometry & Border",
+                ["Appearance.ColorSection"] = "Accent Color & Live Preview",
                 ["Appearance.DefaultStyle"] = "Default Animation Style",
                 ["Appearance.DefaultStyleDesc"] = "Fallback motion effect for newly added app profiles.",
                 ["Appearance.DefaultDuration"] = "Default Duration",
@@ -414,6 +402,7 @@ namespace NotiGlow.Services
                 // Notifications View
                 ["Notifications.Title"] = "Notifications",
                 ["Notifications.Subtitle"] = "Control how NotiGlow behaves when rapid multiple notifications arrive within a short time window.",
+                ["Notifications.OverlapSection"] = "Burst Behavior & Overlap Handling",
                 ["Notifications.Restart"] = "Restart Animation (Default)",
                 ["Notifications.RestartDesc"] = "Immediately resets the animation timer and restarts the glow animation from 0 ms for the new notification.",
                 ["Notifications.Extend"] = "Extend Active Animation",
@@ -426,6 +415,7 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Display",
                 ["Display.Subtitle"] = "Choose which displays show the glow border animation when notifications trigger.",
+                ["Display.ModeSection"] = "Target Display Selection",
                 ["Display.MonitorFormat"] = "Monitor {0}: {1}",
                 ["Display.PrimaryBadge"] = "(Primary)",
                 ["Display.ResolutionFormat"] = "Resolution: {0} x {1} | BitsPerPixel: {2}",
@@ -440,6 +430,7 @@ namespace NotiGlow.Services
                 // Gaming View
                 ["Gaming.Title"] = "Gaming",
                 ["Gaming.Subtitle"] = "Automatically reduce glow intensity or suppress alerts while gaming.",
+                ["Gaming.ActivationSection"] = "Gaming Mode",
                 ["Gaming.TestGameAnimation"] = "Test Game Animation",
                 ["Gaming.TestGameAnimationToolTip"] = "Test tracked game glow animation behavior",
                 ["Gaming.Mode"] = "Gaming Mode",
@@ -764,6 +755,9 @@ namespace NotiGlow.Services
                 // General View
                 ["General.Title"] = "Configuración General",
                 ["General.Subtitle"] = "Controle el comportamiento de NotiGlow y las animaciones ambientales.",
+                ["General.SystemSection"] = "Sistema e Inicio",
+                ["General.PermissionsSection"] = "Permisos y Estado",
+                ["General.PersonalizationSection"] = "Personalización y Comportamiento",
                 ["General.Activation"] = "Activación de NotiGlow",
                 ["General.ActivationDesc"] = "Habilita o deshabilita los efectos de notificación de NotiGlow.",
                 ["General.Listener"] = "Detector de Notificaciones",
@@ -787,13 +781,21 @@ namespace NotiGlow.Services
                 ["General.ThemeLightToolTip"] = "Forzar modo claro",
                 ["General.ThemeDarkToolTip"] = "Forzar modo oscuro",
                 ["General.ColorTheme"] = "Tema de Color",
-                ["General.ColorThemeDesc"] = "Sistemas de color seleccionados con variantes clara y oscura.",
+                ["General.ColorThemeDesc"] = "Seleccione un color de énfasis. Por defecto sigue el color del sistema Windows.",
+                ["General.WindowMaterial"] = "Material de la Ventana",
+                ["General.WindowMaterialDesc"] = "Elija el efecto de material de fondo de la ventana.",
+                ["Material.Acrylic"] = "Acrylic (Recomendado)",
+                ["Material.Mica"] = "Mica",
+                ["Material.MicaAlt"] = "Mica Alt",
                 ["General.Language"] = "Idioma",
                 ["General.LanguageDesc"] = "Elija el idioma de visualización para NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Apariencia",
                 ["Appearance.Subtitle"] = "Configure los parámetros globales de animación y previsualice el brillo.",
+                ["Appearance.AnimationSection"] = "Estilo de Animación y Tiempo",
+                ["Appearance.GeometrySection"] = "Geometría y Borde",
+                ["Appearance.ColorSection"] = "Color de Acento y Vista Previa",
                 ["Appearance.DefaultStyle"] = "Estilo de Animación Predeterminado",
                 ["Appearance.DefaultStyleDesc"] = "Efecto de movimiento para perfiles de aplicación nuevos.",
                 ["Appearance.DefaultDuration"] = "Duración Predeterminada",
@@ -805,6 +807,7 @@ namespace NotiGlow.Services
                 // Notifications View
                 ["Notifications.Title"] = "Notificaciones",
                 ["Notifications.Subtitle"] = "Controle cómo se comporta NotiGlow ante ráfagas de notificaciones continuas.",
+                ["Notifications.OverlapSection"] = "Comportamiento en Ráfaga y Superposición",
                 ["Notifications.Restart"] = "Reiniciar Animación (Predeterminado)",
                 ["Notifications.RestartDesc"] = "Reinicia inmediatamente el temporizador y la animación para la nueva notificación.",
                 ["Notifications.Extend"] = "Extender Animación Activa",
@@ -817,6 +820,7 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Pantalla",
                 ["Display.Subtitle"] = "Elija qué monitores muestran la animación de brillo al llegar notificaciones.",
+                ["Display.ModeSection"] = "Selección de Pantalla de Destino",
                 ["Display.MonitorFormat"] = "Monitor {0}: {1}",
                 ["Display.PrimaryBadge"] = "(Principal)",
                 ["Display.ResolutionFormat"] = "Resolución: {0} x {1} | BitsPorPíxel: {2}",
@@ -831,6 +835,7 @@ namespace NotiGlow.Services
                 // Gaming View
                 ["Gaming.Title"] = "Juegos",
                 ["Gaming.Subtitle"] = "Reduzca automáticamente el brillo o suprima alertas mientras juega.",
+                ["Gaming.ActivationSection"] = "Modo de Juego",
                 ["Gaming.TestGameAnimation"] = "Probar Animación del Juego",
                 ["Gaming.TestGameAnimationToolTip"] = "Probar el comportamiento del brillo en juegos rastreados",
                 ["Gaming.Mode"] = "Modo Juego",
@@ -1155,6 +1160,9 @@ namespace NotiGlow.Services
                 // General View
                 ["General.Title"] = "Paramètres Généraux",
                 ["General.Subtitle"] = "Contrôlez le fonctionnement de NotiGlow et les animations ambiantes.",
+                ["General.SystemSection"] = "Système et Démarrage",
+                ["General.PermissionsSection"] = "Autorisations et État",
+                ["General.PersonalizationSection"] = "Personnalisation et Comportement",
                 ["General.Activation"] = "Activation de NotiGlow",
                 ["General.ActivationDesc"] = "Active ou désactive les effets de notification de NotiGlow.",
                 ["General.Listener"] = "Écouteur de Notifications",
@@ -1178,13 +1186,21 @@ namespace NotiGlow.Services
                 ["General.ThemeLightToolTip"] = "Forcer le mode clair",
                 ["General.ThemeDarkToolTip"] = "Forcer le mode sombre",
                 ["General.ColorTheme"] = "Thème de Couleur",
-                ["General.ColorThemeDesc"] = "Palettes de couleurs harmonieuses avec déclinaisons claires et sombres.",
+                ["General.ColorThemeDesc"] = "Sélectionnez une couleur d'accentuation. Suit la couleur du système Windows par défaut.",
+                ["General.WindowMaterial"] = "Matériau de la Fenêtre",
+                ["General.WindowMaterialDesc"] = "Choisissez l'effet de matériau d'arrière-plan de la fenêtre.",
+                ["Material.Acrylic"] = "Acrylic (Recommandé)",
+                ["Material.Mica"] = "Mica",
+                ["Material.MicaAlt"] = "Mica Alt",
                 ["General.Language"] = "Langue",
                 ["General.LanguageDesc"] = "Choisissez la langue d'affichage pour NotiGlow.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Apparence",
                 ["Appearance.Subtitle"] = "Configurez les paramètres par défaut et visualisez l'effet lumineux.",
+                ["Appearance.AnimationSection"] = "Style d'Animation et Minutage",
+                ["Appearance.GeometrySection"] = "Géométrie et Bordure",
+                ["Appearance.ColorSection"] = "Couleur d'Accent et Aperçu en Direct",
                 ["Appearance.DefaultStyle"] = "Style d'Animation par Défaut",
                 ["Appearance.DefaultStyleDesc"] = "Effet de mouvement appliqué aux nouveaux profils d'application.",
                 ["Appearance.DefaultDuration"] = "Durée par Défaut",
@@ -1196,6 +1212,7 @@ namespace NotiGlow.Services
                 // Notifications View
                 ["Notifications.Title"] = "Notifications",
                 ["Notifications.Subtitle"] = "Définissez le comportement de NotiGlow lors de l'arrivée rapide de plusieurs notifications.",
+                ["Notifications.OverlapSection"] = "Comportement en Rafale et Chevauchement",
                 ["Notifications.Restart"] = "Redémarrer l'Animation (Par défaut)",
                 ["Notifications.RestartDesc"] = "Réinitialise immédiatement le chronomètre et relance l'animation pour la nouvelle alerte.",
                 ["Notifications.Extend"] = "Prolonger l'Animation Active",
@@ -1208,6 +1225,7 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Affichage",
                 ["Display.Subtitle"] = "Choisissez les écrans qui affichent l'effet lumineux lors des notifications.",
+                ["Display.ModeSection"] = "Sélection de l'Écran Cible",
                 ["Display.MonitorFormat"] = "Moniteur {0}: {1}",
                 ["Display.PrimaryBadge"] = "(Principal)",
                 ["Display.ResolutionFormat"] = "Résolution: {0} x {1} | BitsParPixel: {2}",
@@ -1222,6 +1240,7 @@ namespace NotiGlow.Services
                 // Gaming View
                 ["Gaming.Title"] = "Jeux",
                 ["Gaming.Subtitle"] = "Réduisez l'intensité lumineuse ou masquez les alertes pendant vos sessions de jeu.",
+                ["Gaming.ActivationSection"] = "Mode Jeu",
                 ["Gaming.TestGameAnimation"] = "Tester l'Animation de Jeu",
                 ["Gaming.TestGameAnimationToolTip"] = "Tester le comportement lumineux en jeu configuré",
                 ["Gaming.Mode"] = "Mode Jeu",
@@ -1537,6 +1556,9 @@ namespace NotiGlow.Services
                 ["Common.TestAnimationToolTip"] = "Benachrichtigungs-Leuchteffekt testen",
                 ["General.Title"] = "Allgemeine Einstellungen",
                 ["General.Subtitle"] = "Steuern Sie, wie NotiGlow funktioniert und Ambient-Animationen ausführt.",
+                ["General.SystemSection"] = "System & Autostart",
+                ["General.PermissionsSection"] = "Berechtigungen & Status",
+                ["General.PersonalizationSection"] = "Personalisierung & Verhalten",
                 ["General.Activation"] = "NotiGlow-Aktivierung",
                 ["General.ActivationDesc"] = "Aktiviert oder deaktiviert NotiGlow-Benachrichtigungseffekte.",
                 ["General.Listener"] = "Benachrichtigungsdienst",
@@ -1560,11 +1582,19 @@ namespace NotiGlow.Services
                 ["General.ThemeLightToolTip"] = "Hellen Modus erzwingen",
                 ["General.ThemeDarkToolTip"] = "Dunklen Modus erzwingen",
                 ["General.ColorTheme"] = "Farbdesign",
-                ["General.ColorThemeDesc"] = "Kuratierte Farbschemata mit abgestimmten hellen und dunklen Varianten.",
+                ["General.ColorThemeDesc"] = "Wählen Sie eine Akzentfarbe. Standardmäßig wird die Windows-Systemakzentfarbe verwendet.",
+                ["General.WindowMaterial"] = "Fenstermaterial",
+                ["General.WindowMaterialDesc"] = "Wählen Sie den Hintergrundeffekt des Fensters.",
+                ["Material.Acrylic"] = "Acrylic (Empfohlen)",
+                ["Material.Mica"] = "Mica",
+                ["Material.MicaAlt"] = "Mica Alt",
                 ["General.Language"] = "Sprache",
                 ["General.LanguageDesc"] = "Wählen Sie die Anzeigesprache für NotiGlow.",
                 ["Appearance.Title"] = "Erscheinungsbild",
                 ["Appearance.Subtitle"] = "Globale Standardparameter für Animationen konfigurieren und Leuchteffekt voranzeigen.",
+                ["Appearance.AnimationSection"] = "Animationsstil & Zeitsteuerung",
+                ["Appearance.GeometrySection"] = "Geometrie & Rand",
+                ["Appearance.ColorSection"] = "Akzentfarbe & Live-Vorschau",
                 ["Appearance.DefaultStyle"] = "Standard-Animationsstil",
                 ["Appearance.DefaultStyleDesc"] = "Ausweich-Bewegungseffekt für neu hinzugefügte Anwendungsprofile.",
                 ["Appearance.DefaultDuration"] = "Standarddauer",
@@ -1574,6 +1604,7 @@ namespace NotiGlow.Services
                 ["Appearance.LivePreview"] = "Live-Leuchtvorschau",
                 ["Notifications.Title"] = "Benachrichtigungen",
                 ["Notifications.Subtitle"] = "Verhalten von NotiGlow steuern, wenn mehrere Benachrichtigungen kurz hintereinander eintreffen.",
+                ["Notifications.OverlapSection"] = "Burst-Verhalten & Überlappung",
                 ["Notifications.Restart"] = "Animation neu starten (Standard)",
                 ["Notifications.RestartDesc"] = "Setzt den Animationstimer sofort zurück und startet den Leuchteffekt bei 0 ms neu.",
                 ["Notifications.Extend"] = "Aktive Animation verlängern",
@@ -1584,6 +1615,7 @@ namespace NotiGlow.Services
                 ["Notifications.IgnoreDesc"] = "Ignoriert neue eingehende Benachrichtigungen, während bereits ein Leuchteffekt abgespielt wird.",
                 ["Display.Title"] = "Bildschirm",
                 ["Display.Subtitle"] = "Wählen Sie aus, welche Bildschirme den Leuchtumrandungseffekt bei Benachrichtigungen anzeigen.",
+                ["Display.ModeSection"] = "Zielbildschirm-Auswahl",
                 ["Display.MonitorFormat"] = "Monitor {0}: {1}",
                 ["Display.PrimaryBadge"] = "(Primär)",
                 ["Display.ResolutionFormat"] = "Auflösung: {0} x {1} | Farbtiefe: {2}",
@@ -1596,6 +1628,7 @@ namespace NotiGlow.Services
                 ["Display.DetectedMonitors"] = "Erkannte Bildschirme",
                 ["Gaming.Title"] = "Gaming",
                 ["Gaming.Subtitle"] = "Leuchtintensität beim Spielen automatisch reduzieren oder Benachrichtigungen unterdrücken.",
+                ["Gaming.ActivationSection"] = "Spielmodus",
                 ["Gaming.TestGameAnimation"] = "Spiel-Animation testen",
                 ["Gaming.TestGameAnimationToolTip"] = "Leuchteffekt-Verhalten für erfasste Spiele testen",
                 ["Gaming.Mode"] = "Spielmodus",
@@ -1911,6 +1944,9 @@ namespace NotiGlow.Services
                 // General View
                 ["General.Title"] = "Genel Ayarlar",
                 ["General.Subtitle"] = "NotiGlow'un çalışma davranışını ve ortam animasyonlarını yönetin.",
+                ["General.SystemSection"] = "Sistem ve Başlangıç",
+                ["General.PermissionsSection"] = "İzinler ve Durum",
+                ["General.PersonalizationSection"] = "Kişiselleştirme ve Davranış",
                 ["General.Activation"] = "NotiGlow Etkinliği",
                 ["General.ActivationDesc"] = "NotiGlow bildirim efektlerini açar veya kapatır.",
                 ["General.Listener"] = "Bildirim Dinleyici",
@@ -1934,13 +1970,21 @@ namespace NotiGlow.Services
                 ["General.ThemeLightToolTip"] = "Açık temayı zorla",
                 ["General.ThemeDarkToolTip"] = "Koyu temayı zorla",
                 ["General.ColorTheme"] = "Renk Teması",
-                ["General.ColorThemeDesc"] = "Özel Açık ve Koyu varyantlara sahip seçkin renk sistemleri.",
+                ["General.ColorThemeDesc"] = "Bir vurgu rengi seçin. Varsayılan olarak Windows sistem vurgu rengini takip eder.",
+                ["General.WindowMaterial"] = "Pencere Materyali",
+                ["General.WindowMaterialDesc"] = "Pencere arka plan materyal efektini seçin.",
+                ["Material.Acrylic"] = "Acrylic (Önerilen)",
+                ["Material.Mica"] = "Mica",
+                ["Material.MicaAlt"] = "Mica Alt",
                 ["General.Language"] = "Uygulama Dili",
                 ["General.LanguageDesc"] = "NotiGlow için görüntüleme dilini seçin.",
 
                 // Appearance View
                 ["Appearance.Title"] = "Görünüm",
                 ["Appearance.Subtitle"] = "Evrensel varsayılan animasyon parametrelerini yapılandırın ve ekran ışığını önizleyin.",
+                ["Appearance.AnimationSection"] = "Animasyon Stili ve Zamanlama",
+                ["Appearance.GeometrySection"] = "Geometri ve Kenarlık",
+                ["Appearance.ColorSection"] = "Vurgu Rengi ve Canlı Önizleme",
                 ["Appearance.DefaultStyle"] = "Varsayılan Animasyon Stili",
                 ["Appearance.DefaultStyleDesc"] = "Yeni eklenen uygulama profilleri için varsayılan hareket efekti.",
                 ["Appearance.DefaultDuration"] = "Varsayılan Süre",
@@ -1952,6 +1996,7 @@ namespace NotiGlow.Services
                 // Notifications View
                 ["Notifications.Title"] = "Bildirimler",
                 ["Notifications.Subtitle"] = "Kısa bir zaman aralığında art arda birden çok bildirim geldiğinde NotiGlow'un davranışını belirleyin.",
+                ["Notifications.OverlapSection"] = "Çakışma ve Seri Bildirim Yönetimi",
                 ["Notifications.Restart"] = "Animasyonu Yeniden Başlat (Varsayılan)",
                 ["Notifications.RestartDesc"] = "Zamanlayıcıyı anında sıfırlar ve yeni bildirim için kenar ışığı animasyonunu 0 ms'den başlatır.",
                 ["Notifications.Extend"] = "Aktif Animasyonu Uzat",
@@ -1964,6 +2009,7 @@ namespace NotiGlow.Services
                 // Display View
                 ["Display.Title"] = "Ekran",
                 ["Display.Subtitle"] = "Bildirimler tetiklendiğinde kenar ışığı animasyonunun hangi ekranlarda gösterileceğini seçin.",
+                ["Display.ModeSection"] = "Hedef Ekran Seçimi",
                 ["Display.MonitorFormat"] = "Monitör {0}: {1}",
                 ["Display.PrimaryBadge"] = "(Birincil)",
                 ["Display.ResolutionFormat"] = "Çözünürlük: {0} x {1} | Renk Derinliği: {2}",
@@ -1978,6 +2024,7 @@ namespace NotiGlow.Services
                 // Gaming View
                 ["Gaming.Title"] = "Oyun",
                 ["Gaming.Subtitle"] = "Oyun oynarken ışık yoğunluğunu otomatik azaltın veya bildirimleri susturun.",
+                ["Gaming.ActivationSection"] = "Oyun Modu",
                 ["Gaming.TestGameAnimation"] = "Oyun Animasyonunu Test Et",
                 ["Gaming.TestGameAnimationToolTip"] = "Takip edilen oyun kenar ışığı davranışını test edin",
                 ["Gaming.Mode"] = "Oyun Modu",

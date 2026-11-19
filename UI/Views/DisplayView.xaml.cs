@@ -1,42 +1,51 @@
-using System.Windows;
-using System.Windows.Controls;
+using System;
 using System.Windows.Forms;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using NotiGlow.Core.Helpers;
 using NotiGlow.Models;
 using NotiGlow.Services;
-using Wpf.Ui.Controls;
-using TextBlock = System.Windows.Controls.TextBlock;
-using UserControl = System.Windows.Controls.UserControl;
 
 namespace NotiGlow.UI.Views
 {
-    public partial class DisplayView : System.Windows.Controls.UserControl
+    public sealed partial class DisplayView : Microsoft.UI.Xaml.Controls.UserControl
     {
         private SettingsService? _settingsService;
         private GlowManager? _glowManager;
 
         public DisplayView()
         {
-            InitializeComponent();
+            this.InitializeComponent();
             LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+            Loaded += (s, e) =>
+            {
+                ScrollViewerHelper.EnableReliableMouseWheel(RootScrollViewer);
+                ScrollViewerHelper.AttachToChildComboBoxes(this);
+            };
         }
 
         private void OnLanguageChanged(object? sender, string languageCode)
         {
-            var dispatcher = Dispatcher;
-            if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished || !dispatcher.Thread.IsAlive)
+            DispatcherQueue.TryEnqueue(() =>
             {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-                return;
-            }
+                RefreshDetectedMonitors();
+                UpdateLocalizedTexts();
+            });
+        }
 
-            try
-            {
-                dispatcher.BeginInvoke(RefreshDetectedMonitors);
-            }
-            catch (InvalidOperationException)
-            {
-                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-            }
+        private void UpdateLocalizedTexts()
+        {
+            TxtDisplayTitle.Text = LocalizationService.Instance.GetString("Display.Title");
+            TxtDisplaySubtitle.Text = LocalizationService.Instance.GetString("Display.Subtitle");
+            TxtBtnTestAnimation.Text = LocalizationService.Instance.GetString("Common.TestAnimation");
+            TxtSectionTargetDisplay.Text = LocalizationService.Instance.GetString("Display.ModeSection");
+            TxtActiveMonitor.Text = LocalizationService.Instance.GetString("Display.ActiveMonitor");
+            TxtActiveMonitorDesc.Text = LocalizationService.Instance.GetString("Display.ActiveMonitorDesc");
+            TxtPrimaryMonitor.Text = LocalizationService.Instance.GetString("Display.PrimaryMonitor");
+            TxtPrimaryMonitorDesc.Text = LocalizationService.Instance.GetString("Display.PrimaryMonitorDesc");
+            TxtAllMonitors.Text = LocalizationService.Instance.GetString("Display.AllMonitors");
+            TxtAllMonitorsDesc.Text = LocalizationService.Instance.GetString("Display.AllMonitorsDesc");
+            TxtDetectedDisplays.Text = LocalizationService.Instance.GetString("Display.DetectedMonitors");
         }
 
         public void Initialize(SettingsService settingsService, GlowManager? glowManager = null)
@@ -45,6 +54,7 @@ namespace NotiGlow.UI.Views
             _glowManager = glowManager;
             LoadSettings();
             RefreshDetectedMonitors();
+            UpdateLocalizedTexts();
         }
 
         private void LoadSettings()
@@ -72,13 +82,16 @@ namespace NotiGlow.UI.Views
             int index = 1;
             foreach (var screen in Screen.AllScreens)
             {
-                var card = new CardControl
+                var border = new Border
                 {
-                    Margin = new Thickness(0, 0, 0, 4),
+                    Background = (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources["CardBackground"],
+                    BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources["BorderColor"],
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(8),
                     Padding = new Thickness(14)
                 };
 
-                var sp = new StackPanel();
+                var sp = new StackPanel { Spacing = 4 };
                 string monitorFormat = LocalizationService.Instance.GetString("Display.MonitorFormat", index, screen.DeviceName);
                 string primaryBadge = screen.Primary ? $" {LocalizationService.Instance.GetString("Display.PrimaryBadge")}" : string.Empty;
                 string resolutionText = LocalizationService.Instance.GetString("Display.ResolutionFormat", screen.Bounds.Width, screen.Bounds.Height, screen.BitsPerPixel);
@@ -87,33 +100,22 @@ namespace NotiGlow.UI.Views
                 {
                     Text = $"{monitorFormat}{primaryBadge}",
                     FontSize = 14,
-                    FontWeight = FontWeights.SemiBold
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold
                 });
                 sp.Children.Add(new TextBlock
                 {
                     Text = resolutionText,
-                    Foreground = System.Windows.Media.Brushes.Gray,
-                    FontSize = 12,
-                    Margin = new Thickness(0, 2, 0, 0)
+                    Foreground = (Microsoft.UI.Xaml.Media.Brush)Microsoft.UI.Xaml.Application.Current.Resources["TextSecondary"],
+                    FontSize = 12
                 });
 
-                card.Header = sp;
-                PnlMonitors.Children.Add(card);
+                border.Child = sp;
+                PnlMonitors.Children.Add(border);
                 index++;
             }
         }
 
-        private void MonitorMode_Checked(object sender, RoutedEventArgs e)
-        {
-            SaveMonitorModeSelection();
-        }
-
         private void MonitorMode_Click(object sender, RoutedEventArgs e)
-        {
-            SaveMonitorModeSelection();
-        }
-
-        private void SaveMonitorModeSelection()
         {
             if (_settingsService == null) return;
 
@@ -132,10 +134,11 @@ namespace NotiGlow.UI.Views
         private void BtnTestAnimation_Click(object sender, RoutedEventArgs e)
         {
             if (_glowManager == null || _settingsService == null) return;
+
             var testProfile = new AppProfile
             {
-                AppId = "TestApp",
-                Name = "NotiGlow Test",
+                AppId = "DisplayTest",
+                Name = "Display Test",
                 ColorHex = _settingsService.Current.DefaultColorHex,
                 DurationMs = _settingsService.Current.DefaultDurationMs,
                 Intensity = _settingsService.Current.DefaultIntensity,

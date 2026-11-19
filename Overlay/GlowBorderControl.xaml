@@ -1,16 +1,13 @@
-<UserControl x:Class="NotiGlow.Overlay.GlowBorderControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             d:DesignHeight="720" d:DesignWidth="1280"
-             IsHitTestVisible="False">
-    <Grid Name="MainGrid">
+<UserControl
+    x:Class="NotiGlow.Overlay.GlowBorderControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    IsHitTestVisible="False">
+    <Grid x:Name="MainGrid">
         <!-- Base Glow Layer (Pulse & Ambient, and ambient backdrop for dynamic effects) -->
-        <Grid Name="BaseGlowLayer" Opacity="1">
+        <Grid x:Name="BaseGlowLayer" Opacity="1">
             <!-- Layer 4: Subtle Soft Ambient Spill -->
-            <Border Name="AmbientSpillBorder" BorderThickness="12" IsHitTestVisible="False" Margin="-6" Opacity="0.45">
+            <Border x:Name="AmbientSpillBorder" BorderThickness="12" IsHitTestVisible="False" Margin="-6" Opacity="0.45">
                 <Border.BorderBrush>
                     <SolidColorBrush x:Name="SpillBrush" Color="#FF5865F2"/>
                 </Border.BorderBrush>
@@ -18,7 +15,7 @@
 
             <!-- Layer 3: Edge Glow Gradients -->
             <!-- Top Edge Glow -->
-            <Rectangle Name="TopEdge" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="50" IsHitTestVisible="False">
+            <Rectangle x:Name="TopEdge" VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="50" IsHitTestVisible="False">
                 <Rectangle.Fill>
                     <LinearGradientBrush x:Name="TopGradientBrush" StartPoint="0.5,0" EndPoint="0.5,1">
                         <GradientStop x:Name="TopStop0" Offset="0" Color="#FF5865F2"/>
@@ -28,7 +25,7 @@
             </Rectangle>
 
             <!-- Bottom Edge Glow -->
-            <Rectangle Name="BottomEdge" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="50" IsHitTestVisible="False">
+            <Rectangle x:Name="BottomEdge" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="50" IsHitTestVisible="False">
                 <Rectangle.Fill>
                     <LinearGradientBrush x:Name="BottomGradientBrush" StartPoint="0.5,1" EndPoint="0.5,0">
                         <GradientStop x:Name="BottomStop0" Offset="0" Color="#FF5865F2"/>
@@ -38,7 +35,7 @@
             </Rectangle>
 
             <!-- Left Edge Glow -->
-            <Rectangle Name="LeftEdge" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="50" IsHitTestVisible="False">
+            <Rectangle x:Name="LeftEdge" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="50" IsHitTestVisible="False">
                 <Rectangle.Fill>
                     <LinearGradientBrush x:Name="LeftGradientBrush" StartPoint="0,0.5" EndPoint="1,0.5">
                         <GradientStop x:Name="LeftStop0" Offset="0" Color="#FF5865F2"/>
@@ -48,7 +45,7 @@
             </Rectangle>
 
             <!-- Right Edge Glow -->
-            <Rectangle Name="RightEdge" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="50" IsHitTestVisible="False">
+            <Rectangle x:Name="RightEdge" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="50" IsHitTestVisible="False">
                 <Rectangle.Fill>
                     <LinearGradientBrush x:Name="RightGradientBrush" StartPoint="1,0.5" EndPoint="0,0.5">
                         <GradientStop x:Name="RightStop0" Offset="0" Color="#FF5865F2"/>
@@ -58,17 +55,17 @@
             </Rectangle>
 
             <!-- Layer 2: Crisp Core Inner Border Line -->
-            <Border Name="InnerBorder" BorderThickness="4" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border x:Name="InnerBorder" BorderThickness="4" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Border.BorderBrush>
                     <SolidColorBrush x:Name="InnerBorderBrush" Color="#FF5865F2"/>
                 </Border.BorderBrush>
             </Border>
         </Grid>
 
-        <!-- Dynamic Overlay: Sweep Light Beam (Rich glow beam with wide gradient & bloom) -->
-        <Grid Name="SweepContainer" Visibility="Collapsed" IsHitTestVisible="False">
+        <!-- Dynamic Overlay: Sweep Light Beam -->
+        <Grid x:Name="SweepContainer" Visibility="Collapsed" IsHitTestVisible="False">
             <!-- Sweep Wide Bloom Frame -->
-            <Border Name="SweepBloomBorder" BorderThickness="32" Margin="-8" Opacity="0.55" IsHitTestVisible="False">
+            <Border x:Name="SweepBloomBorder" BorderThickness="32" Margin="-8" Opacity="0.55" IsHitTestVisible="False">
                 <Border.BorderBrush>
                     <LinearGradientBrush x:Name="SweepBloomBrush" StartPoint="0,0" EndPoint="1,1">
                         <GradientStop x:Name="SweepBloomStop0" Offset="0.0" Color="#00FFFFFF"/>
@@ -78,7 +75,7 @@
                 </Border.BorderBrush>
             </Border>
             <!-- Sweep Crisp Core Frame -->
-            <Border Name="SweepOverlay" BorderThickness="8" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border x:Name="SweepOverlay" BorderThickness="8" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Border.BorderBrush>
                     <LinearGradientBrush x:Name="SweepGradientBrush" StartPoint="0,0" EndPoint="1,1">
                         <GradientStop x:Name="SweepStop0" Offset="0.0" Color="#00FFFFFF"/>
@@ -90,23 +87,23 @@
         </Grid>
 
         <!-- Dynamic Overlay: Comet Travelling Head & Trail -->
-        <Grid Name="CometContainer" Visibility="Collapsed" IsHitTestVisible="False">
+        <Grid x:Name="CometContainer" Visibility="Collapsed" IsHitTestVisible="False">
             <!-- Comet Soft Outer Glow Bloom -->
-            <Border Name="CometBloomBorder" BorderThickness="36" Margin="-10" Opacity="0.5" IsHitTestVisible="False">
+            <Border x:Name="CometBloomBorder" BorderThickness="36" Margin="-10" Opacity="0.5" IsHitTestVisible="False">
                 <Border.BorderBrush>
                     <LinearGradientBrush x:Name="CometBloomBrush" StartPoint="0,0" EndPoint="1,0"/>
                 </Border.BorderBrush>
             </Border>
             <!-- Comet Intense Head and Core Trail -->
-            <Border Name="CometOverlay" BorderThickness="10" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border x:Name="CometOverlay" BorderThickness="10" IsHitTestVisible="False" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Border.BorderBrush>
                     <LinearGradientBrush x:Name="CometGradientBrush" StartPoint="0,0" EndPoint="1,0"/>
                 </Border.BorderBrush>
             </Border>
         </Grid>
 
-        <!-- Dynamic Overlay: Ripple Expanding Radial Wave (Center origin, full-screen annular shockwave) -->
-        <Rectangle Name="RippleOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Visibility="Collapsed">
+        <!-- Dynamic Overlay: Ripple Expanding Radial Wave -->
+        <Rectangle x:Name="RippleOverlay" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Visibility="Collapsed">
             <Rectangle.Fill>
                 <RadialGradientBrush x:Name="RippleGradientBrush" MappingMode="Absolute" Center="960,540" GradientOrigin="960,540" RadiusX="0" RadiusY="0">
                     <GradientStop x:Name="RippleStop0" Offset="0.0" Color="#005865F2"/>

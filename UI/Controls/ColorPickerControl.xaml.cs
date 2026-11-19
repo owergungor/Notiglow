@@ -1,30 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using UserControl = System.Windows.Controls.UserControl;
-using Color = System.Windows.Media.Color;
-using ColorConverter = System.Windows.Media.ColorConverter;
-using Point = System.Windows.Point;
-using MouseEventArgs = System.Windows.Input.MouseEventArgs;
-using Cursors = System.Windows.Input.Cursors;
-using Brushes = System.Windows.Media.Brushes;
-using Clipboard = System.Windows.Clipboard;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using VerticalAlignment = System.Windows.VerticalAlignment;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using NotiGlow.Core.Helpers;
 
 namespace NotiGlow.UI.Controls
 {
-    public partial class ColorPickerControl : UserControl
+    public sealed partial class ColorPickerControl : UserControl
     {
         public static readonly DependencyProperty SelectedColorHexProperty =
             DependencyProperty.Register(
                 nameof(SelectedColorHex),
                 typeof(string),
                 typeof(ColorPickerControl),
-                new FrameworkPropertyMetadata("#5865F2", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSelectedColorHexChanged));
+                new PropertyMetadata("#5865F2", OnSelectedColorHexChanged));
 
         public string SelectedColorHex
         {
@@ -53,34 +45,24 @@ namespace NotiGlow.UI.Controls
         };
 
         private bool _isUpdating = false;
-        private bool _isDraggingSatVal = false;
-        private bool _isDraggingHue = false;
-        private double _currentHue = 234;
-        private double _currentSat = 0.63;
-        private double _currentVal = 0.95;
 
         public ColorPickerControl()
         {
-            InitializeComponent();
+            this.InitializeComponent();
             PopulatePresets();
+
+            BtnRgbOption.PointerPressed += (s, e) =>
+            {
+                SelectedColorHex = "RGB";
+            };
         }
 
         private void PopulatePresets()
         {
-            PresetPalette.Children.Clear();
+            PresetPalette.Items.Clear();
             foreach (var preset in Presets)
             {
-                Color color;
-                try
-                {
-                    color = (Color)ColorConverter.ConvertFromString(preset.Hex);
-                }
-                catch
-                {
-                    color = Colors.Purple;
-                }
-
-                bool isWhite = preset.Hex.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase);
+                Color color = ColorHelper.ParseColor(preset.Hex);
 
                 var border = new Border
                 {
@@ -89,174 +71,51 @@ namespace NotiGlow.UI.Controls
                     CornerRadius = new CornerRadius(8),
                     Margin = new Thickness(3),
                     Background = new SolidColorBrush(color),
-                    BorderBrush = isWhite ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Color.FromArgb(90, 255, 255, 255)),
+                    BorderBrush = new SolidColorBrush(Color.FromArgb(90, 255, 255, 255)),
                     BorderThickness = new Thickness(1.5),
-                    ToolTip = $"{preset.Name} ({preset.Hex})",
-                    Cursor = Cursors.Hand,
                     Tag = preset.Hex
                 };
 
-                var checkIcon = new TextBlock
-                {
-                    Text = "✓",
-                    FontSize = 16,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = isWhite ? Brushes.Black : Brushes.White,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    IsHitTestVisible = false,
-                    Visibility = SelectedColorHex.Equals(preset.Hex, StringComparison.OrdinalIgnoreCase) ? Visibility.Visible : Visibility.Collapsed
-                };
+                ToolTipService.SetToolTip(border, $"{preset.Name} ({preset.Hex})");
 
-                border.Child = checkIcon;
-                NotiGlow.UI.Animations.ButtonPressAnimationBehavior.Attach(border);
-
-                Action handleSelection = () =>
+                border.PointerPressed += (s, e) =>
                 {
                     SelectedColorHex = preset.Hex;
-                    UpdateVisuals(preset.Hex);
                 };
 
-                border.PreviewMouseLeftButtonDown += (s, e) =>
-                {
-                    handleSelection();
-                    e.Handled = true;
-                };
-
-                border.MouseLeftButtonDown += (s, e) =>
-                {
-                    handleSelection();
-                    e.Handled = true;
-                };
-
-                PresetPalette.Children.Add(border);
+                PresetPalette.Items.Add(border);
             }
-
-            NotiGlow.UI.Animations.ButtonPressAnimationBehavior.Attach(BtnRgbOption);
-
-            BtnRgbOption.PreviewMouseLeftButtonDown += (s, e) =>
-            {
-                SelectedColorHex = "RGB";
-                UpdateVisuals("RGB");
-                e.Handled = true;
-            };
-
-            BtnRgbOption.MouseLeftButtonDown += (s, e) =>
-            {
-                SelectedColorHex = "RGB";
-                UpdateVisuals("RGB");
-                e.Handled = true;
-            };
-
-            BtnRgbOption.KeyDown += (s, e) =>
-            {
-                if (e.Key == Key.Enter || e.Key == Key.Space)
-                {
-                    SelectedColorHex = "RGB";
-                    UpdateVisuals("RGB");
-                    e.Handled = true;
-                }
-            };
         }
 
         private static void OnSelectedColorHexChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is ColorPickerControl control && !control._isUpdating)
+            if (d is ColorPickerControl control && e.NewValue is string newHex)
             {
-                string newHex = (string)e.NewValue;
                 control.UpdateVisuals(newHex);
-            }
-        }
-
-        private void HexInput_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isUpdating) return;
-
-            string input = HexInput.Text.Trim();
-            if (NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(input))
-            {
-                SelectedColorHex = "RGB";
-                UpdateVisuals("RGB");
-                return;
-            }
-
-            if (!input.StartsWith("#")) input = "#" + input;
-
-            if (input.Length == 7 || input.Length == 9)
-            {
-                try
-                {
-                    Color color = (Color)ColorConverter.ConvertFromString(input);
-                    _isUpdating = true;
-                    SelectedColorHex = input;
-                    ColorPreviewBorder.Background = ColorPreviewBrush;
-                    ColorPreviewBrush.Color = color;
-                    
-                    var (h, s, v) = ColorToHsv(color);
-                    _currentHue = h;
-                    _currentSat = s;
-                    _currentVal = v;
-
-                    SldHue.Value = h;
-                    HueBaseBrush.Color = ColorFromHsv(h, 1.0, 1.0);
-                    UpdateThumbPosition();
-
-                    _isUpdating = false;
-
-                    ColorChanged?.Invoke(this, input);
-                    UpdateSelectionVisuals(input);
-                }
-                catch
-                {
-                    // Invalid hex string during typing
-                }
+                control.ColorChanged?.Invoke(control, newHex);
             }
         }
 
         private void UpdateVisuals(string hex)
         {
-            if (NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(hex))
-            {
-                _isUpdating = true;
-                try
-                {
-                    HexInput.Text = "RGB";
-                    ColorPreviewBorder.Background = NotiGlow.Core.Helpers.ColorHelper.CreateRainbowLinearBrush(new Point(0, 0), new Point(1, 0));
-                    SelectedColorHex = "RGB";
-                    ColorChanged?.Invoke(this, "RGB");
-                    UpdateSelectionVisuals("RGB");
-                }
-                finally
-                {
-                    _isUpdating = false;
-                }
-                return;
-            }
-
+            if (_isUpdating) return;
             _isUpdating = true;
             try
             {
-                if (!hex.StartsWith("#")) hex = "#" + hex;
-                HexInput.Text = hex;
-                Color color = (Color)ColorConverter.ConvertFromString(hex);
-                ColorPreviewBorder.Background = ColorPreviewBrush;
-                ColorPreviewBrush.Color = color;
+                bool isRgb = ColorHelper.IsRgbSpectrum(hex);
+                TxtRgbCheck.Visibility = isRgb ? Visibility.Visible : Visibility.Collapsed;
 
-                var (h, s, v) = ColorToHsv(color);
-                _currentHue = h;
-                _currentSat = s;
-                _currentVal = v;
-
-                SldHue.Value = h;
-                HueBaseBrush.Color = ColorFromHsv(h, 1.0, 1.0);
-                UpdateThumbPosition();
-
-                ColorChanged?.Invoke(this, hex);
-                UpdateSelectionVisuals(hex);
-            }
-            catch
-            {
-                // Fallback
+                if (!isRgb)
+                {
+                    Color color = ColorHelper.ParseColor(hex);
+                    ColorPreviewBrush.Color = color;
+                    HexInput.Text = hex;
+                    NativeColorPicker.Color = color;
+                }
+                else
+                {
+                    HexInput.Text = "RGB";
+                }
             }
             finally
             {
@@ -264,43 +123,30 @@ namespace NotiGlow.UI.Controls
             }
         }
 
-        private void UpdateSelectionVisuals(string selectedHex)
-        {
-            bool isRgb = NotiGlow.Core.Helpers.ColorHelper.IsRgbSpectrum(selectedHex);
-            TxtRgbCheck.Visibility = isRgb ? Visibility.Visible : Visibility.Collapsed;
-            BtnRgbOption.BorderThickness = isRgb ? new Thickness(2.5) : new Thickness(1.0);
-            BtnRgbOption.BorderBrush = isRgb ? Brushes.White : new SolidColorBrush(Color.FromArgb(140, 255, 255, 255));
-
-            foreach (var child in PresetPalette.Children)
-            {
-                if (child is Border b && b.Tag is string hex)
-                {
-                    bool isSelected = !isRgb && hex.Equals(selectedHex, StringComparison.OrdinalIgnoreCase);
-                    b.BorderThickness = isSelected ? new Thickness(3) : new Thickness(1.5);
-                    if (isSelected)
-                    {
-                        b.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5865F2"));
-                    }
-                    else
-                    {
-                        bool isWhite = hex.Equals("#FFFFFF", StringComparison.OrdinalIgnoreCase);
-                        b.BorderBrush = isWhite ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Color.FromArgb(90, 255, 255, 255));
-                    }
-
-                    if (b.Child is TextBlock checkIcon)
-                    {
-                        checkIcon.Visibility = isSelected ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                }
-            }
-        }
-
         private void BtnToggleCustom_Click(object sender, RoutedEventArgs e)
         {
-            PnlCustomHex.Visibility = PnlCustomHex.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-            if (PnlCustomHex.Visibility == Visibility.Visible)
+            PnlCustomHex.Visibility = PnlCustomHex.Visibility == Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+        }
+
+        private void NativeColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
+        {
+            if (_isUpdating) return;
+            SelectedColorHex = ColorHelper.ToCanonicalHex(args.NewColor);
+        }
+
+        private void HexInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isUpdating) return;
+            string text = HexInput.Text.Trim();
+            if (ColorHelper.IsRgbSpectrum(text))
             {
-                UpdateThumbPosition();
+                SelectedColorHex = "RGB";
+            }
+            else if (ColorHelper.TryParseHex(text, out _))
+            {
+                SelectedColorHex = text.StartsWith("#") ? text : "#" + text;
             }
         }
 
@@ -308,192 +154,18 @@ namespace NotiGlow.UI.Controls
         {
             try
             {
-                Clipboard.SetText(HexInput.Text);
+                var package = new DataPackage();
+                package.SetText(SelectedColorHex);
+                Clipboard.SetContent(package);
             }
-            catch
-            {
-                // Silently handle clipboard exceptions
-            }
+            catch { }
         }
 
-        private void SldHue_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (_isUpdating) return;
-            _currentHue = SldHue.Value;
-            HueBaseBrush.Color = ColorFromHsv(_currentHue, 1.0, 1.0);
-            ApplyHsvColor();
-        }
-
-        private void SldHue_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            _isDraggingHue = true;
-            SldHue.CaptureMouse();
-            UpdateHueFromPoint(e.GetPosition(SldHue));
-            e.Handled = true;
-        }
-
-        private void SldHue_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_isDraggingHue)
-            {
-                _isDraggingHue = false;
-                if (SldHue.IsMouseCaptured) SldHue.ReleaseMouseCapture();
-            }
-            e.Handled = true;
-        }
-
-        private void SldHue_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (_isDraggingHue && e.LeftButton == MouseButtonState.Pressed)
-                UpdateHueFromPoint(e.GetPosition(SldHue));
-            else if (_isDraggingHue)
-                StopHueDrag();
-        }
-
-        private void SldHue_LostMouseCapture(object sender, MouseEventArgs e) => _isDraggingHue = false;
-
-        private void StopHueDrag()
-        {
-            _isDraggingHue = false;
-            if (SldHue.IsMouseCaptured) SldHue.ReleaseMouseCapture();
-        }
-
-        private void UpdateHueFromPoint(Point pos)
-        {
-            double width = SldHue.ActualWidth;
-            if (width <= 0) return;
-
-            _currentHue = HueFromPosition(pos.X, width);
-            SldHue.Value = _currentHue;
-        }
-
-        internal static double HueFromPosition(double x, double width) =>
+        public static double HueFromPosition(double x, double width) =>
             width <= 0 ? 0 : Math.Clamp(x / width, 0, 1) * 360;
 
-        internal static (double Saturation, double Value) SatValFromPosition(Point pos, double width, double height) =>
+        public static (double Saturation, double Value) SatValFromPosition(Windows.Foundation.Point pos, double width, double height) =>
             (width <= 0 ? 0 : Math.Clamp(pos.X / width, 0, 1),
              height <= 0 ? 0 : 1.0 - Math.Clamp(pos.Y / height, 0, 1));
-
-        private void SatValCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            _isDraggingSatVal = true;
-            SatValCanvas.CaptureMouse();
-            UpdateSatValFromPoint(e.GetPosition(SatValCanvas));
-            e.Handled = true;
-        }
-
-        private void SatValCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            if (_isDraggingSatVal)
-            {
-                _isDraggingSatVal = false;
-                if (SatValCanvas.IsMouseCaptured) SatValCanvas.ReleaseMouseCapture();
-            }
-            e.Handled = true;
-        }
-
-        private void SatValCanvas_LostMouseCapture(object sender, MouseEventArgs e) => _isDraggingSatVal = false;
-
-        private void SatValCanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (_isDraggingSatVal && e.LeftButton == MouseButtonState.Pressed)
-            {
-                UpdateSatValFromPoint(e.GetPosition(SatValCanvas));
-            }
-            else if (_isDraggingSatVal)
-            {
-                _isDraggingSatVal = false;
-                if (SatValCanvas.IsMouseCaptured) SatValCanvas.ReleaseMouseCapture();
-            }
-        }
-
-        private void UpdateSatValFromPoint(Point pos)
-        {
-            double width = SatValCanvas.ActualWidth > 0 ? SatValCanvas.ActualWidth : 250;
-            double height = SatValCanvas.ActualHeight > 0 ? SatValCanvas.ActualHeight : 130;
-
-            var (saturation, value) = SatValFromPosition(pos, width, height);
-            double x = saturation * width;
-            double y = (1.0 - value) * height;
-
-            _currentSat = saturation;
-            _currentVal = value;
-
-            Canvas.SetLeft(SatValThumb, Math.Clamp(x - 7, 0, width - 14));
-            Canvas.SetTop(SatValThumb, Math.Clamp(y - 7, 0, height - 14));
-
-            ApplyHsvColor();
-        }
-
-        private void UpdateThumbPosition()
-        {
-            double width = SatValCanvas.ActualWidth > 0 ? SatValCanvas.ActualWidth : 250;
-            double height = SatValCanvas.ActualHeight > 0 ? SatValCanvas.ActualHeight : 130;
-
-            double x = _currentSat * width;
-            double y = (1.0 - _currentVal) * height;
-
-            Canvas.SetLeft(SatValThumb, Math.Clamp(x - 7, 0, width - 14));
-            Canvas.SetTop(SatValThumb, Math.Clamp(y - 7, 0, height - 14));
-        }
-
-        private void ApplyHsvColor()
-        {
-            Color color = ColorFromHsv(_currentHue, _currentSat, _currentVal);
-            string hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-
-            _isUpdating = true;
-            HexInput.Text = hex;
-            ColorPreviewBrush.Color = color;
-            SelectedColorHex = hex;
-            _isUpdating = false;
-
-            ColorChanged?.Invoke(this, hex);
-            UpdateSelectionVisuals(hex);
-        }
-
-        public static Color ColorFromHsv(double hue, double saturation, double value)
-        {
-            int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
-            double f = hue / 60 - Math.Floor(hue / 60);
-
-            double vVal = value * 255;
-            byte v = Convert.ToByte(Math.Clamp(vVal, 0, 255));
-            byte p = Convert.ToByte(Math.Clamp(vVal * (1 - saturation), 0, 255));
-            byte q = Convert.ToByte(Math.Clamp(vVal * (1 - f * saturation), 0, 255));
-            byte t = Convert.ToByte(Math.Clamp(vVal * (1 - (1 - f) * saturation), 0, 255));
-
-            if (hi == 0) return Color.FromRgb(v, t, p);
-            if (hi == 1) return Color.FromRgb(q, v, p);
-            if (hi == 2) return Color.FromRgb(p, v, t);
-            if (hi == 3) return Color.FromRgb(p, q, v);
-            if (hi == 4) return Color.FromRgb(t, p, v);
-            return Color.FromRgb(v, p, q);
-        }
-
-        public static (double h, double s, double v) ColorToHsv(Color color)
-        {
-            double r = color.R / 255.0;
-            double g = color.G / 255.0;
-            double b = color.B / 255.0;
-
-            double max = Math.Max(r, Math.Max(g, b));
-            double min = Math.Min(r, Math.Min(g, b));
-            double delta = max - min;
-
-            double h = 0;
-            if (delta > 0)
-            {
-                if (Math.Abs(max - r) < 0.001) h = 60 * (((g - b) / delta) % 6);
-                else if (Math.Abs(max - g) < 0.001) h = 60 * (((b - r) / delta) + 2);
-                else if (Math.Abs(max - b) < 0.001) h = 60 * (((r - g) / delta) + 4);
-            }
-            if (h < 0) h += 360;
-
-            double s = Math.Abs(max) < 0.001 ? 0 : delta / max;
-            double v = max;
-
-            return (h, s, v);
-        }
     }
 }

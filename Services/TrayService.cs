@@ -67,13 +67,6 @@ namespace NotiGlow.Services
         {
             try
             {
-                var uri = new Uri("pack://application:,,,/Assets/NotiGlow.ico", UriKind.Absolute);
-                var stream = System.Windows.Application.GetResourceStream(uri)?.Stream;
-                if (stream != null) using (stream) return new Icon(stream);
-            }
-            catch (Exception ex) { LoggerService.LogWarning($"Failed loading tray icon from pack URI: {ex.Message}"); }
-            try
-            {
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "NotiGlow.ico");
                 if (File.Exists(path)) return new Icon(path);
             }

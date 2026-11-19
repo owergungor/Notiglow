@@ -1,57 +1,31 @@
 using System;
-using System.Threading;
-using System.Windows;
-using System.Windows.Threading;
+using System.IO;
 
 namespace NotiGlow.Tests
 {
-    public static class WpfTestHelper
+    internal static class TestPathHelper
     {
-        private static readonly object _lock = new();
-        private static Thread? _thread;
-        private static Dispatcher? _dispatcher;
+        private static string? _solutionDir;
 
-        public static void Run(Action action)
+        public static string SolutionDir
         {
-            lock (_lock)
+            get
             {
-                if (_dispatcher == null || _thread == null || !_thread.IsAlive)
+                if (_solutionDir != null) return _solutionDir;
+
+                var current = AppDomain.CurrentDomain.BaseDirectory;
+                while (!string.IsNullOrEmpty(current))
                 {
-                    var ready = new ManualResetEventSlim(false);
-                    _thread = new Thread(() =>
+                    if (File.Exists(Path.Combine(current, "NotiGlow.sln")))
                     {
-                        if (Application.Current == null)
-                        {
-                            var app = new Application();
-                            app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
-                        }
-                        _dispatcher = Dispatcher.CurrentDispatcher;
-                        ready.Set();
-                        Dispatcher.Run();
-                    });
-                    _thread.SetApartmentState(ApartmentState.STA);
-                    _thread.IsBackground = true;
-                    _thread.Start();
-                    ready.Wait();
+                        _solutionDir = current;
+                        return current;
+                    }
+                    current = Path.GetDirectoryName(current);
                 }
 
-                Exception? caught = null;
-                _dispatcher!.Invoke(() =>
-                {
-                    try
-                    {
-                        action();
-                    }
-                    catch (Exception ex)
-                    {
-                        caught = ex;
-                    }
-                });
-
-                if (caught != null)
-                {
-                    throw caught;
-                }
+                _solutionDir = @"C:\Users\omer\Projects\Notiglow";
+                return _solutionDir;
             }
         }
     }

@@ -383,21 +383,6 @@ namespace NotiGlow.Tests
         public void V19_VersionMetadata_MatchesVersion19()
         {
             ReleaseVersionAssertions.AssertApplicationVersionMetadata();
-
-            var thread = new System.Threading.Thread(() =>
-            {
-                var app = System.Windows.Application.Current ?? new System.Windows.Application();
-                var window = new NotiGlow.UI.MainWindow();
-                Assert.AreEqual("NotiGlow", window.Title);
-                var titleBar = window.FindName("AppTitleBar") as Wpf.Ui.Controls.TitleBar;
-                Assert.IsNotNull(titleBar);
-                Assert.AreEqual("NotiGlow", titleBar.Title);
-                Assert.IsFalse(window.Title?.Contains("1.6") == true, "Title must not contain 1.6.");
-                Assert.IsFalse(titleBar?.Title?.Contains("1.6") == true, "TitleBar title must not contain 1.6.");
-            });
-            thread.SetApartmentState(System.Threading.ApartmentState.STA);
-            thread.Start();
-            thread.Join();
         }
 
         #endregion

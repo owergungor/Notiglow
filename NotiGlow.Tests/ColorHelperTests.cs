@@ -1,7 +1,6 @@
-using System.Windows.Media;
-using NotiGlow.Core.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Color = System.Windows.Media.Color;
+using NotiGlow.Core.Helpers;
+using Windows.UI;
 
 namespace NotiGlow.Tests
 {
@@ -34,7 +33,7 @@ namespace NotiGlow.Tests
         [TestMethod]
         public void ToCanonicalHex_ReturnsHexFormat()
         {
-            Color color = Color.FromRgb(37, 211, 102);
+            Color color = ColorHelper.FromRgb(37, 211, 102);
             string hex = ColorHelper.ToCanonicalHex(color);
             Assert.AreEqual("#25D366", hex);
         }
