@@ -110,22 +110,23 @@ Starting with **v4.0**, NotiGlow has been completely migrated from WPF to **WinU
 
 ## Download, Installation & Updating
 
-### Direct MSIX Package (v4.0)
-- **Download MSIX (x64)**: [**NotiGlow-v4.0-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.msix)
-- **All Release Assets**: [GitHub Releases — v4.0](https://github.com/owergungor/Notiglow/releases/tag/v4.0)
-- **Microsoft Store**: [NotiGlow on Microsoft Store](https://apps.microsoft.com/detail/9P9L33HG5V64) (Package Identity: `crius.Notiglow`)
+### Direct Downloads (v4.0)
+- **Windows Installer EXE (x64, Self-Contained):** [**NotiGlow-v4.0-x64.exe**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.exe)
+- **MSIX Package (x64, Self-Contained):** [**NotiGlow-v4.0-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.msix)
+- **All Release Assets & SHA-256 Checksums:** [GitHub Releases — v4.0](https://github.com/owergungor/Notiglow/releases/tag/v4.0)
+- **Microsoft Store:** [NotiGlow on Microsoft Store](https://apps.microsoft.com/detail/9P9L33HG5V64) (Package Identity: `crius.Notiglow`)
 
-### Installing or Updating via MSIX
+### Installing or Updating via EXE Installer (`NotiGlow-v4.0-x64.exe`)
+1. Download `NotiGlow-v4.0-x64.exe` from the [v4.0 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
+2. Run the installer — it bundles the complete self-contained **.NET 9.0** and **Windows App SDK 1.6** runtime files (no separate downloads required) and supports optional desktop shortcut and Windows startup registration.
+3. Launch **NotiGlow** from the Start Menu. Your existing `%AppData%\NotiGlow\settings.json` and `profiles.json` are preserved automatically across upgrades.
+
+### Installing or Updating via MSIX (`NotiGlow-v4.0-x64.msix`)
 1. Download `NotiGlow-v4.0-x64.msix` from the [v4.0 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
 2. Double-click the `.msix` file to open Windows App Installer and click **Install** (or **Update** if a previous `crius.Notiglow` MSIX version is already installed — the package identity and publisher remain unchanged for in-place upgrades).
 3. Launch **NotiGlow** from the Start Menu and grant Windows Notification access when prompted.
 
-> **Note on Sideloading**: MSIX packages downloaded directly from GitHub are signed with the project's self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). If Windows App Installer asks to trust the certificate during manual sideloading, import the certificate into *Local Machine → Trusted People* or install via the Microsoft Store / standalone release builds.
-
-### Standalone Setup / Portable ZIP
-1. Download `NotiGlow-Setup-v4.0.exe` or `NotiGlow_4.0_win-x64.zip` from [GitHub Releases](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
-2. Run the setup installer or extract the ZIP archive and launch `NotiGlow.exe`.
-3. Your existing `%AppData%\NotiGlow\settings.json` and `profiles.json` are preserved automatically across updates (including automatic migration of legacy view settings).
+> **Note on Sideloading**: MSIX packages downloaded directly from GitHub are signed with the project's self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). If Windows App Installer asks to trust the certificate during manual sideloading, import the certificate into *Local Machine → Trusted People* or use `NotiGlow-v4.0-x64.exe` / Microsoft Store.
 
 ---
 

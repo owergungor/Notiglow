@@ -450,11 +450,14 @@ namespace NotiGlow.Tests
         public void Test_DialogService_NativeModalContentDialog_AndSingleGameRemoval()
         {
             string dialogCs = File.ReadAllText(Path.Combine(SolutionDir, "Services", "DialogService.cs"));
+            string appsCs = File.ReadAllText(Path.Combine(SolutionDir, "UI", "Views", "ApplicationsView.xaml.cs"));
             StringAssert.Contains(dialogCs, "new ContentDialog");
             StringAssert.Contains(dialogCs, "XamlRoot = xamlRoot");
             StringAssert.Contains(dialogCs, "DefaultButton = ContentDialogButton.Close");
             StringAssert.Contains(dialogCs, "SemaphoreSlim");
             StringAssert.Contains(dialogCs, "DestructiveDialogPrimaryButtonStyle");
+            StringAssert.Contains(appsCs, "DialogService.ShowDestructiveConfirmAsync", "ApplicationsView profile deletion must use native ContentDialog via DialogService.");
+            Assert.IsFalse(appsCs.Contains("ConfirmationDialogWindow"), "ApplicationsView must not use separate ConfirmationDialogWindow.");
 
             // Null XamlRoot safely returns false without crashing
             bool nullRootResult = DialogService.ShowDestructiveConfirmAsync(null, "Remove Game?", "Confirm").GetAwaiter().GetResult();

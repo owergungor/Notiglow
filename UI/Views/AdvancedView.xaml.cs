@@ -430,19 +430,19 @@ namespace NotiGlow.UI.Views
             }
         }
 
-        private void BtnReset_Click(object sender, RoutedEventArgs e)
+        private async void BtnReset_Click(object sender, RoutedEventArgs e)
         {
             string resetTitle = LocalizationService.Instance.GetString("Advanced.ResetConfirmTitle");
             string resetMsg = LocalizationService.Instance.GetString("Advanced.ResetConfirmMsg");
             string resetBtn = LocalizationService.Instance.GetString("Advanced.ResetToDefaults");
             string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
 
-            bool confirmed = ConfirmationDialogWindow.ShowConfirm(
-                string.IsNullOrEmpty(resetTitle) ? "Reset Settings" : resetTitle,
-                string.IsNullOrEmpty(resetMsg) ? "Are you sure you want to reset all settings to defaults?" : resetMsg,
-                confirmText: string.IsNullOrEmpty(resetBtn) ? "Reset" : resetBtn,
-                cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
-                isDestructive: true);
+            bool confirmed = await DialogService.ShowDestructiveConfirmAsync(
+                this.XamlRoot,
+                title: string.IsNullOrEmpty(resetTitle) ? "Reset Settings" : resetTitle,
+                message: string.IsNullOrEmpty(resetMsg) ? "Are you sure you want to reset all settings to defaults?" : resetMsg,
+                primaryButtonText: string.IsNullOrEmpty(resetBtn) ? "Reset" : resetBtn,
+                cancelButtonText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn);
 
             if (confirmed)
             {
