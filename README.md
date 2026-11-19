@@ -17,7 +17,7 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Version-4.1-0078D4?style=flat" alt="Version 4.1" />
+    <img src="https://img.shields.io/badge/Version-4.1-BB9EFF?style=flat" alt="Version 4.1" />
     <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-08a1f7?style=flat&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
     <img src="https://img.shields.io/badge/UI-WinUI%203%20%2F%20Fluent-0067C0?style=flat" alt="WinUI 3 Fluent Design" />
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 9.0" />
