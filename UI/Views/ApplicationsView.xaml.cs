@@ -181,7 +181,7 @@ namespace NotiGlow.UI.Views
                 listCard.SetProfile(profile);
                 listCard.EditRequested += (s, p) => OpenEditor(p, false);
                 listCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
-                listCard.DeleteRequested += (s, p) => DeleteProfile(p);
+                listCard.DeleteRequested += (s, p) => DeleteProfileAsync(p);
                 listCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
                 listCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
 
@@ -333,19 +333,18 @@ namespace NotiGlow.UI.Views
             }
         }
 
-        private void DeleteProfile(AppProfile profile)
+        private async void DeleteProfileAsync(AppProfile profile)
         {
             string confirmTitle = LocalizationService.Instance.GetString("Applications.ConfirmDeleteTitle");
             string confirmMsg = LocalizationService.Instance.GetString("Applications.ConfirmDeleteMsg", profile.Name);
-            string deleteBtn = LocalizationService.Instance.GetString("Applications.Delete");
             string cancelBtn = LocalizationService.Instance.GetString("Common.Cancel");
 
-            bool confirmed = NotiGlow.UI.Dialogs.ConfirmationDialogWindow.ShowConfirm(
-                string.IsNullOrEmpty(confirmTitle) ? "Delete Profile" : confirmTitle,
-                string.IsNullOrEmpty(confirmMsg) ? $"Are you sure you want to delete profile '{profile.Name}'?" : confirmMsg,
-                confirmText: string.IsNullOrEmpty(deleteBtn) ? "Delete" : deleteBtn,
-                cancelText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn,
-                isDestructive: true);
+            bool confirmed = await DialogService.ShowDestructiveConfirmAsync(
+                this.XamlRoot,
+                title: string.IsNullOrEmpty(confirmTitle) ? "Remove Application?" : confirmTitle,
+                message: string.IsNullOrEmpty(confirmMsg) ? $"Are you sure you want to remove '{profile.Name}' from tracked applications?" : confirmMsg,
+                primaryButtonText: "Remove",
+                cancelButtonText: string.IsNullOrEmpty(cancelBtn) ? "Cancel" : cancelBtn);
 
             if (confirmed)
             {
