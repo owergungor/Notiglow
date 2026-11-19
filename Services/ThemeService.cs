@@ -38,8 +38,6 @@ namespace NotiGlow.Services
         public string SliderActiveTrackBackground { get; init; } = "#3B82F6";
         public string DropdownHoverBackground { get; init; } = "#353535";
         public string DropdownSelectedBackground { get; init; } = "#3B82F6";
-        public string SkeletonShimmerBase { get; init; } = "#242424";
-        public string SkeletonShimmerHighlight { get; init; } = "#333333";
     }
 
     public static class ThemeService
@@ -60,7 +58,6 @@ namespace NotiGlow.Services
         public static event EventHandler? ThemeChanged;
 
         private static readonly Dictionary<(ColorTheme, bool), ThemePalette> Palettes = new();
-        private static readonly Dictionary<string, SolidColorBrush> BrushCache = new();
         private static Windows.UI.ViewManagement.UISettings? _uiSettings;
         private static bool _accentWatcherInitialized = false;
 
@@ -148,9 +145,7 @@ namespace NotiGlow.Services
                 SliderThumbBorder = accent,
                 SliderActiveTrackBackground = accent,
                 DropdownHoverBackground = "#353535",
-                DropdownSelectedBackground = accent,
-                SkeletonShimmerBase = "#242424",
-                SkeletonShimmerHighlight = "#333333"
+                DropdownSelectedBackground = accent
             };
         }
 
@@ -184,9 +179,7 @@ namespace NotiGlow.Services
                 SliderThumbBorder = accent,
                 SliderActiveTrackBackground = accent,
                 DropdownHoverBackground = "#F5F5F5",
-                DropdownSelectedBackground = accent,
-                SkeletonShimmerBase = "#EAEAEA",
-                SkeletonShimmerHighlight = "#F5F5F5"
+                DropdownSelectedBackground = accent
             };
         }
 
@@ -313,8 +306,6 @@ namespace NotiGlow.Services
                     SetBrush(res, "SliderActiveTrackBackground", palette.SliderActiveTrackBackground);
                     SetBrush(res, "DropdownHoverBackground", palette.DropdownHoverBackground);
                     SetBrush(res, "DropdownSelectedBackground", palette.DropdownSelectedBackground);
-                    SetBrush(res, "SkeletonShimmerBase", palette.SkeletonShimmerBase);
-                    SetBrush(res, "SkeletonShimmerHighlight", palette.SkeletonShimmerHighlight);
 
                     SetBrush(res, "CardControlBorderBrush", palette.BorderColor);
                     SetBrush(res, "CardControlHeaderBorderBrush", palette.DividerColor);

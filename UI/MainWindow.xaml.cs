@@ -21,6 +21,8 @@ namespace NotiGlow.UI
 
         private bool _isExplicitExit = false;
         private bool _isGeometryInitialized = false;
+        private WindowMaterial? _lastAppliedMaterial = null;
+        private (ColorTheme Theme, ThemeMode Mode, bool IsDark)? _lastAppliedThemeVisuals = null;
         private readonly IntPtr _hwnd;
         private readonly AppWindow _appWindow;
         private readonly NativeMethods.SubclassProc _subclassProc;
@@ -86,6 +88,12 @@ namespace NotiGlow.UI
             Closed += (s, e) =>
             {
                 ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
+                LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+                ThemeService.ThemeChanged -= OnThemeChanged;
+                if (_settingsService != null)
+                {
+                    _settingsService.SettingsChanged -= OnSettingsServiceChanged;
+                }
                 NativeMethods.RemoveWindowSubclass(_hwnd, _subclassProc, (UIntPtr)101);
             };
 
@@ -157,36 +165,39 @@ namespace NotiGlow.UI
             // Taskbar Visibility
             _appWindow.IsShownInSwitchers = _settingsService.Current.ShowInTaskbar;
 
-            _settingsService.SettingsChanged += (s, e) =>
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    _appWindow.IsShownInSwitchers = _settingsService.Current.ShowInTaskbar;
-                    if (Microsoft.UI.Xaml.Application.Current is App app)
-                    {
-                        app.ApplyCurrentSettingsTheme();
-                    }
-                    ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
-                    ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
-                });
-            };
-
-            ThemeService.ThemeChanged += (s, e) =>
-            {
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_settingsService != null)
-                    {
-                        ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
-                        ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
-                    }
-                });
-            };
+            _settingsService.SettingsChanged += OnSettingsServiceChanged;
+            ThemeService.ThemeChanged += OnThemeChanged;
 
             ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
             ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
             ApplyWindowGeometry(_settingsService.Current);
             NavigateToTag("General");
+        }
+
+        private void OnSettingsServiceChanged(object? sender, EventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_settingsService == null) return;
+                if (_appWindow.IsShownInSwitchers != _settingsService.Current.ShowInTaskbar)
+                {
+                    _appWindow.IsShownInSwitchers = _settingsService.Current.ShowInTaskbar;
+                }
+                ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+                ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+            });
+        }
+
+        private void OnThemeChanged(object? sender, EventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_settingsService != null)
+                {
+                    ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+                    ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+                }
+            });
         }
 
         public void ApplyWindowGeometry(AppSettings? settings)
@@ -302,6 +313,11 @@ namespace NotiGlow.UI
 
         public void ApplyBackdropMaterial(WindowMaterial material)
         {
+            if (_lastAppliedMaterial == material && SystemBackdrop != null)
+            {
+                return;
+            }
+
             try
             {
                 switch (material)
@@ -317,6 +333,7 @@ namespace NotiGlow.UI
                         SystemBackdrop = new DesktopAcrylicBackdrop();
                         break;
                 }
+                _lastAppliedMaterial = material;
             }
             catch (Exception ex)
             {
@@ -324,6 +341,7 @@ namespace NotiGlow.UI
                 try
                 {
                     SystemBackdrop = new DesktopAcrylicBackdrop();
+                    _lastAppliedMaterial = WindowMaterial.Acrylic;
                 }
                 catch { }
             }
@@ -334,6 +352,13 @@ namespace NotiGlow.UI
             try
             {
                 bool isDark = ThemeService.GetIsDark(mode);
+                var currentKey = (colorTheme, mode, isDark);
+                if (_lastAppliedThemeVisuals == currentKey)
+                {
+                    return;
+                }
+                _lastAppliedThemeVisuals = currentKey;
+
                 if (this.Content is FrameworkElement rootElement)
                 {
                     rootElement.RequestedTheme = mode switch

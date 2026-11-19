@@ -88,13 +88,13 @@ namespace NotiGlow.Tests
 
         {
 
-            Assert.AreEqual("4.0", UpdateService.CurrentVersionString);
+            Assert.AreEqual("4.1", UpdateService.CurrentVersionString);
 
             ReleaseVersionAssertions.AssertApplicationVersionMetadata();
 
-            ReleaseVersionAssertions.AssertInstallerVersionMetadata("4.0");
+            ReleaseVersionAssertions.AssertInstallerVersionMetadata("4.1");
 
-            ReleaseVersionAssertions.AssertPackageManifestVersionMetadata("4.0");
+            ReleaseVersionAssertions.AssertPackageManifestVersionMetadata("4.1");
 
         }
 
@@ -648,73 +648,65 @@ namespace NotiGlow.Tests
 
         #region Requirement 6: System Tray Left Click & Context Menu
 
-
-
         [TestMethod]
-
+        [Timeout(10000)]
         public void Test_TrayService_SingleLeftClick_Invokes_OpenSettingsAction()
-
         {
+            var prevSyncContext = System.Threading.SynchronizationContext.Current;
+            try
+            {
+                bool opened = false;
+                var settings = new SettingsService();
+                using var tray = new TrayService(settings, () => opened = true, () => { }, () => { });
 
-            bool opened = false;
-
-            var settings = new SettingsService();
-
-            using var tray = new TrayService(settings, () => opened = true, () => { }, () => { });
-
-
-
-            tray.SimulateLeftClickForTesting();
-
-            Assert.IsTrue(opened, "Single left click on tray must open the main window.");
-
+                tray.SimulateLeftClickForTesting();
+                Assert.IsTrue(opened, "Single left click on tray must open the main window.");
+            }
+            finally
+            {
+                System.Threading.SynchronizationContext.SetSynchronizationContext(prevSyncContext);
+            }
         }
 
-
-
         [TestMethod]
-
+        [Timeout(10000)]
         public void Test_TrayService_ContextMenu_Preserved_On_RightClick()
-
         {
+            var prevSyncContext = System.Threading.SynchronizationContext.Current;
+            try
+            {
+                var settings = new SettingsService();
+                using var tray = new TrayService(settings, () => { }, () => { }, () => { });
 
-            var settings = new SettingsService();
-
-            using var tray = new TrayService(settings, () => { }, () => { }, () => { });
-
-
-
-            Assert.IsNotNull(tray.ContextMenuForTesting, "Tray right-click context menu must exist.");
-
-            Assert.IsTrue(tray.ContextMenuForTesting.Items.Count >= 4, "Context menu must have items.");
-
+                Assert.IsNotNull(tray.ContextMenuForTesting, "Tray right-click context menu must exist.");
+                Assert.IsTrue(tray.ContextMenuForTesting.Items.Count >= 4, "Context menu must have items.");
+            }
+            finally
+            {
+                System.Threading.SynchronizationContext.SetSynchronizationContext(prevSyncContext);
+            }
         }
-
-
 
         [TestMethod]
-
+        [Timeout(10000)]
         public void Test_TrayService_RapidClicks_AreThrottled()
-
         {
+            var prevSyncContext = System.Threading.SynchronizationContext.Current;
+            try
+            {
+                int openCount = 0;
+                var settings = new SettingsService();
+                using var tray = new TrayService(settings, () => openCount++, () => { }, () => { });
 
-            int openCount = 0;
-
-            var settings = new SettingsService();
-
-            using var tray = new TrayService(settings, () => openCount++, () => { }, () => { });
-
-
-
-            tray.SimulateLeftClickForTesting();
-
-            tray.SimulateLeftClickForTesting();
-
-            Assert.AreEqual(1, openCount, "Rapid duplicate clicks within throttle threshold must be suppressed.");
-
+                tray.SimulateLeftClickForTesting();
+                tray.SimulateLeftClickForTesting();
+                Assert.AreEqual(1, openCount, "Rapid duplicate clicks within throttle threshold must be suppressed.");
+            }
+            finally
+            {
+                System.Threading.SynchronizationContext.SetSynchronizationContext(prevSyncContext);
+            }
         }
-
-
 
         #endregion
 

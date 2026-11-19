@@ -2,22 +2,22 @@
 
   <img alt="NotiGlow Logo" src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" width="96" height="96" />
 
-  <h1>NotiGlow v4.0</h1>
+  <h1>NotiGlow v4.1</h1>
 
-  <p><strong>Transform your Windows notifications into sleek, ambient fullscreen edge glow animations — now rebuilt natively with WinUI 3 and Windows 11 Fluent Design.</strong></p>
+  <p><strong>Transform your Windows notifications into sleek, ambient fullscreen edge glow animations — built natively with WinUI 3 and Windows 11 Fluent Design.</strong></p>
 
   <p>
     <a href="https://apps.microsoft.com/detail/9P9L33HG5V64" target="_blank">
       <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from Microsoft Store" height="44" />
     </a>
     &nbsp;&nbsp;
-    <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.0" target="_blank">
+    <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.1" target="_blank">
       <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub Releases" height="44" />
     </a>
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/Version-4.0-BB9EFF?style=flat" alt="Version 4.0" />
+    <img src="https://img.shields.io/badge/Version-4.1-BB9EFF?style=flat" alt="Version 4.1" />
     <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-08a1f7?style=flat&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
     <img src="https://img.shields.io/badge/UI-WinUI%203%20%2F%20Fluent-0067C0?style=flat" alt="WinUI 3 Fluent Design" />
     <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 9.0" />
@@ -67,8 +67,9 @@ Starting with **v4.0**, NotiGlow has been completely migrated from WPF to **WinU
 
 ### Supported Game Platforms & App Detection
 - **Game Platform Discovery**:
-  - **Steam** — Scans local Steam library folders (`libraryfolders.vdf` and `appmanifest_*.acf`) to discover installed titles.
+  - **Steam** — Scans local Steam library folders (`libraryfolders.vdf`, `appmanifest_*.acf`, and library cache metadata) to discover installed titles (including Valve Source Engine titles like *Portal* and *Portal 2* and Xbox Game Studios titles like *Halo Infinite*).
   - **Epic Games** — Reads local Epic Games Launcher manifests (`%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests`) to identify installed games.
+  - **Xbox App & Microsoft Store** — Scans Xbox PC library directories (`XboxGames`, `ModifiableWindowsApps`, `.GamingRoot`), GDK `MicrosoftGame.config` manifests, and packaged Store titles.
   - **Manual Addition** — Add any game or desktop executable directly via file selection (`.exe`) or App ID.
 - **Installed Application Detection**:
   - Scans standard Windows installed application entries (Registry Uninstall keys, App Paths, Start Menu shortcuts, and common built-in desktop apps such as Discord, WhatsApp, Telegram, Teams, Spotify, Slack, and Steam) to populate profiles automatically.
@@ -104,29 +105,30 @@ Starting with **v4.0**, NotiGlow has been completely migrated from WPF to **WinU
 - **Operating System**: Windows 10 (version 1809 / build `17763` or newer) or Windows 11
 - **Architecture**: 64-bit (`x64`)
 - **Permissions**: Windows Notification Listener access (`UserNotificationListener`) to detect incoming toast notification headers
-- **Runtime Dependencies**: **None required for end users** — NotiGlow v4.0 is distributed as a **self-contained** package bundling both **.NET 9.0** and **Windows App SDK 1.6** (`WindowsAppSDKSelfContained=true`).
+- **Runtime Dependencies**: **None required for end users** — NotiGlow v4.1 is distributed as a **self-contained** package bundling both **.NET 9.0** and **Windows App SDK 1.6** (`WindowsAppSDKSelfContained=true`).
 
 ---
 
 ## Download, Installation & Updating
 
-### Direct Downloads (v4.0)
-- **Windows Installer EXE (x64, Self-Contained):** [**NotiGlow-v4.0-x64.exe**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.exe)
-- **MSIX Package (x64, Self-Contained):** [**NotiGlow-v4.0-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v4.0/NotiGlow-v4.0-x64.msix)
-- **All Release Assets & SHA-256 Checksums:** [GitHub Releases — v4.0](https://github.com/owergungor/Notiglow/releases/tag/v4.0)
+### Direct Downloads (v4.1)
+- **Windows Installer EXE (x64, Self-Contained):** [**NotiGlow-v4.1-x64.exe**](https://github.com/owergungor/Notiglow/releases/download/v4.1/NotiGlow-v4.1-x64.exe)
+- **MSIX Package (x64, Self-Contained):** [**NotiGlow-v4.1-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v4.1/NotiGlow-v4.1-x64.msix)
+- **Portable ZIP Archive (x64, Self-Contained):** [**NotiGlow_4.1_win-x64.zip**](https://github.com/owergungor/Notiglow/releases/download/v4.1/NotiGlow_4.1_win-x64.zip)
+- **All Release Assets & SHA-256 Checksums:** [GitHub Releases — v4.1](https://github.com/owergungor/Notiglow/releases/tag/v4.1)
 - **Microsoft Store:** [NotiGlow on Microsoft Store](https://apps.microsoft.com/detail/9P9L33HG5V64) (Package Identity: `crius.Notiglow`)
 
-### Installing or Updating via EXE Installer (`NotiGlow-v4.0-x64.exe`)
-1. Download `NotiGlow-v4.0-x64.exe` from the [v4.0 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
+### Installing or Updating via EXE Installer (`NotiGlow-v4.1-x64.exe`)
+1. Download `NotiGlow-v4.1-x64.exe` from the [v4.1 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.1).
 2. Run the installer — it bundles the complete self-contained **.NET 9.0** and **Windows App SDK 1.6** runtime files (no separate downloads required) and supports optional desktop shortcut and Windows startup registration.
 3. Launch **NotiGlow** from the Start Menu. Your existing `%AppData%\NotiGlow\settings.json` and `profiles.json` are preserved automatically across upgrades.
 
-### Installing or Updating via MSIX (`NotiGlow-v4.0-x64.msix`)
-1. Download `NotiGlow-v4.0-x64.msix` from the [v4.0 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.0).
+### Installing or Updating via MSIX (`NotiGlow-v4.1-x64.msix`)
+1. Download `NotiGlow-v4.1-x64.msix` from the [v4.1 Release page](https://github.com/owergungor/Notiglow/releases/tag/v4.1).
 2. Double-click the `.msix` file to open Windows App Installer and click **Install** (or **Update** if a previous `crius.Notiglow` MSIX version is already installed — the package identity and publisher remain unchanged for in-place upgrades).
 3. Launch **NotiGlow** from the Start Menu and grant Windows Notification access when prompted.
 
-> **Note on Sideloading**: MSIX packages downloaded directly from GitHub are signed with the project's self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). If Windows App Installer asks to trust the certificate during manual sideloading, import the certificate into *Local Machine → Trusted People* or use `NotiGlow-v4.0-x64.exe` / Microsoft Store.
+> **Note on Sideloading**: MSIX packages downloaded directly from GitHub are signed with the project's self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). If Windows App Installer asks to trust the certificate during manual sideloading, import the certificate into *Local Machine → Trusted People* or use `NotiGlow-v4.1-x64.exe` / Microsoft Store.
 
 ---
 
@@ -170,5 +172,5 @@ Read the full Privacy Policy here:
 - **Contributing**: Bug reports, feature suggestions, and pull requests are welcome. Please review [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue on [GitHub Issues](https://github.com/owergungor/Notiglow/issues).
 
 <div align="center">
-  <sub>NotiGlow v4.0 &bull; <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.0">Releases</a> &bull; <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a> &bull; <a href="LICENSE">MIT License</a></sub>
+  <sub>NotiGlow v4.1 &bull; <a href="https://github.com/owergungor/Notiglow/releases/tag/v4.1">Releases</a> &bull; <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a> &bull; <a href="LICENSE">MIT License</a></sub>
 </div>

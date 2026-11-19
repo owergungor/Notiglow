@@ -153,13 +153,25 @@ namespace NotiGlow
                 string lastKnownLanguage = _settingsService.Current.AppLanguage;
                 _settingsService.SettingsChanged += (s, ev) =>
                 {
-                    ApplyCurrentSettingsTheme();
-                    if (_settingsService.Current.AppLanguage != lastKnownLanguage)
+                    void HandleSettingsChanged()
                     {
-                        lastKnownLanguage = _settingsService.Current.AppLanguage;
-                        LocalizationService.Instance.SetLanguage(lastKnownLanguage, persist: false);
+                        ApplyCurrentSettingsTheme();
+                        if (_settingsService.Current.AppLanguage != lastKnownLanguage)
+                        {
+                            lastKnownLanguage = _settingsService.Current.AppLanguage;
+                            LocalizationService.Instance.SetLanguage(lastKnownLanguage, persist: false);
+                        }
+                        NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
                     }
-                    NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
+
+                    if (_mainWindow?.DispatcherQueue != null && !_mainWindow.DispatcherQueue.HasThreadAccess)
+                    {
+                        _mainWindow.DispatcherQueue.TryEnqueue(HandleSettingsChanged);
+                    }
+                    else
+                    {
+                        HandleSettingsChanged();
+                    }
                 };
 
                 // Notification Received Event
@@ -220,19 +232,22 @@ namespace NotiGlow
                     _ = CheckForUpdatesInBackgroundAsync();
                 }
 
-                // Sync installed games in background
-                _ = System.Threading.Tasks.Task.Run(async () =>
+                // Sync installed games in background on first run or when tracked games list is empty
+                if (_settingsService.Current.TrackedGames == null || _settingsService.Current.TrackedGames.Count == 0)
                 {
-                    try
+                    _ = System.Threading.Tasks.Task.Run(async () =>
                     {
-                        await System.Threading.Tasks.Task.Delay(2500);
-                        await _glowManager.GameDetectionService.ScanAndSyncTrackedGamesAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        LoggerService.LogWarning($"Background game detection sync error: {ex.Message}");
-                    }
-                });
+                        try
+                        {
+                            await System.Threading.Tasks.Task.Delay(2500);
+                            await _glowManager.GameDetectionService.ScanAndSyncTrackedGamesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggerService.LogWarning($"Background game detection sync error: {ex.Message}");
+                        }
+                    });
+                }
 
                 LoggerService.LogStartupPhase("READY");
             }
@@ -279,16 +294,21 @@ namespace NotiGlow
         {
             try
             {
-                var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+                using var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
                 var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName)
                     .Concat(System.Diagnostics.Process.GetProcessesByName("GlowBorder"));
+                bool found = false;
                 foreach (var p in processes)
                 {
-                    if (p.Id != currentProcess.Id)
+                    using (p)
                     {
-                        return true;
+                        if (!found && p.Id != currentProcess.Id)
+                        {
+                            found = true;
+                        }
                     }
                 }
+                return found;
             }
             catch { }
             return false;
@@ -399,7 +419,7 @@ namespace NotiGlow
         {
             try
             {
-                _glowManager?.StopAllOverlays();
+                _glowManager?.CloseAllOverlays();
                 _trayService?.Dispose();
                 _notificationService?.Stop();
 

@@ -24,11 +24,13 @@ namespace NotiGlow.Services
         {
             "Microsoft.WindowsStore",
             "Microsoft.GamingApp",
+            "Microsoft.GamingServices",
             "Microsoft.XboxGamingOverlay",
             "Microsoft.XboxIdentityProvider",
             "Microsoft.XboxSpeechToTextOverlay",
             "Microsoft.XboxTCUI",
             "Microsoft.XboxGameOverlay",
+            "Microsoft.XboxGameCallableUI",
             "Microsoft.WindowsTerminal",
             "Microsoft.GetHelp",
             "Microsoft.Getstarted",
@@ -43,7 +45,17 @@ namespace NotiGlow.Services
             "Microsoft.People",
             "Microsoft.MicrosoftOfficeHub",
             "Microsoft.MicrosoftSolitaireCollection",
+            "MicrosoftWindows.",
+            "Microsoft.Windows.",
+            "Windows.",
             "crius.Notiglow"
+        };
+
+        private static readonly Dictionary<string, string> KnownStorePackageDisplayNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Microsoft.254428597CFE2"] = "Halo Infinite",
+            ["HaloInfinite"] = "Halo Infinite",
+            ["HaloInfinite.exe"] = "Halo Infinite"
         };
 
         private static readonly HashSet<string> IgnoredExeNames = new(StringComparer.OrdinalIgnoreCase)
@@ -51,8 +63,10 @@ namespace NotiGlow.Services
             "unins000.exe", "uninstall.exe", "setup.exe", "installer.exe", "crashpad_handler.exe",
             "crashreport.exe", "crashhandler.exe", "unitycrashhandler.exe", "unitycrashhandler64.exe",
             "dxsetup.exe", "vcredist_x64.exe", "vcredist_x86.exe", "easyanticheat.exe", "battleye.exe",
-            "gamelaunchhelper.exe", "gamelauncher.exe"
+            "gamelaunchhelper.exe", "gamelauncher.exe", "appactions.exe"
         };
+
+        private static readonly Regex UnderscoreCollapseRegex = new(@"_+", RegexOptions.Compiled);
 
         public XboxAndStoreGameDetector(
             Func<IEnumerable<string>>? getXboxLibraryDrives = null,
@@ -106,12 +120,15 @@ namespace NotiGlow.Services
 
                 string pathKey = fullPath.ToLowerInvariant();
                 string nameKey = (game.Name ?? string.Empty).Trim().ToLowerInvariant();
+                bool isSharedHelper = exeName.Equals("gamelaunchhelper.exe", StringComparison.OrdinalIgnoreCase) ||
+                                      exeName.Equals("gdklauncher.exe", StringComparison.OrdinalIgnoreCase);
 
-                if (IgnoredExeNames.Contains(exeName)) return;
+                if (IgnoredExeNames.Contains(exeName) && !isSharedHelper) return;
 
-                if (!seenExes.Contains(exeName) && !seenPaths.Contains(pathKey) && (string.IsNullOrEmpty(nameKey) || !seenNames.Contains(nameKey)))
+                bool exeSeen = !isSharedHelper && seenExes.Contains(exeName);
+                if (!exeSeen && !seenPaths.Contains(pathKey) && (string.IsNullOrEmpty(nameKey) || !seenNames.Contains(nameKey)))
                 {
-                    seenExes.Add(exeName);
+                    if (!isSharedHelper) seenExes.Add(exeName);
                     seenPaths.Add(pathKey);
                     if (!string.IsNullOrEmpty(nameKey)) seenNames.Add(nameKey);
                     detected.Add(game);
@@ -185,11 +202,11 @@ namespace NotiGlow.Services
                     {
                         try
                         {
-                            string content = _readAllText(gamingRootFile);
+                            string content = ParseGamingRootContent(_readAllText(gamingRootFile));
                             var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (var line in lines)
                             {
-                                string trimmed = line.Trim();
+                                string trimmed = line.Trim().Trim('\\', '/');
                                 if (!string.IsNullOrEmpty(trimmed) && trimmed.IndexOfAny(Path.GetInvalidPathChars()) < 0)
                                 {
                                     string customRoot = Path.IsPathRooted(trimmed) ? trimmed : Path.Combine(drive, trimmed);
@@ -234,23 +251,51 @@ namespace NotiGlow.Services
             return results;
         }
 
+        private static string ParseGamingRootContent(string rawContent)
+        {
+            if (string.IsNullOrEmpty(rawContent)) return string.Empty;
+
+            // Binary .GamingRoot starts with "RGBX" header followed by 4 version bytes and UTF-16LE chars (with '\0' bytes)
+            string strippedNulls = rawContent.Replace("\0", string.Empty);
+            if (strippedNulls.StartsWith("RGBX", StringComparison.Ordinal))
+            {
+                strippedNulls = strippedNulls.Substring(4);
+            }
+
+            var sb = new System.Text.StringBuilder(strippedNulls.Length);
+            foreach (char c in strippedNulls)
+            {
+                if (c == '\r' || c == '\n' || c >= 32)
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
+        }
+
         public DetectedGameInfo? ParseXboxGameFolder(string gameFolder)
         {
             if (!_directoryExists(gameFolder)) return null;
 
-            string folderName = Path.GetFileName(gameFolder);
+            string folderName = Path.GetFileName(gameFolder.TrimEnd('\\', '/'));
+            if (folderName.Equals("GameSave", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             string contentDir = Path.Combine(gameFolder, "Content");
             string searchDir = _directoryExists(contentDir) ? contentDir : gameFolder;
 
             string? gameName = null;
             string? exeName = null;
+            string? fallbackHelperExeName = null;
             string? logoPath = null;
             string? appId = null;
 
             bool hasMicrosoftGameConfig = false;
             bool hasAppxManifest = false;
 
-            // 1. Try MicrosoftGame.config
+            // 1. Try MicrosoftGame.config (GDK format used by Halo Infinite & Xbox PC games)
             string configPath = Path.Combine(searchDir, "MicrosoftGame.config");
             if (!_fileExists(configPath))
             {
@@ -266,14 +311,17 @@ namespace NotiGlow.Services
                     var doc = XDocument.Parse(xml);
                     var root = doc.Root;
 
-                    var identity = root?.Element("Identity");
+                    var identity = root?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("Identity", StringComparison.OrdinalIgnoreCase));
                     appId = identity?.Attribute("Name")?.Value;
 
-                    var shellVisuals = root?.Element("ShellVisuals");
-                    gameName = shellVisuals?.Attribute("DisplayName")?.Value;
+                    var shellVisuals = root?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("ShellVisuals", StringComparison.OrdinalIgnoreCase));
+                    gameName = shellVisuals?.Attribute("DefaultDisplayName")?.Value
+                            ?? shellVisuals?.Attribute("DisplayName")?.Value;
+
                     string? logoRel = shellVisuals?.Attribute("Square150x150Logo")?.Value
                                    ?? shellVisuals?.Attribute("Square44x44Logo")?.Value
-                                   ?? shellVisuals?.Attribute("DefaultDisplayName")?.Value;
+                                   ?? shellVisuals?.Attribute("StoreLogo")?.Value
+                                   ?? shellVisuals?.Attribute("SplashScreenImage")?.Value;
 
                     if (!string.IsNullOrEmpty(logoRel))
                     {
@@ -282,21 +330,37 @@ namespace NotiGlow.Services
                         {
                             logoPath = candidateLogo;
                         }
+                        else
+                        {
+                            candidateLogo = Path.Combine(gameFolder, logoRel);
+                            if (_fileExists(candidateLogo))
+                            {
+                                logoPath = candidateLogo;
+                            }
+                        }
                     }
 
-                    var execList = root?.Element("ExecutableList")?.Elements("Executable");
+                    var execListElem = root?.Elements().FirstOrDefault(e => e.Name.LocalName.Equals("ExecutableList", StringComparison.OrdinalIgnoreCase));
+                    var execList = execListElem?.Elements().Where(e => e.Name.LocalName.Equals("Executable", StringComparison.OrdinalIgnoreCase));
                     if (execList != null)
                     {
                         foreach (var exec in execList)
                         {
                             string? targetDevice = exec.Attribute("TargetDeviceFamily")?.Value;
-                            if (string.IsNullOrEmpty(targetDevice) || targetDevice.Equals("PC", StringComparison.OrdinalIgnoreCase))
+                            if (string.IsNullOrEmpty(targetDevice) ||
+                                targetDevice.Equals("PC", StringComparison.OrdinalIgnoreCase) ||
+                                targetDevice.Equals("Desktop", StringComparison.OrdinalIgnoreCase))
                             {
                                 string? candidateExe = exec.Attribute("Name")?.Value;
-                                if (!string.IsNullOrEmpty(candidateExe) && !IgnoredExeNames.Contains(candidateExe))
+                                if (!string.IsNullOrEmpty(candidateExe))
                                 {
-                                    exeName = candidateExe;
-                                    break;
+                                    string candidateFileName = Path.GetFileName(candidateExe);
+                                    if (!IgnoredExeNames.Contains(candidateFileName))
+                                    {
+                                        exeName = candidateExe;
+                                        break;
+                                    }
+                                    fallbackHelperExeName ??= candidateExe;
                                 }
                             }
                         }
@@ -319,14 +383,28 @@ namespace NotiGlow.Services
                 {
                     string xml = _readAllText(manifestPath);
                     var doc = XDocument.Parse(xml);
-                    var ns = doc.Root?.GetDefaultNamespace() ?? XNamespace.None;
-                    var appElem = doc.Descendants(ns + "Application").FirstOrDefault();
+
+                    if (string.IsNullOrEmpty(appId))
+                    {
+                        var identityElem = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("Identity", StringComparison.OrdinalIgnoreCase));
+                        appId = identityElem?.Attribute("Name")?.Value;
+                    }
+
+                    var appElem = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("Application", StringComparison.OrdinalIgnoreCase));
                     if (appElem != null)
                     {
                         string? candidateExe = appElem.Attribute("Executable")?.Value;
-                        if (!string.IsNullOrEmpty(candidateExe) && !IgnoredExeNames.Contains(candidateExe))
+                        if (!string.IsNullOrEmpty(candidateExe))
                         {
-                            exeName = candidateExe;
+                            string candidateFileName = Path.GetFileName(candidateExe);
+                            if (string.IsNullOrEmpty(exeName) && !IgnoredExeNames.Contains(candidateFileName))
+                            {
+                                exeName = candidateExe;
+                            }
+                            else
+                            {
+                                fallbackHelperExeName ??= candidateExe;
+                            }
                         }
                         if (string.IsNullOrEmpty(appId))
                         {
@@ -334,10 +412,23 @@ namespace NotiGlow.Services
                         }
                     }
 
-                    if (string.IsNullOrEmpty(gameName))
+                    if (string.IsNullOrWhiteSpace(gameName) || gameName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
                     {
-                        var visualElements = doc.Descendants().FirstOrDefault(d => d.Name.LocalName == "VisualElements");
-                        gameName = visualElements?.Attribute("DisplayName")?.Value;
+                        var visualElements = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("VisualElements", StringComparison.OrdinalIgnoreCase));
+                        string? veName = visualElements?.Attribute("DisplayName")?.Value;
+                        if (!string.IsNullOrWhiteSpace(veName) && !veName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            gameName = veName;
+                        }
+                    }
+
+                    if (string.IsNullOrWhiteSpace(gameName) || gameName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var propsDisplayName = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("DisplayName", StringComparison.OrdinalIgnoreCase))?.Value;
+                        if (!string.IsNullOrWhiteSpace(propsDisplayName) && !propsDisplayName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            gameName = propsDisplayName;
+                        }
                     }
                 }
                 catch { }
@@ -352,37 +443,23 @@ namespace NotiGlow.Services
                 return null;
             }
 
-            // 3. Fallback to locating main executable in directory
-            string? resolvedExePath = null;
-            if (!string.IsNullOrEmpty(exeName))
-            {
-                string candidate = Path.Combine(searchDir, exeName);
-                if (_fileExists(candidate))
-                {
-                    resolvedExePath = candidate;
-                }
-                else
-                {
-                    candidate = Path.Combine(gameFolder, exeName);
-                    if (_fileExists(candidate))
-                    {
-                        resolvedExePath = candidate;
-                    }
-                }
-            }
+            // 3. Fallback to locating main executable in directory (and subdirectories depth 1-2)
+            string? resolvedExePath = TryResolveExecutableInFolder(searchDir, gameFolder, exeName);
 
             if (string.IsNullOrEmpty(resolvedExePath) && (hasMicrosoftGameConfig || hasAppxManifest || isExplicitXboxDir))
             {
-                try
-                {
-                    string[] exes = _getFiles(searchDir, "*.exe");
-                    resolvedExePath = exes.FirstOrDefault(f =>
-                    {
-                        string fn = Path.GetFileName(f);
-                        return !IgnoredExeNames.Contains(fn);
-                    });
-                }
-                catch { }
+                resolvedExePath = FindFirstGameExecutableInTree(searchDir, includeHelpers: false)
+                               ?? (searchDir != gameFolder ? FindFirstGameExecutableInTree(gameFolder, includeHelpers: false) : null);
+            }
+
+            if (string.IsNullOrEmpty(resolvedExePath) && !string.IsNullOrEmpty(fallbackHelperExeName))
+            {
+                resolvedExePath = TryResolveExecutableInFolder(searchDir, gameFolder, fallbackHelperExeName);
+            }
+
+            if (string.IsNullOrEmpty(resolvedExePath) && (hasMicrosoftGameConfig || hasAppxManifest))
+            {
+                resolvedExePath = FindFirstGameExecutableInTree(searchDir, includeHelpers: true);
             }
 
             if (string.IsNullOrEmpty(resolvedExePath) || !_fileExists(resolvedExePath))
@@ -390,9 +467,32 @@ namespace NotiGlow.Services
                 return null;
             }
 
+            // Resolve opaque package identity or folder name (e.g. Microsoft.254428597CFE2 -> Halo Infinite)
+            if (!string.IsNullOrEmpty(appId) && KnownStorePackageDisplayNames.TryGetValue(appId, out var knownByAppId))
+            {
+                if (string.IsNullOrWhiteSpace(gameName) ||
+                    gameName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase) ||
+                    gameName.Equals(appId, StringComparison.OrdinalIgnoreCase))
+                {
+                    gameName = knownByAppId;
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(gameName) || gameName.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
             {
-                gameName = CleanGameDisplayName(folderName);
+                string exeStem = Path.GetFileNameWithoutExtension(resolvedExePath);
+                if (KnownStorePackageDisplayNames.TryGetValue(exeStem, out var knownByExe))
+                {
+                    gameName = knownByExe;
+                }
+                else
+                {
+                    gameName = CleanGameDisplayName(folderName);
+                }
+            }
+            else
+            {
+                gameName = CleanGameDisplayName(gameName);
             }
 
             return new DetectedGameInfo
@@ -403,6 +503,68 @@ namespace NotiGlow.Services
                 AppId = appId ?? Path.GetFileName(resolvedExePath),
                 IconPath = logoPath
             };
+        }
+
+        private string? TryResolveExecutableInFolder(string searchDir, string gameFolder, string? exeName)
+        {
+            if (string.IsNullOrWhiteSpace(exeName)) return null;
+
+            string normalizedExe = exeName.Replace('/', '\\').TrimStart('\\');
+            string candidate = Path.Combine(searchDir, normalizedExe);
+            if (_fileExists(candidate)) return candidate;
+
+            candidate = Path.Combine(gameFolder, normalizedExe);
+            if (_fileExists(candidate)) return candidate;
+
+            string fileNameOnly = Path.GetFileName(normalizedExe);
+            if (!string.Equals(fileNameOnly, normalizedExe, StringComparison.OrdinalIgnoreCase))
+            {
+                candidate = Path.Combine(searchDir, fileNameOnly);
+                if (_fileExists(candidate)) return candidate;
+
+                candidate = Path.Combine(gameFolder, fileNameOnly);
+                if (_fileExists(candidate)) return candidate;
+            }
+
+            return null;
+        }
+
+        private string? FindFirstGameExecutableInTree(string rootDir, bool includeHelpers)
+        {
+            var candidates = new List<string>();
+            try
+            {
+                candidates.AddRange(_getFiles(rootDir, "*.exe"));
+            }
+            catch { }
+
+            try
+            {
+                foreach (var sub in _getDirectories(rootDir))
+                {
+                    try { candidates.AddRange(_getFiles(sub, "*.exe")); } catch { }
+                    try
+                    {
+                        foreach (var sub2 in _getDirectories(sub))
+                        {
+                            try { candidates.AddRange(_getFiles(sub2, "*.exe")); } catch { }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            return candidates.FirstOrDefault(f =>
+            {
+                string fn = Path.GetFileName(f);
+                if (includeHelpers && (fn.Equals("gamelaunchhelper.exe", StringComparison.OrdinalIgnoreCase) ||
+                                       fn.Equals("gdklauncher.exe", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+                return !IgnoredExeNames.Contains(fn);
+            });
         }
 
         public IReadOnlyList<DetectedGameInfo> ScanGameConfigStoreRegistry()
@@ -494,6 +656,9 @@ namespace NotiGlow.Services
                 var pm = new Windows.Management.Deployment.PackageManager();
                 var packages = pm.FindPackagesForUser(string.Empty);
 
+                using var repoKey = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages");
+                string[] repoSubKeyNames = repoKey?.GetSubKeyNames() ?? Array.Empty<string>();
+
                 foreach (var pkg in packages)
                 {
                     try
@@ -513,8 +678,15 @@ namespace NotiGlow.Services
                         }
                         catch { }
 
+                        if (!string.IsNullOrEmpty(installedPath) &&
+                            (installedPath.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase) ||
+                             installedPath.Contains(@"\Windows\System32\", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            continue;
+                        }
+
                         // Check if package has game classification before enumerating app entries
-                        bool isGame = IsPackageGame(pkg, installedPath);
+                        bool isGame = IsPackageGame(pkg, installedPath, repoKey, repoSubKeyNames);
                         if (!isGame) continue;
 
                         if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 19041, 0)) continue;
@@ -535,16 +707,28 @@ namespace NotiGlow.Services
                                 string exePath = string.Empty;
                                 if (!string.IsNullOrEmpty(installedPath) && _directoryExists(installedPath))
                                 {
-                                    try
+                                    var parsedFolderGame = ParseXboxGameFolder(installedPath);
+                                    if (parsedFolderGame != null)
                                     {
-                                        string[] exes = _getFiles(installedPath, "*.exe");
-                                        string? found = exes.FirstOrDefault(f => !IgnoredExeNames.Contains(Path.GetFileName(f)));
-                                        if (!string.IsNullOrEmpty(found))
+                                        exePath = parsedFolderGame.ExecutablePath;
+                                        if (dispName.Equals(pkgName, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(parsedFolderGame.Name))
                                         {
-                                            exePath = found;
+                                            dispName = parsedFolderGame.Name;
                                         }
                                     }
-                                    catch { }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            string[] exes = _getFiles(installedPath, "*.exe");
+                                            string? found = exes.FirstOrDefault(f => !IgnoredExeNames.Contains(Path.GetFileName(f)));
+                                            if (!string.IsNullOrEmpty(found))
+                                            {
+                                                exePath = found;
+                                            }
+                                        }
+                                        catch { }
+                                    }
                                 }
 
                                 if (string.IsNullOrEmpty(exePath))
@@ -556,7 +740,9 @@ namespace NotiGlow.Services
                                 {
                                     Name = CleanGameDisplayName(dispName),
                                     ExecutablePath = exePath,
-                                    Launcher = (pkgName.Contains("Xbox", StringComparison.OrdinalIgnoreCase) || pkgName.Contains("Gaming", StringComparison.OrdinalIgnoreCase)) ? "Xbox" : "Microsoft Store",
+                                    Launcher = (pkgName.Contains("Xbox", StringComparison.OrdinalIgnoreCase) ||
+                                                pkgName.Contains("Gaming", StringComparison.OrdinalIgnoreCase) ||
+                                                KnownStorePackageDisplayNames.ContainsKey(pkgName)) ? "Xbox" : "Microsoft Store",
                                     AppId = aumid,
                                     AumId = aumid
                                 });
@@ -575,33 +761,55 @@ namespace NotiGlow.Services
             return results;
         }
 
-        private bool IsPackageGame(Windows.ApplicationModel.Package pkg, string? installedPath)
+        private bool IsPackageGame(
+            Windows.ApplicationModel.Package pkg,
+            string? installedPath,
+            RegistryKey? repoKey,
+            string[] repoSubKeyNames)
         {
             try
             {
-                // Check appxmanifest.xml Category="game"
+                if (KnownStorePackageDisplayNames.ContainsKey(pkg.Id.Name))
+                {
+                    return true;
+                }
+
+                // Check MicrosoftGame.config or appxmanifest.xml Category="game"
                 if (!string.IsNullOrEmpty(installedPath))
                 {
+                    if (_fileExists(Path.Combine(installedPath, "MicrosoftGame.config")) ||
+                        _fileExists(Path.Combine(installedPath, "Content", "MicrosoftGame.config")))
+                    {
+                        return true;
+                    }
+
                     string manifestPath = Path.Combine(installedPath, "appxmanifest.xml");
                     if (_fileExists(manifestPath))
                     {
                         string xml = _readAllText(manifestPath);
                         if (xml.Contains("Category=\"game\"", StringComparison.OrdinalIgnoreCase) ||
-                            xml.Contains("Category=\"Game\"", StringComparison.OrdinalIgnoreCase) ||
-                            xml.Contains("xboxLive", StringComparison.OrdinalIgnoreCase) ||
-                            xml.Contains("gaming", StringComparison.OrdinalIgnoreCase))
+                            xml.Contains("Category=\"games\"", StringComparison.OrdinalIgnoreCase) ||
+                            xml.Contains("xboxLive", StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }
                     }
                 }
 
-                // Check AppModel repository registry for category
-                string pkgFamily = pkg.Id.FamilyName;
-                using var repoKey = Registry.CurrentUser.OpenSubKey(@"Software\Classes\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages");
-                if (repoKey != null)
+                // Check AppModel repository registry for category using pre-fetched subkeys
+                if (repoKey != null && repoSubKeyNames.Length > 0)
                 {
-                    string? matchKey = repoKey.GetSubKeyNames().FirstOrDefault(k => k.StartsWith(pkg.Id.Name, StringComparison.OrdinalIgnoreCase));
+                    string pkgName = pkg.Id.Name;
+                    string? matchKey = null;
+                    for (int i = 0; i < repoSubKeyNames.Length; i++)
+                    {
+                        if (repoSubKeyNames[i].StartsWith(pkgName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            matchKey = repoSubKeyNames[i];
+                            break;
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(matchKey))
                     {
                         using var targetKey = repoKey.OpenSubKey($@"{matchKey}\Applications");
@@ -650,13 +858,27 @@ namespace NotiGlow.Services
             if (string.IsNullOrWhiteSpace(rawName)) return "Unknown Game";
             string clean = rawName.Trim();
 
+            if (KnownStorePackageDisplayNames.TryGetValue(clean, out var knownName))
+            {
+                return knownName;
+            }
+
+            foreach (var kvp in KnownStorePackageDisplayNames)
+            {
+                if (clean.StartsWith(kvp.Key + "_", StringComparison.OrdinalIgnoreCase) ||
+                    clean.StartsWith(kvp.Key + "!", StringComparison.OrdinalIgnoreCase))
+                {
+                    return kvp.Value;
+                }
+            }
+
             // Strip resource strings e.g. "ms-resource:..."
             if (clean.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase) || clean.StartsWith("@{", StringComparison.OrdinalIgnoreCase))
             {
                 return "PC Game";
             }
 
-            clean = Regex.Replace(clean, @"_+", " ");
+            clean = UnderscoreCollapseRegex.Replace(clean, " ");
             return clean.Trim();
         }
     }

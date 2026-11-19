@@ -29,7 +29,7 @@ namespace NotiGlow.Services
         {
             _settingsService = settingsService;
             _profileService = profileService;
-            _gameDetectionService = gameDetectionService ?? new GameDetectionService(settingsService);
+            _gameDetectionService = gameDetectionService ?? new GameDetectionService(settingsService, profileService: profileService);
         }
 
         public void TriggerNotification(NotificationItem notification)
@@ -369,6 +369,16 @@ namespace NotiGlow.Services
             }
             _isAnimating = false;
             _activeProfile = null;
+        }
+
+        public void CloseAllOverlays()
+        {
+            StopAllOverlays();
+            foreach (var win in _activeOverlayWindows.Values)
+            {
+                try { win.Close(); } catch { }
+            }
+            _activeOverlayWindows.Clear();
         }
     }
 }

@@ -2,7 +2,6 @@ using System;
 using Windows.Foundation;
 using Windows.UI;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 
 namespace NotiGlow.Core.Helpers
 {

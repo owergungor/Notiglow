@@ -408,23 +408,45 @@ namespace NotiGlow.Core.Helpers
             return s.Replace(" ", "").Replace(".", "").Replace("-", "").Replace("_", "").ToLowerInvariant();
         }
 
+        private static readonly Type? WScriptShellType = Type.GetTypeFromProgID("WScript.Shell");
+
         private static string? DefaultShortcutResolver(string lnkPath)
         {
-            try
+            if (WScriptShellType != null)
             {
-                Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
-                if (shellType != null)
+                object? shellObj = null;
+                object? shortcutObj = null;
+                try
                 {
-                    dynamic shell = Activator.CreateInstance(shellType)!;
-                    dynamic shortcut = shell.CreateShortcut(lnkPath);
-                    string target = shortcut.TargetPath;
-                    if (!string.IsNullOrWhiteSpace(target))
+                    shellObj = Activator.CreateInstance(WScriptShellType);
+                    if (shellObj != null)
                     {
-                        return Environment.ExpandEnvironmentVariables(target.Trim('\"'));
+                        dynamic shell = shellObj;
+                        shortcutObj = shell.CreateShortcut(lnkPath);
+                        if (shortcutObj != null)
+                        {
+                            dynamic shortcut = shortcutObj;
+                            string target = shortcut.TargetPath;
+                            if (!string.IsNullOrWhiteSpace(target))
+                            {
+                                return Environment.ExpandEnvironmentVariables(target.Trim('\"'));
+                            }
+                        }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    if (shortcutObj != null && System.Runtime.InteropServices.Marshal.IsComObject(shortcutObj))
+                    {
+                        try { System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shortcutObj); } catch { }
+                    }
+                    if (shellObj != null && System.Runtime.InteropServices.Marshal.IsComObject(shellObj))
+                    {
+                        try { System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shellObj); } catch { }
                     }
                 }
             }
-            catch { }
 
             // Binary fallback: scan shortcut bytes for Drive:\...exe path
             try

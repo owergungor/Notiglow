@@ -28,8 +28,18 @@ namespace NotiGlow.Services
 
         private static readonly HashSet<string> IgnoredExePrefixes = new(StringComparer.OrdinalIgnoreCase)
         {
-            "unins", "setup", "install", "crashpad", "crashreport", "crashhandler", "unitycrashhandler", "dxsetup", "vcredist", "easyanticheat", "epicgameslauncher", "battleye", "bugreport"
+            "unins", "setup", "install", "crashpad", "crashreport", "crashhandler", "unitycrashhandler",
+            "dxsetup", "vcredist", "easyanticheat", "eaanticheat", "epicgameslauncher", "battleye",
+            "bugreport", "steamerrorreporter", "bspzip", "vbsp", "vrad", "vvis", "vpk", "vtex",
+            "studiomdl", "shadercompile", "hlmv", "hammer"
         };
+
+        private static readonly Regex LibraryPathRegex = new("\"path\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex LegacyLibraryPathRegex = new("\"\\d+\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NonAlphaNumRegex = new(@"[^a-zA-Z0-9]", RegexOptions.Compiled);
+        private static readonly Regex AppIdVdfRegex = new("\"appid\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex NameVdfRegex = new("\"name\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex InstallDirVdfRegex = new("\"installdir\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public SteamGameDetector(
             Func<string?>? getSteamRoot = null,
@@ -111,7 +121,7 @@ namespace NotiGlow.Services
                     string content = _readAllText(vdfPath);
 
                     // Parse "path" "D:\\SteamLibrary"
-                    var matches = Regex.Matches(content, "\"path\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase);
+                    var matches = LibraryPathRegex.Matches(content);
                     foreach (Match m in matches)
                     {
                         string path = NormalizePath(m.Groups[1].Value);
@@ -122,7 +132,7 @@ namespace NotiGlow.Services
                     }
 
                     // Legacy format: "1" "D:\\SteamLibrary"
-                    var legacyMatches = Regex.Matches(content, "\"\\d+\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase);
+                    var legacyMatches = LegacyLibraryPathRegex.Matches(content);
                     foreach (Match m in legacyMatches)
                     {
                         string path = NormalizePath(m.Groups[1].Value);
@@ -214,13 +224,13 @@ namespace NotiGlow.Services
             if (validCandidates.Count == 0) return null;
 
             // Priority 1: Exe name matches installDir or sanitized gameName
-            string cleanInstall = Regex.Replace(installDir, @"[^a-zA-Z0-9]", "").ToLowerInvariant();
-            string cleanGameName = Regex.Replace(gameName, @"[^a-zA-Z0-9]", "").ToLowerInvariant();
+            string cleanInstall = NonAlphaNumRegex.Replace(installDir, "").ToLowerInvariant();
+            string cleanGameName = NonAlphaNumRegex.Replace(gameName, "").ToLowerInvariant();
 
             foreach (var cand in validCandidates)
             {
                 string fn = Path.GetFileNameWithoutExtension(cand);
-                string cleanFn = Regex.Replace(fn, @"[^a-zA-Z0-9]", "").ToLowerInvariant();
+                string cleanFn = NonAlphaNumRegex.Replace(fn, "").ToLowerInvariant();
 
                 if ((!string.IsNullOrEmpty(cleanInstall) && cleanFn.Equals(cleanInstall, StringComparison.OrdinalIgnoreCase)) ||
                     (!string.IsNullOrEmpty(cleanGameName) && cleanFn.Equals(cleanGameName, StringComparison.OrdinalIgnoreCase)))
@@ -229,23 +239,41 @@ namespace NotiGlow.Services
                 }
             }
 
-            // Priority 2: Exe contains installDir or gameName
+            // Priority 2: Exe contains installDir or gameName (guard against "portal" matching "portal2")
             foreach (var cand in validCandidates)
             {
                 string fn = Path.GetFileNameWithoutExtension(cand).ToLowerInvariant();
-                if ((!string.IsNullOrEmpty(cleanInstall) && fn.Contains(cleanInstall)) ||
-                    (!string.IsNullOrEmpty(cleanGameName) && fn.Contains(cleanGameName)))
+                string cleanFn = NonAlphaNumRegex.Replace(fn, "").ToLowerInvariant();
+
+                if (!string.IsNullOrEmpty(cleanInstall) && cleanFn.Contains(cleanInstall))
                 {
-                    return cand;
+                    if (!HasMismatchingTrailingNumber(cleanFn, cleanInstall))
+                    {
+                        return cand;
+                    }
+                }
+                if (!string.IsNullOrEmpty(cleanGameName) && cleanFn.Contains(cleanGameName))
+                {
+                    if (!HasMismatchingTrailingNumber(cleanFn, cleanGameName))
+                    {
+                        return cand;
+                    }
                 }
             }
 
-            // Priority 3: Root candidates (prefer largest file size)
+            // Priority 3: Root candidates (prefer known engine main executables like hl2.exe for Source Engine games, then largest file size)
             var rootCandidates = validCandidates
                 .Where(c => Path.GetDirectoryName(c)?.Equals(gameDir, StringComparison.OrdinalIgnoreCase) == true)
                 .ToList();
             if (rootCandidates.Count > 0)
             {
+                var sourceEngineExe = rootCandidates.FirstOrDefault(c =>
+                    Path.GetFileName(c).Equals("hl2.exe", StringComparison.OrdinalIgnoreCase));
+                if (sourceEngineExe != null && rootCandidates.Count == 1)
+                {
+                    return sourceEngineExe;
+                }
+
                 return rootCandidates.OrderByDescending(c =>
                 {
                     try { return new FileInfo(c).Length; }
@@ -260,9 +288,30 @@ namespace NotiGlow.Services
             }).First();
         }
 
+        private static bool HasMismatchingTrailingNumber(string candidateClean, string targetClean)
+        {
+            if (candidateClean.Length <= targetClean.Length) return false;
+            int idx = candidateClean.IndexOf(targetClean, StringComparison.OrdinalIgnoreCase);
+            if (idx < 0) return false;
+            int afterIdx = idx + targetClean.Length;
+            if (afterIdx < candidateClean.Length && char.IsDigit(candidateClean[afterIdx]))
+            {
+                // E.g. target is "portal" and candidate is "portal2" -> mismatching numbered sequel
+                return true;
+            }
+            return false;
+        }
+
         private static string? ExtractVdfValue(string content, string key)
         {
-            var match = Regex.Match(content, $"\"{Regex.Escape(key)}\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase);
+            Regex regex = key switch
+            {
+                "appid" => AppIdVdfRegex,
+                "name" => NameVdfRegex,
+                "installdir" => InstallDirVdfRegex,
+                _ => new Regex($"\"{Regex.Escape(key)}\"\\s+\"([^\"]+)\"", RegexOptions.IgnoreCase)
+            };
+            var match = regex.Match(content);
             return match.Success ? match.Groups[1].Value : null;
         }
 
