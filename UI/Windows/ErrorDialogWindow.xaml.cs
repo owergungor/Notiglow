@@ -100,14 +100,13 @@ namespace NotiGlow.UI.Dialogs
             }
         }
 
+        private static readonly System.Text.RegularExpressions.Regex SecretSanitizeRegex =
+            new(@"(token|password|secret|pwd)=([^&\s]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+
         private static string SanitizeText(string text)
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
-            return System.Text.RegularExpressions.Regex.Replace(
-                text,
-                @"(token|password|secret|pwd)=([^&\s]+)",
-                "$1=[REDACTED]",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            return SecretSanitizeRegex.Replace(text, "$1=[REDACTED]");
         }
 
         private void BtnCopyLogPath_Click(object sender, RoutedEventArgs e)
@@ -137,7 +136,6 @@ namespace NotiGlow.UI.Dialogs
             _isOpen = false;
             Close();
         }
-
-}
     }
+}
 

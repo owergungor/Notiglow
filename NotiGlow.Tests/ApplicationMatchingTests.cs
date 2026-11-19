@@ -14,14 +14,8 @@ namespace NotiGlow.Tests
         {
             try
             {
-                string path1 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NotiGlow", "profiles.json");
-                if (System.IO.File.Exists(path1)) System.IO.File.Delete(path1);
-
-                string path2 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NotiGlow", "profiles.json");
-                if (System.IO.File.Exists(path2)) System.IO.File.Delete(path2);
-
-                string legacyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GlowBorder", "profiles.json");
-                if (System.IO.File.Exists(legacyPath)) System.IO.File.Delete(legacyPath);
+                string defaultTestPath = ProfileService.GetDefaultProfilesPath();
+                if (System.IO.File.Exists(defaultTestPath)) System.IO.File.Delete(defaultTestPath);
             }
             catch { }
             _profileService = new ProfileService();

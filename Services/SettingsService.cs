@@ -7,10 +7,26 @@ namespace NotiGlow.Services
 {
     public class SettingsService
     {
+        private static readonly JsonSerializerOptions WriteIndentedOptions = new() { WriteIndented = true };
         private readonly string _settingsPath;
         public AppSettings Current { get; private set; }
 
         public event EventHandler? SettingsChanged;
+
+        public static string GetDefaultSettingsPath()
+        {
+            if (ProfileService.IsTestEnvironment)
+            {
+                string testDir = Path.Combine(Path.GetTempPath(), "NotiGlow_TestEnv");
+                Directory.CreateDirectory(testDir);
+                return Path.Combine(testDir, $"settings_{Environment.ProcessId}.json");
+            }
+
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string folder = Path.Combine(appData, "NotiGlow");
+            Directory.CreateDirectory(folder);
+            return Path.Combine(folder, "settings.json");
+        }
 
         public SettingsService(string? customSettingsPath = null)
         {
@@ -26,24 +42,25 @@ namespace NotiGlow.Services
                 return;
             }
 
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string folder = Path.Combine(appData, "NotiGlow");
-            Directory.CreateDirectory(folder);
-            _settingsPath = Path.Combine(folder, "settings.json");
+            _settingsPath = GetDefaultSettingsPath();
 
             // Migrate legacy GlowBorder settings if present and NotiGlow settings don't exist yet
-            try
+            if (!ProfileService.IsTestEnvironment)
             {
-                string legacySettingsPath = Path.Combine(appData, "GlowBorder", "settings.json");
-                if (!File.Exists(_settingsPath) && File.Exists(legacySettingsPath))
+                try
                 {
-                    File.Copy(legacySettingsPath, _settingsPath, true);
-                    LoggerService.LogInfo("Migrated legacy GlowBorder settings.json to NotiGlow.");
+                    string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string legacySettingsPath = Path.Combine(appData, "GlowBorder", "settings.json");
+                    if (!File.Exists(_settingsPath) && File.Exists(legacySettingsPath))
+                    {
+                        File.Copy(legacySettingsPath, _settingsPath, true);
+                        LoggerService.LogInfo("Migrated legacy GlowBorder settings.json to NotiGlow.");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                LoggerService.LogWarning($"Legacy settings migration notice: {ex.Message}");
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"Legacy settings migration notice: {ex.Message}");
+                }
             }
 
             Current = Load();
@@ -59,7 +76,8 @@ namespace NotiGlow.Services
             "leagueoflegends.exe",
             "valorant.exe",
             "gta5.exe",
-            "rdr2.exe"
+            "rdr2.exe",
+            "appactions.exe"
         };
 
         public AppSettings Load()
@@ -74,7 +92,13 @@ namespace NotiGlow.Services
                     {
                         if (settings.TrackedGames != null)
                         {
-                            settings.TrackedGames.RemoveAll(g => LegacyDemoGames.Contains(g.Trim()));
+                            settings.TrackedGames.RemoveAll(g =>
+                            {
+                                string trimmed = g.Trim();
+                                return LegacyDemoGames.Contains(trimmed) ||
+                                       LegacyDemoGames.Contains(Path.GetFileName(trimmed)) ||
+                                       trimmed.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase);
+                            });
                         }
                         return settings;
                     }
@@ -95,7 +119,7 @@ namespace NotiGlow.Services
             try
             {
                 Current = settings;
-                string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(settings, WriteIndentedOptions);
                 File.WriteAllText(_settingsPath, json);
                 SettingsChanged?.Invoke(this, EventArgs.Empty);
             }

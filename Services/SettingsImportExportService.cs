@@ -15,6 +15,7 @@ namespace NotiGlow.Services
 
     public class SettingsImportExportService
     {
+        private static readonly JsonSerializerOptions WriteIndentedOptions = new() { WriteIndented = true };
         private readonly SettingsService _settingsService;
         private readonly ProfileService _profileService;
 
@@ -35,7 +36,7 @@ namespace NotiGlow.Services
                     Profiles = new List<AppProfile>(_profileService.Profiles)
                 };
 
-                string json = JsonSerializer.Serialize(container, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(container, WriteIndentedOptions);
                 File.WriteAllText(filePath, json);
                 return true;
             }

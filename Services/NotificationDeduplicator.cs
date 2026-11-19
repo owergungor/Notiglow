@@ -21,17 +21,24 @@ namespace NotiGlow.Services
             DateTime now = DateTime.Now;
 
             // Clean up old hashes older than 10 seconds
-            var staleKeys = new List<string>();
-            foreach (var kvp in _seenHashes)
+            if (_seenHashes.Count > 0)
             {
-                if (now - kvp.Value > TimeSpan.FromSeconds(10))
+                List<string>? staleKeys = null;
+                foreach (var kvp in _seenHashes)
                 {
-                    staleKeys.Add(kvp.Key);
+                    if (now - kvp.Value > TimeSpan.FromSeconds(10))
+                    {
+                        staleKeys ??= new List<string>();
+                        staleKeys.Add(kvp.Key);
+                    }
                 }
-            }
-            foreach (var key in staleKeys)
-            {
-                _seenHashes.Remove(key);
+                if (staleKeys != null)
+                {
+                    foreach (var key in staleKeys)
+                    {
+                        _seenHashes.Remove(key);
+                    }
+                }
             }
 
             if (_seenHashes.TryGetValue(hash, out DateTime lastSeen))
@@ -48,8 +55,7 @@ namespace NotiGlow.Services
 
         private static string ComputeHash(string input)
         {
-            using var sha = SHA256.Create();
-            byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+            byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
             return Convert.ToBase64String(bytes);
         }
     }

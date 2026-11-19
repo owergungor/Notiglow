@@ -11,6 +11,8 @@ namespace NotiGlow.Services
     {
         private UserNotificationListener? _listener;
         private Action? _notificationChangedCallback;
+        private readonly Dictionary<uint, RawNotificationData> _notificationMetadataCache = new();
+        private readonly object _cacheLock = new();
 
         public async Task<UserNotificationListenerAccessStatus> RequestAccessAsync()
         {
@@ -39,32 +41,7 @@ namespace NotiGlow.Services
         /// </summary>
         public static Func<RawNotificationData, (string AppId, string AppName)?>? TestEnvironmentFallbackResolver { get; set; }
 
-        private static readonly bool IsTestHostEnvironment = DetectTestHostEnvironment();
-
-        private static bool DetectTestHostEnvironment()
-        {
-            try
-            {
-                var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
-                if (processName.IndexOf("testhost", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    processName.IndexOf("vstest", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    return true;
-                }
-
-                var domainName = AppDomain.CurrentDomain.FriendlyName;
-                if (domainName.IndexOf("testhost", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    domainName.IndexOf("vstest", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-            }
-
-            return false;
-        }
+        private static readonly bool IsTestHostEnvironment = ProfileService.DetectTestHostEnvironment();
 
         public async Task<IReadOnlyList<RawNotificationData>> GetCurrentNotificationsAsync()
         {
@@ -91,10 +68,30 @@ namespace NotiGlow.Services
             try
             {
                 var notifications = await _listener.GetNotificationsAsync(NotificationKinds.Toast);
-                var list = new List<RawNotificationData>(notifications.Count);
+                int count = notifications.Count;
+                if (count == 0)
+                {
+                    return Array.Empty<RawNotificationData>();
+                }
+
+                var list = new List<RawNotificationData>(count);
+                bool canUseMetadataCache = !IsTestHostEnvironment && TestEnvironmentFallbackResolver == null;
 
                 foreach (var n in notifications)
                 {
+                    uint notifId = n.Id;
+                    if (canUseMetadataCache)
+                    {
+                        lock (_cacheLock)
+                        {
+                            if (_notificationMetadataCache.TryGetValue(notifId, out var cachedItem))
+                            {
+                                list.Add(cachedItem);
+                                continue;
+                            }
+                        }
+                    }
+
                     string appId = "UnknownApp";
                     string appName = "UnknownApp";
 
@@ -141,7 +138,7 @@ namespace NotiGlow.Services
 
                     var rawItem = new RawNotificationData
                     {
-                        NotificationId = n.Id,
+                        NotificationId = notifId,
                         AppId = appId,
                         AppName = appName,
                         Title = title,
@@ -169,6 +166,18 @@ namespace NotiGlow.Services
                                 rawItem.AppId = "5319275A.WhatsAppDesktop_cv1g1gvanyjgm!App";
                                 rawItem.AppName = "WhatsApp";
                             }
+                        }
+                    }
+
+                    if (canUseMetadataCache)
+                    {
+                        lock (_cacheLock)
+                        {
+                            if (_notificationMetadataCache.Count > 256)
+                            {
+                                _notificationMetadataCache.Clear();
+                            }
+                            _notificationMetadataCache[notifId] = rawItem;
                         }
                     }
 

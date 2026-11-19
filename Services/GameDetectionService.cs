@@ -12,6 +12,7 @@ namespace NotiGlow.Services
     public class GameDetectionService
     {
         private readonly SettingsService _settingsService;
+        private readonly ProfileService? _profileService;
         private readonly SteamGameDetector _steamDetector;
         private readonly EpicGameDetector _epicDetector;
         private readonly XboxAndStoreGameDetector _xboxStoreDetector;
@@ -54,9 +55,11 @@ namespace NotiGlow.Services
             SettingsService settingsService,
             SteamGameDetector? steamDetector = null,
             EpicGameDetector? epicDetector = null,
-            XboxAndStoreGameDetector? xboxStoreDetector = null)
+            XboxAndStoreGameDetector? xboxStoreDetector = null,
+            ProfileService? profileService = null)
         {
             _settingsService = settingsService;
+            _profileService = profileService;
             _steamDetector = steamDetector ?? new SteamGameDetector();
             _epicDetector = epicDetector ?? new EpicGameDetector();
             bool isMockContext = steamDetector != null || epicDetector != null;
@@ -109,6 +112,12 @@ namespace NotiGlow.Services
                     if (string.IsNullOrWhiteSpace(game.ExecutablePath)) continue;
 
                     string exeName = Path.GetFileName(game.ExecutablePath).ToLowerInvariant();
+                    if (exeName.Equals("appactions.exe", StringComparison.OrdinalIgnoreCase) ||
+                        game.ExecutablePath.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     string fullPath = game.ExecutablePath.Trim().ToLowerInvariant();
                     try
                     {
@@ -116,11 +125,21 @@ namespace NotiGlow.Services
                     }
                     catch { }
 
-                    string nameKey = (game.Name ?? string.Empty).Trim().ToLowerInvariant();
+                    string resolvedName = !string.IsNullOrWhiteSpace(game.Name)
+                        ? Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(game.ExecutablePath, new AppProfile { Name = game.Name })
+                        : Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(game.ExecutablePath);
+                    game.Name = resolvedName;
 
-                    if (!seenExes.Contains(exeName) && !seenPaths.Contains(fullPath) && (string.IsNullOrEmpty(nameKey) || !seenNames.Contains(nameKey)))
+                    string nameKey = resolvedName.Trim().ToLowerInvariant();
+                    bool isSharedExe = Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(exeName);
+
+                    bool exeDuplicate = !isSharedExe && seenExes.Contains(exeName);
+                    bool pathDuplicate = seenPaths.Contains(fullPath);
+                    bool nameDuplicate = !string.IsNullOrEmpty(nameKey) && seenNames.Contains(nameKey);
+
+                    if (!exeDuplicate && !pathDuplicate && !nameDuplicate)
                     {
-                        seenExes.Add(exeName);
+                        if (!isSharedExe) seenExes.Add(exeName);
                         seenPaths.Add(fullPath);
                         if (!string.IsNullOrEmpty(nameKey)) seenNames.Add(nameKey);
                         uniqueGames.Add(game);
@@ -131,45 +150,78 @@ namespace NotiGlow.Services
             });
         }
 
-        public async System.Threading.Tasks.Task<int> ScanAndSyncTrackedGamesAsync()
+        public async System.Threading.Tasks.Task<int> ScanAndSyncTrackedGamesAsync(ProfileService? profileService = null)
         {
             try
             {
+                var targetProfileService = profileService ?? _profileService;
                 var detected = await DetectInstalledGamesAsync();
                 if (detected.Count == 0) return 0;
 
                 var settings = _settingsService.Current;
+                settings.TrackedGames ??= new List<string>();
+                settings.IgnoredGames ??= new List<string>();
+
+                // Clean up any stale Windows SystemApps false positive
+                bool removedStale = settings.TrackedGames.RemoveAll(g =>
+                    g.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetFileName(g.Trim()).Equals("AppActions.exe", StringComparison.OrdinalIgnoreCase)) > 0;
+
                 var existingExes = new HashSet<string>(
-                    settings.TrackedGames.Select(g => Path.GetFileName(g.Trim())),
+                    settings.TrackedGames
+                        .Select(g => Path.GetFileName(g.Trim()))
+                        .Where(fn => !Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(fn)),
+                    StringComparer.OrdinalIgnoreCase);
+
+                var existingPaths = new HashSet<string>(
+                    settings.TrackedGames.Select(g => ProfileService.NormalizePath(g)),
+                    StringComparer.OrdinalIgnoreCase);
+
+                var existingNames = new HashSet<string>(
+                    settings.TrackedGames.Select(g => Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(g)),
                     StringComparer.OrdinalIgnoreCase);
 
                 var ignoredExes = new HashSet<string>(
-                    settings.IgnoredGames.Select(g => Path.GetFileName(g.Trim())),
+                    settings.IgnoredGames
+                        .Select(g => Path.GetFileName(g.Trim()))
+                        .Where(fn => !Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(fn)),
                     StringComparer.OrdinalIgnoreCase);
 
                 int addedCount = 0;
                 foreach (var game in detected)
                 {
                     string exeName = Path.GetFileName(game.ExecutablePath);
+                    string normPath = ProfileService.NormalizePath(game.ExecutablePath);
+                    string friendlyName = Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(
+                        game.ExecutablePath,
+                        !string.IsNullOrWhiteSpace(game.Name) ? new AppProfile { Name = game.Name } : null);
+                    bool isSharedExe = Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(exeName);
 
                     // Skip if user previously deleted this game (ignored)
-                    if (ignoredExes.Contains(exeName) || settings.IgnoredGames.Contains(game.ExecutablePath, StringComparer.OrdinalIgnoreCase))
+                    if ((!isSharedExe && ignoredExes.Contains(exeName)) ||
+                        settings.IgnoredGames.Contains(game.ExecutablePath, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    // Skip if already in tracked games
-                    if (existingExes.Contains(exeName) || settings.TrackedGames.Contains(game.ExecutablePath, StringComparer.OrdinalIgnoreCase))
+                    bool alreadyTracked = existingPaths.Contains(normPath) ||
+                                          (!isSharedExe && existingExes.Contains(exeName)) ||
+                                          (!string.IsNullOrEmpty(friendlyName) && existingNames.Contains(friendlyName));
+
+                    if (!alreadyTracked)
                     {
-                        continue;
+                        settings.TrackedGames.Add(game.ExecutablePath);
+                        existingPaths.Add(normPath);
+                        if (!isSharedExe) existingExes.Add(exeName);
+                        if (!string.IsNullOrEmpty(friendlyName)) existingNames.Add(friendlyName);
+                        addedCount++;
                     }
 
-                    settings.TrackedGames.Add(game.ExecutablePath);
-                    existingExes.Add(exeName);
-                    addedCount++;
+                    // Ensure ProfileService has the friendly display name and Gaming category while preserving user settings
+                    EnsureDetectedGameProfile(game, friendlyName, targetProfileService, settings);
                 }
 
-                if (addedCount > 0)
+                if (addedCount > 0 || removedStale)
                 {
                     _settingsService.Save(settings);
                     LoggerService.LogInfo($"Automatically synced {addedCount} games from launchers (Steam, Epic, Xbox, Microsoft Store).");
@@ -182,6 +234,77 @@ namespace NotiGlow.Services
                 LoggerService.LogError("Error syncing detected games with settings", ex);
                 return 0;
             }
+        }
+
+        public static void EnsureDetectedGameProfile(
+            DetectedGameInfo game,
+            string friendlyName,
+            ProfileService? profileService,
+            AppSettings settings)
+        {
+            if (profileService == null || game == null || string.IsNullOrWhiteSpace(game.ExecutablePath))
+                return;
+
+            var existing = profileService.Profiles.FirstOrDefault(p =>
+                Core.Helpers.AppCategoryHelper.MatchesIdentifier(p, game.ExecutablePath) ||
+                (!string.IsNullOrEmpty(friendlyName) && string.Equals(p.Name, friendlyName, StringComparison.OrdinalIgnoreCase)));
+
+            if (existing != null)
+            {
+                // If user explicitly moved this profile to General, respect their choice; otherwise ensure clean name & path
+                bool changed = false;
+                if (Core.Helpers.AppCategoryHelper.IsGamingCategory(existing.Category))
+                {
+                    string resolvedExistingName = Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(game.ExecutablePath, existing);
+                    if (!string.Equals(existing.Name, resolvedExistingName, StringComparison.Ordinal) &&
+                        !string.IsNullOrWhiteSpace(friendlyName))
+                    {
+                        existing.Name = friendlyName;
+                        changed = true;
+                    }
+                    if (string.IsNullOrWhiteSpace(existing.ExecutablePath))
+                    {
+                        existing.ExecutablePath = game.ExecutablePath;
+                        changed = true;
+                    }
+                    if (changed)
+                    {
+                        profileService.AddOrUpdateProfile(existing);
+                    }
+                }
+                return;
+            }
+
+            string normId = AppSettings.NormalizeGameIdentifier(game.ExecutablePath);
+            GameGlowOverride? ov = null;
+            if (!string.IsNullOrEmpty(normId))
+            {
+                settings.GameOverrides?.TryGetValue(normId, out ov);
+            }
+
+            string appId = Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(game.ExecutablePath)
+                ? (!string.IsNullOrWhiteSpace(game.AppId) ? $"{friendlyName}_{game.AppId}" : friendlyName)
+                : Path.GetFileName(game.ExecutablePath);
+
+            var newProfile = new AppProfile
+            {
+                AppId = appId,
+                Name = !string.IsNullOrWhiteSpace(friendlyName) ? friendlyName : game.Name,
+                ExecutablePath = game.ExecutablePath,
+                Category = Core.Helpers.AppCategoryHelper.CategoryGaming,
+                Enabled = true,
+                Priority = NotificationPriority.Normal,
+                ColorHex = ov?.ColorHex ?? settings.DefaultColorHex,
+                DurationMs = ov?.DurationMs ?? (settings.CommonGamingDurationMs ?? 3000),
+                Intensity = ov?.Intensity ?? (settings.CommonGamingIntensity ?? 0.8),
+                GlowSize = ov?.GlowSize ?? (settings.CommonGamingGlowSize ?? 32.0),
+                CornerRadius = ov?.CornerRadius ?? (settings.CommonGamingCornerRadius ?? 0.0),
+                Style = ov?.Style ?? settings.DefaultStyle,
+                Thickness = settings.DefaultThickness,
+                IsCustom = true
+            };
+
+            profileService.AddOrUpdateProfile(newProfile);
         }
 
         public bool IsGameRunning()
@@ -221,43 +344,61 @@ namespace NotiGlow.Services
                 if (processId == 0) return false;
 
                 using Process process = Process.GetProcessById((int)processId);
-                string procName = process.ProcessName.ToLowerInvariant();
+                string procName = process.ProcessName;
                 string exeName = $"{procName}.exe";
 
-                string? fullProcPath = null;
-                try
-                {
-                    fullProcPath = process.MainModule?.FileName;
-                }
-                catch { }
-
                 var trackedGames = _settingsService.Current.TrackedGames;
+                if (trackedGames == null || trackedGames.Count == 0)
+                {
+                    _activeGameIdentifier = string.Empty;
+                    return false;
+                }
+
+                string? fullProcPath = null;
+                bool fullPathQueried = false;
 
                 foreach (var game in trackedGames)
                 {
                     if (string.IsNullOrWhiteSpace(game)) continue;
                     string trimmed = game.Trim();
 
-                    // Compare full executable paths if available
-                    if (!string.IsNullOrEmpty(fullProcPath) &&
-                        string.Equals(fullProcPath, trimmed, StringComparison.OrdinalIgnoreCase))
-                    {
-                        gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
-                        _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
-                        return true;
-                    }
-
-                    // Compare executable filename without path
+                    // Fast in-memory filename check first (avoids expensive Win32 MainModule lookup when process name doesn't match)
                     string fileName = Path.GetFileName(trimmed);
                     string fileNameWithoutExt = Path.GetFileNameWithoutExtension(trimmed);
 
-                    if (procName.Equals(fileNameWithoutExt, StringComparison.OrdinalIgnoreCase) ||
-                        exeName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+                    bool nameMatches = procName.Equals(fileNameWithoutExt, StringComparison.OrdinalIgnoreCase) ||
+                                       exeName.Equals(fileName, StringComparison.OrdinalIgnoreCase);
+
+                    if (!nameMatches)
                     {
-                        gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
-                        _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
-                        return true;
+                        continue;
                     }
+
+                    // If the tracked entry specifies a directory path, optionally verify MainModule path if accessible
+                    if (trimmed.Contains('\\') || trimmed.Contains('/'))
+                    {
+                        if (!fullPathQueried)
+                        {
+                            fullPathQueried = true;
+                            try
+                            {
+                                fullProcPath = process.MainModule?.FileName;
+                            }
+                            catch { }
+                        }
+
+                        if (!string.IsNullOrEmpty(fullProcPath) &&
+                            string.Equals(fullProcPath, trimmed, StringComparison.OrdinalIgnoreCase))
+                        {
+                            gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
+                            _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
+                            return true;
+                        }
+                    }
+
+                    gameName = process.MainWindowTitle.Length > 0 ? process.MainWindowTitle : process.ProcessName;
+                    _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(trimmed);
+                    return true;
                 }
             }
             catch (Exception ex)

@@ -21,6 +21,7 @@ namespace NotiGlow.UI.Views
         private GameDetectionService? _gameDetectionService;
         private ProfileService? _profileService;
         private bool _isDirty = true;
+        private bool _isLoadedOnce = false;
         private string? _highlightedIdentifier;
 
         public bool IsDirty => _isDirty;
@@ -37,7 +38,10 @@ namespace NotiGlow.UI.Views
                 ScrollViewerHelper.AttachToChildComboBoxes(this);
 
                 UpdateLocalizedTexts();
-                RenderTrackedGameCards();
+                if (_isDirty || !_isLoadedOnce)
+                {
+                    RenderTrackedGameCards();
+                }
             };
         }
 
@@ -120,16 +124,30 @@ namespace NotiGlow.UI.Views
         {
             var result = new List<(string Entry, AppProfile? Profile, string NormId)>();
             var seenNorms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var settings = _settingsService.Current;
             var games = settings.TrackedGames ?? new List<string>();
 
             foreach (var gamePath in games)
             {
                 if (string.IsNullOrWhiteSpace(gamePath)) continue;
+                if (gamePath.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetFileName(gamePath.Trim()).Equals("AppActions.exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 string normId = AppSettings.NormalizeGameIdentifier(gamePath);
-                if (string.IsNullOrEmpty(normId) || !seenNorms.Add(normId)) continue;
+                if (string.IsNullOrEmpty(normId)) continue;
 
                 var profile = _profileService?.Profiles.FirstOrDefault(p => AppCategoryHelper.MatchesIdentifier(p, gamePath));
+                string friendlyName = AppCategoryHelper.ResolveFriendlyGameName(gamePath, profile);
+                bool isSharedExe = AppCategoryHelper.IsSharedEngineExecutable(normId);
+                string dedupKey = isSharedExe ? $"{normId}::{friendlyName}" : normId;
+
+                if (!seenNorms.Add(dedupKey) || (!string.IsNullOrEmpty(friendlyName) && !seenNames.Add(friendlyName)))
+                    continue;
+
                 result.Add((gamePath, profile, normId));
             }
 
@@ -139,8 +157,21 @@ namespace NotiGlow.UI.Views
                 {
                     if (!AppCategoryHelper.IsGamingCategory(profile.Category)) continue;
                     string entry = AppCategoryHelper.GetPrimaryIdentifier(profile);
+                    if (entry.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase) ||
+                        Path.GetFileName(entry.Trim()).Equals("AppActions.exe", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
                     string normId = AppSettings.NormalizeGameIdentifier(entry);
-                    if (string.IsNullOrEmpty(normId) || !seenNorms.Add(normId)) continue;
+                    if (string.IsNullOrEmpty(normId)) continue;
+
+                    string friendlyName = AppCategoryHelper.ResolveFriendlyGameName(entry, profile);
+                    bool isSharedExe = AppCategoryHelper.IsSharedEngineExecutable(normId);
+                    string dedupKey = isSharedExe ? $"{normId}::{friendlyName}" : normId;
+
+                    if (!seenNorms.Add(dedupKey) || (!string.IsNullOrEmpty(friendlyName) && !seenNames.Add(friendlyName)))
+                        continue;
 
                     result.Add((entry, profile, normId));
                 }
@@ -151,8 +182,9 @@ namespace NotiGlow.UI.Views
 
         public void RenderTrackedGameCards()
         {
-            _isDirty = false;
             if (_settingsService == null) return;
+            _isDirty = false;
+            _isLoadedOnce = true;
             PnlTrackedGames.Children.Clear();
 
             var settings = _settingsService.Current;
@@ -185,13 +217,7 @@ namespace NotiGlow.UI.Views
 
             foreach (var (gamePath, matchingProfile, normId) in entries)
             {
-                string friendlyName = !string.IsNullOrWhiteSpace(matchingProfile?.Name)
-                    ? matchingProfile!.Name
-                    : Path.GetFileNameWithoutExtension(gamePath);
-                if (!string.IsNullOrEmpty(friendlyName) && matchingProfile == null)
-                {
-                    friendlyName = char.ToUpperInvariant(friendlyName[0]) + (friendlyName.Length > 1 ? friendlyName.Substring(1) : "");
-                }
+                string friendlyName = AppCategoryHelper.ResolveFriendlyGameName(gamePath, matchingProfile);
 
                 GameGlowOverride? ov = null;
                 settings.GameOverrides?.TryGetValue(normId, out ov);
@@ -460,13 +486,7 @@ namespace NotiGlow.UI.Views
 
             var existingProfile = _profileService?.Profiles.FirstOrDefault(p => AppCategoryHelper.MatchesIdentifier(p, gameEntry));
 
-            string friendlyName = !string.IsNullOrWhiteSpace(existingProfile?.Name)
-                ? existingProfile!.Name
-                : Path.GetFileNameWithoutExtension(gameEntry);
-            if (!string.IsNullOrEmpty(friendlyName) && existingProfile == null)
-            {
-                friendlyName = char.ToUpperInvariant(friendlyName[0]) + (friendlyName.Length > 1 ? friendlyName.Substring(1) : "");
-            }
+            string friendlyName = AppCategoryHelper.ResolveFriendlyGameName(gameEntry, existingProfile);
 
             var editorProfile = new AppProfile
             {
@@ -529,28 +549,8 @@ namespace NotiGlow.UI.Views
             try
             {
                 var detected = await _gameDetectionService.DetectInstalledGamesAsync();
-                int added = 0;
-                var settings = _settingsService.Current;
-                settings.TrackedGames ??= new List<string>();
-
-                foreach (var g in detected)
-                {
-                    string target = !string.IsNullOrEmpty(g.ExecutablePath) ? g.ExecutablePath : (g.AppId ?? string.Empty);
-                    if (string.IsNullOrEmpty(target)) continue;
-
-                    string norm = AppSettings.NormalizeGameIdentifier(target);
-                    if (!settings.TrackedGames.Any(existing => AppSettings.NormalizeGameIdentifier(existing) == norm))
-                    {
-                        settings.TrackedGames.Add(target);
-                        added++;
-                    }
-                }
-
-                if (added > 0)
-                {
-                    _settingsService.Save(settings);
-                    RenderTrackedGameCards();
-                }
+                int added = await _gameDetectionService.ScanAndSyncTrackedGamesAsync(_profileService);
+                RenderTrackedGameCards();
 
                 string msg = $"Scan complete. {detected.Count} games detected ({added} newly added).";
                 ToastNotificationService.Instance.ShowSuccess(msg, "Game Scan");
@@ -623,7 +623,7 @@ namespace NotiGlow.UI.Views
 
         public void EnsureLoaded()
         {
-            if (!_isDirty) return;
+            if (!_isDirty && _isLoadedOnce) return;
             RenderTrackedGameCards();
         }
 

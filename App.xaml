@@ -22,8 +22,6 @@
             <SolidColorBrush x:Key="AccentColor" Color="#3B82F6" />
             <SolidColorBrush x:Key="ControlBackground" Color="#1F1F1F" />
             <SolidColorBrush x:Key="ControlHoverBackground" Color="#292929" />
-            <SolidColorBrush x:Key="GlassOverlay" Color="#00000000" />
-            <SolidColorBrush x:Key="GlassBorder" Color="#262626" />
             <SolidColorBrush x:Key="TextDisabled" Color="#444444" />
             <SolidColorBrush x:Key="ControlPressedBackground" Color="#333333" />
             <SolidColorBrush x:Key="ControlDisabledBackground" Color="#141414" />

@@ -16,7 +16,12 @@ namespace NotiGlow.Services
         private static AppIconService? _instance;
         public static AppIconService Instance => _instance ??= new AppIconService();
 
+        private const int MaxIconCacheEntries = 200;
+        private const int MaxPathCacheEntries = 300;
+        private const int IconDecodePixelWidth = 64;
+
         private readonly ConcurrentDictionary<string, ImageSource?> _iconCache = new(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, string?> _resolvedPathCache = new(StringComparer.OrdinalIgnoreCase);
         private readonly string _cacheDirectory;
 
         public AppIconService()
@@ -46,12 +51,31 @@ namespace NotiGlow.Services
                 return cached;
             }
 
-            string? iconFilePath = await Task.Run(() => ResolveIconFilePath(executablePath, appId));
+            if (!_resolvedPathCache.TryGetValue(cacheKey, out string? iconFilePath))
+            {
+                iconFilePath = await Task.Run(() => ResolveIconFilePath(executablePath, appId));
+                if (_resolvedPathCache.Count >= MaxPathCacheEntries)
+                {
+                    _resolvedPathCache.Clear();
+                }
+                _resolvedPathCache[cacheKey] = iconFilePath;
+            }
+
             if (!string.IsNullOrEmpty(iconFilePath) && File.Exists(iconFilePath))
             {
                 try
                 {
-                    var bitmap = new BitmapImage(new Uri(iconFilePath, UriKind.Absolute));
+                    if (_iconCache.Count >= MaxIconCacheEntries)
+                    {
+                        _iconCache.Clear();
+                    }
+
+                    var bitmap = new BitmapImage
+                    {
+                        DecodePixelWidth = IconDecodePixelWidth,
+                        DecodePixelType = DecodePixelType.Logical,
+                        UriSource = new Uri(iconFilePath, UriKind.Absolute)
+                    };
                     _iconCache[cacheKey] = bitmap;
                     return bitmap;
                 }
@@ -184,6 +208,13 @@ namespace NotiGlow.Services
                         }
                     }
                 }
+
+                // 3. Try Steam appcache/librarycache icon (e.g. for Halo Infinite 1240440, Portal 400, Portal 2 620)
+                string? steamLibraryIcon = TryResolveSteamLibraryCacheIcon(cleanPath, appId);
+                if (!string.IsNullOrEmpty(steamLibraryIcon) && File.Exists(steamLibraryIcon))
+                {
+                    return steamLibraryIcon;
+                }
             }
             catch (Exception ex)
             {
@@ -193,11 +224,65 @@ namespace NotiGlow.Services
             return null;
         }
 
+        private static string? TryResolveSteamLibraryCacheIcon(string? cleanPath, string? appId)
+        {
+            try
+            {
+                string friendlyName = Core.Helpers.AppCategoryHelper.ResolveFriendlyGameName(cleanPath ?? appId);
+                string? steamAppId = null;
+
+                if (!string.IsNullOrWhiteSpace(appId) && appId.All(char.IsDigit))
+                {
+                    steamAppId = appId.Trim();
+                }
+                else if (friendlyName.Equals("Halo Infinite", StringComparison.OrdinalIgnoreCase))
+                {
+                    steamAppId = "1240440";
+                }
+                else if (friendlyName.Equals("Portal", StringComparison.OrdinalIgnoreCase))
+                {
+                    steamAppId = "400";
+                }
+                else if (friendlyName.Equals("Portal 2", StringComparison.OrdinalIgnoreCase))
+                {
+                    steamAppId = "620";
+                }
+
+                if (string.IsNullOrEmpty(steamAppId)) return null;
+
+                string[] steamRoots = new[]
+                {
+                    @"C:\Program Files (x86)\Steam",
+                    @"C:\Program Files\Steam"
+                };
+
+                foreach (var root in steamRoots)
+                {
+                    string cacheDir = Path.Combine(root, "appcache", "librarycache", steamAppId);
+                    if (!Directory.Exists(cacheDir)) continue;
+
+                    var jpgs = Directory.GetFiles(cacheDir, "*.jpg");
+                    var squareIcon = jpgs.FirstOrDefault(f =>
+                    {
+                        string fn = Path.GetFileNameWithoutExtension(f);
+                        return fn.Length == 40 && !fn.StartsWith("library_", StringComparison.OrdinalIgnoreCase);
+                    });
+
+                    if (!string.IsNullOrEmpty(squareIcon) && File.Exists(squareIcon))
+                    {
+                        return squareIcon;
+                    }
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
         private static string ComputeHash(string input)
         {
-            using var md5 = MD5.Create();
-            byte[] bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(input.ToLowerInvariant()));
-            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
+            byte[] hashBytes = MD5.HashData(Encoding.UTF8.GetBytes(input.ToLowerInvariant()));
+            return Convert.ToHexStringLower(hashBytes);
         }
 
         private static string CleanExecutablePath(string? rawPath)
@@ -222,6 +307,7 @@ namespace NotiGlow.Services
         public void ClearCache()
         {
             _iconCache.Clear();
+            _resolvedPathCache.Clear();
         }
     }
 }

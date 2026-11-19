@@ -119,7 +119,7 @@ namespace NotiGlow.Tests
             Assert.AreEqual("AI Assistants", gemini.Category);
 
             // Clean profile service instance
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NotiGlow", "profiles.json");
+            string path = ProfileService.GetDefaultProfilesPath();
             try { if (File.Exists(path)) File.Delete(path); } catch { }
 
             var service = new ProfileService();

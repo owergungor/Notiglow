@@ -47,7 +47,7 @@ namespace NotiGlow.Services
 
     public class UpdateService
     {
-        internal const string FallbackVersion = "4.0";
+        internal const string FallbackVersion = "4.1";
         public static string CurrentVersionString => ResolveCurrentVersion();
         private static string? _cachedVersion;
 

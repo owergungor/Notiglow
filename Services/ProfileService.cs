@@ -9,6 +9,7 @@ namespace NotiGlow.Services
 {
     public class ProfileService
     {
+        private static readonly JsonSerializerOptions WriteIndentedOptions = new() { WriteIndented = true };
         private readonly string _profilesPath;
         private readonly List<AppProfile> _profiles = new();
 
@@ -16,26 +17,54 @@ namespace NotiGlow.Services
 
         public event EventHandler? ProfilesChanged;
 
-        public ProfileService()
+        public static string GetDefaultProfilesPath()
         {
+            if (IsTestEnvironment)
+            {
+                string testDir = Path.Combine(Path.GetTempPath(), "NotiGlow_TestEnv");
+                Directory.CreateDirectory(testDir);
+                return Path.Combine(testDir, $"profiles_{Environment.ProcessId}.json");
+            }
+
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string folder = Path.Combine(appData, "NotiGlow");
             Directory.CreateDirectory(folder);
-            _profilesPath = Path.Combine(folder, "profiles.json");
+            return Path.Combine(folder, "profiles.json");
+        }
+
+        public ProfileService(string? customProfilesPath = null)
+        {
+            if (!string.IsNullOrEmpty(customProfilesPath))
+            {
+                _profilesPath = customProfilesPath;
+                string? dir = Path.GetDirectoryName(_profilesPath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                Load();
+                return;
+            }
+
+            _profilesPath = GetDefaultProfilesPath();
 
             // Migrate legacy GlowBorder profiles if present and NotiGlow profiles don't exist yet
-            try
+            if (!IsTestEnvironment)
             {
-                string legacyProfilesPath = Path.Combine(appData, "GlowBorder", "profiles.json");
-                if (!File.Exists(_profilesPath) && File.Exists(legacyProfilesPath))
+                try
                 {
-                    File.Copy(legacyProfilesPath, _profilesPath, true);
-                    LoggerService.LogInfo("Migrated legacy GlowBorder profiles.json to NotiGlow.");
+                    string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string legacyProfilesPath = Path.Combine(appData, "GlowBorder", "profiles.json");
+                    if (!File.Exists(_profilesPath) && File.Exists(legacyProfilesPath))
+                    {
+                        File.Copy(legacyProfilesPath, _profilesPath, true);
+                        LoggerService.LogInfo("Migrated legacy GlowBorder profiles.json to NotiGlow.");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                LoggerService.LogWarning($"Legacy profile migration notice: {ex.Message}");
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"Legacy profile migration notice: {ex.Message}");
+                }
             }
 
             Load();
@@ -43,11 +72,12 @@ namespace NotiGlow.Services
 
         public static bool IsTestEnvironment { get; set; } = DetectTestHostEnvironment();
 
-        private static bool DetectTestHostEnvironment()
+        internal static bool DetectTestHostEnvironment()
         {
             try
             {
-                var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                using var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+                var processName = currentProcess.ProcessName;
                 if (processName.IndexOf("testhost", StringComparison.OrdinalIgnoreCase) >= 0 ||
                     processName.IndexOf("vstest", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
@@ -79,6 +109,9 @@ namespace NotiGlow.Services
         public void Load()
         {
             _profiles.Clear();
+            bool loadedFromExistingFile = false;
+            bool modifiedDuringLoad = false;
+
             try
             {
                 if (File.Exists(_profilesPath))
@@ -89,6 +122,11 @@ namespace NotiGlow.Services
                     {
                         var deduplicated = DeduplicateProfiles(loaded);
                         _profiles.AddRange(deduplicated);
+                        loadedFromExistingFile = _profiles.Count > 0;
+                        if (deduplicated.Count != loaded.Count)
+                        {
+                            modifiedDuringLoad = true;
+                        }
                     }
                 }
             }
@@ -99,18 +137,49 @@ namespace NotiGlow.Services
 
             if (!IsTestEnvironment)
             {
-                SyncWithInstalledApps();
+                if (!loadedFromExistingFile)
+                {
+                    SyncWithInstalledApps();
+                }
+                else
+                {
+                    if (PruneStaleNonCustomProfiles())
+                    {
+                        modifiedDuringLoad = true;
+                    }
+                }
             }
             else
             {
                 if (_profiles.Count == 0)
                 {
                     _profiles.AddRange(GetDefaultProfiles());
+                    modifiedDuringLoad = true;
                 }
                 PruneOrResolveProfiles();
             }
 
-            Save();
+            if (!loadedFromExistingFile || modifiedDuringLoad)
+            {
+                Save();
+            }
+        }
+
+        private bool PruneStaleNonCustomProfiles()
+        {
+            bool modified = false;
+            for (int i = _profiles.Count - 1; i >= 0; i--)
+            {
+                var p = _profiles[i];
+                if (!p.IsCustom &&
+                    !Core.Helpers.AppCategoryHelper.IsGamingCategory(p.Category) &&
+                    (string.IsNullOrEmpty(p.ExecutablePath) || !File.Exists(p.ExecutablePath)))
+                {
+                    _profiles.RemoveAt(i);
+                    modified = true;
+                }
+            }
+            return modified;
         }
 
         public static string NormalizePath(string rawPath)
@@ -148,18 +217,21 @@ namespace NotiGlow.Services
 
                 string cleanId = CleanIdentityString(p.AppId);
                 string cleanName = CleanIdentityString(p.Name);
+                bool isSharedExe = Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(exeName);
 
                 bool isDuplicate = false;
                 if (!string.IsNullOrEmpty(normPath) && seenPaths.Contains(normPath)) isDuplicate = true;
-                if (!string.IsNullOrEmpty(exeName) && seenExes.Contains(exeName)) isDuplicate = true;
-                if (!string.IsNullOrEmpty(cleanId) && seenAppIds.Contains(cleanId)) isDuplicate = true;
+                if (!string.IsNullOrEmpty(exeName) && !isSharedExe && seenExes.Contains(exeName)) isDuplicate = true;
+                if (!string.IsNullOrEmpty(cleanId) && !Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(p.AppId) && seenAppIds.Contains(cleanId)) isDuplicate = true;
+                if (isSharedExe && !string.IsNullOrEmpty(cleanName) && seenAppIds.Contains(cleanName)) isDuplicate = true;
 
                 if (isDuplicate)
                 {
                     // Merge/enrich existing entry if this one has valid executable path
                     var existing = result.FirstOrDefault(x =>
                         (!string.IsNullOrEmpty(normPath) && !string.IsNullOrEmpty(x.ExecutablePath) && NormalizePath(x.ExecutablePath).Equals(normPath, StringComparison.OrdinalIgnoreCase)) ||
-                        CleanIdentityString(x.AppId).Equals(cleanId, StringComparison.OrdinalIgnoreCase));
+                        (!isSharedExe && CleanIdentityString(x.AppId).Equals(cleanId, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(cleanName) && CleanIdentityString(x.Name).Equals(cleanName, StringComparison.OrdinalIgnoreCase)));
                     if (existing != null && string.IsNullOrEmpty(existing.ExecutablePath) && !string.IsNullOrEmpty(normPath))
                     {
                         existing.ExecutablePath = normPath;
@@ -172,8 +244,8 @@ namespace NotiGlow.Services
                     p.ExecutablePath = normPath;
                     seenPaths.Add(normPath);
                 }
-                if (!string.IsNullOrEmpty(exeName)) seenExes.Add(exeName);
-                if (!string.IsNullOrEmpty(cleanId)) seenAppIds.Add(cleanId);
+                if (!string.IsNullOrEmpty(exeName) && !isSharedExe) seenExes.Add(exeName);
+                if (!string.IsNullOrEmpty(cleanId) && !Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(p.AppId)) seenAppIds.Add(cleanId);
                 if (!string.IsNullOrEmpty(cleanName)) seenAppIds.Add(cleanName);
 
                 result.Add(p);
@@ -305,7 +377,7 @@ namespace NotiGlow.Services
                 for (int i = _profiles.Count - 1; i >= 0; i--)
                 {
                     var p = _profiles[i];
-                    if (!p.IsCustom)
+                    if (!p.IsCustom && !Core.Helpers.AppCategoryHelper.IsGamingCategory(p.Category))
                     {
                         if (string.IsNullOrEmpty(p.ExecutablePath) || !File.Exists(p.ExecutablePath))
                         {
@@ -345,7 +417,7 @@ namespace NotiGlow.Services
         {
             try
             {
-                string json = JsonSerializer.Serialize(_profiles, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(_profiles, WriteIndentedOptions);
                 File.WriteAllText(_profilesPath, json);
                 ProfilesChanged?.Invoke(this, EventArgs.Empty);
             }
@@ -472,12 +544,14 @@ namespace NotiGlow.Services
             string normPath = !string.IsNullOrEmpty(profile.ExecutablePath) ? NormalizePath(profile.ExecutablePath) : string.Empty;
             string cleanId = CleanIdentityString(profile.AppId);
             string exeName = !string.IsNullOrEmpty(normPath) ? Path.GetFileName(normPath).ToLowerInvariant() : string.Empty;
+            bool isSharedExe = Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(exeName) ||
+                               Core.Helpers.AppCategoryHelper.IsSharedEngineExecutable(profile.AppId);
 
             var existing = _profiles.FirstOrDefault(p =>
-                p.AppId.Equals(profile.AppId, StringComparison.OrdinalIgnoreCase) ||
-                CleanIdentityString(p.AppId).Equals(cleanId, StringComparison.OrdinalIgnoreCase) ||
+                (!isSharedExe && p.AppId.Equals(profile.AppId, StringComparison.OrdinalIgnoreCase)) ||
+                (!isSharedExe && CleanIdentityString(p.AppId).Equals(cleanId, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(normPath) && !string.IsNullOrEmpty(p.ExecutablePath) && NormalizePath(p.ExecutablePath).Equals(normPath, StringComparison.OrdinalIgnoreCase)) ||
-                (!string.IsNullOrEmpty(exeName) && !string.IsNullOrEmpty(p.ExecutablePath) && Path.GetFileName(p.ExecutablePath).Equals(exeName, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(exeName) && !isSharedExe && !string.IsNullOrEmpty(p.ExecutablePath) && Path.GetFileName(p.ExecutablePath).Equals(exeName, StringComparison.OrdinalIgnoreCase)) ||
                 (!string.IsNullOrEmpty(profile.Name) && p.Name.Equals(profile.Name, StringComparison.OrdinalIgnoreCase)));
 
             if (existing != null)
