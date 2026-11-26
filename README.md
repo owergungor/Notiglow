@@ -37,8 +37,6 @@ Built on a **WinUI 3 + Rust hybrid architecture**, NotiGlow pairs a native Windo
   <img src="https://github.com/user-attachments/assets/7b3f4394-7ec9-4b12-892b-8de67129cac8" alt="NotiGlow Settings Overview" width="820" />
   <p><em>WinUI 3 Fluent Design settings interface with per-app profiles and live preview.</em></p>
   <br />
-  <img src="Package/Assets/SplashScreen.png" alt="NotiGlow Ambient Edge Glow" width="560" />
-  <p><em>Customizable ambient screen-edge glow illuminated around the display perimeter.</em></p>
 </div>
 
 ---
