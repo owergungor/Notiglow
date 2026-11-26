@@ -26,7 +26,7 @@ if (-not $makeAppxPath) {
     throw "makeappx.exe not found."
 }
 
-Write-Host "=== NotiGlow v4.2 MSIX Build Pipeline ===" -ForegroundColor Cyan
+Write-Host "=== NotiGlow v5.0 MSIX Build Pipeline ===" -ForegroundColor Cyan
 
 # 1. Publish self-contained x64 if requested
 $publishDir = Join-Path $repoRoot "bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
@@ -81,7 +81,7 @@ $msixPath = if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
     if ($outParent -and -not (Test-Path $outParent)) { New-Item -ItemType Directory -Path $outParent -Force | Out-Null }
     $OutputPath
 } else {
-    Join-Path $outputDir "NotiGlow-v4.2-x64.msix"
+    Join-Path $outputDir "NotiGlow-v5.0-x64.msix"
 }
 
 Write-Host "[4/5] Packaging MSIX: $msixPath..." -ForegroundColor Yellow

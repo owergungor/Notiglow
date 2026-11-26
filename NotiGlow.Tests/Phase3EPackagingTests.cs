@@ -55,12 +55,13 @@ namespace NotiGlow.Tests
         }
 
         [TestMethod]
-        public void FeatureFlags_RemainDefaultFalse_ForPhase3E()
+        public void FeatureFlags_DefaultTrue_ForV5Release()
         {
             var s = new AppSettings();
-            Assert.IsFalse(s.UseRustBackgroundWorker);
-            Assert.IsFalse(s.UseRustGameDetection);
-            Assert.IsFalse(s.UseRustGlowEngine);
+            Assert.AreEqual(5, s.SettingsSchemaVersion);
+            Assert.IsTrue(s.UseRustBackgroundWorker);
+            Assert.IsTrue(s.UseRustGameDetection);
+            Assert.IsTrue(s.UseRustGlowEngine);
         }
 
         [TestMethod]

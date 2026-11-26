@@ -94,9 +94,35 @@ namespace NotiGlow.Services
                 if (File.Exists(_settingsPath))
                 {
                     string json = File.ReadAllText(_settingsPath);
+                    int persistedSchemaVersion = 0;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(json);
+                        if (doc.RootElement.TryGetProperty("SettingsSchemaVersion", out var svProp) &&
+                            svProp.ValueKind == JsonValueKind.Number &&
+                            svProp.TryGetInt32(out int sv))
+                        {
+                            persistedSchemaVersion = sv;
+                        }
+                    }
+                    catch { }
+
                     var settings = JsonSerializer.Deserialize<AppSettings>(json);
                     if (settings != null)
                     {
+                        bool migrated = false;
+                        if (persistedSchemaVersion < 5)
+                        {
+                            // One-time v4.x -> v5.0 migration: adopt Rust Background Worker defaults
+                            // while preserving every existing user preference and profile.
+                            // Once SettingsSchemaVersion == 5 is persisted, explicit user opt-outs are respected.
+                            settings.SettingsSchemaVersion = 5;
+                            settings.UseRustBackgroundWorker = true;
+                            settings.UseRustGameDetection = true;
+                            settings.UseRustGlowEngine = true;
+                            migrated = true;
+                        }
+
                         if (settings.TrackedGames != null)
                         {
                             settings.TrackedGames.RemoveAll(g =>
@@ -107,6 +133,21 @@ namespace NotiGlow.Services
                                        trimmed.Contains(@"\Windows\SystemApps\", StringComparison.OrdinalIgnoreCase);
                             });
                         }
+
+                        if (migrated)
+                        {
+                            try
+                            {
+                                string migratedJson = JsonSerializer.Serialize(settings, WriteIndentedOptions);
+                                File.WriteAllText(_settingsPath, migratedJson);
+                                LoggerService.LogInfo("Migrated v4.x settings.json to v5.0 schema (Rust architecture enabled by default).");
+                            }
+                            catch (Exception mex)
+                            {
+                                LoggerService.LogWarning($"v5.0 settings migration save notice: {mex.Message}");
+                            }
+                        }
+
                         return settings;
                     }
                 }

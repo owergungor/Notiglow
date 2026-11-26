@@ -46,21 +46,21 @@ namespace NotiGlow.Tests
 
         [TestMethod]
         [Timeout(10000)]
-        public void FeatureFlag_DefaultIsFalse_AndJsonRoundTripPreserved()
+        public void FeatureFlag_DefaultIsTrueInV5_AndJsonRoundTripPreserved()
         {
             var settings = new AppSettings();
-            Assert.IsFalse(settings.UseRustBackgroundWorker);
+            Assert.IsTrue(settings.UseRustBackgroundWorker);
 
-            string jsonFalse = JsonSerializer.Serialize(settings);
-            var restoredFalse = JsonSerializer.Deserialize<AppSettings>(jsonFalse);
-            Assert.IsNotNull(restoredFalse);
-            Assert.IsFalse(restoredFalse!.UseRustBackgroundWorker);
-
-            settings.UseRustBackgroundWorker = true;
             string jsonTrue = JsonSerializer.Serialize(settings);
             var restoredTrue = JsonSerializer.Deserialize<AppSettings>(jsonTrue);
             Assert.IsNotNull(restoredTrue);
             Assert.IsTrue(restoredTrue!.UseRustBackgroundWorker);
+
+            settings.UseRustBackgroundWorker = false;
+            string jsonFalse = JsonSerializer.Serialize(settings);
+            var restoredFalse = JsonSerializer.Deserialize<AppSettings>(jsonFalse);
+            Assert.IsNotNull(restoredFalse);
+            Assert.IsFalse(restoredFalse!.UseRustBackgroundWorker);
         }
 
         [TestMethod]

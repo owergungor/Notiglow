@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## [5.0] - 2026-11-26
+- **Rust Background Worker Architecture Now Default**:
+  - `UseRustBackgroundWorker`, `UseRustGameDetection`, and `UseRustGlowEngine` are now enabled by default (`true`) for fresh installations and automatically migrated from v4.x (`SettingsSchemaVersion = 5`) while preserving all existing user settings and profiles.
+  - Native Rust worker (`NotiGlow_Background.exe`, `v5.0.0`, ~3.1–3.3 MB Private Working Set when UI is closed) now serves as the primary engine for system tray, Windows notifications, Steam/Epic/Xbox/Store/Manual EXE game detection, and the 6-mode Win32 layered Glow overlay.
+  - Explicit user opt-outs (`UseRustBackgroundWorker = false` after v5.0 migration) and automatic crash/unavailable fallback to legacy C# services remain fully supported.
+
 ## [4.2] - 2026-11-26
 - **Memory & Startup Optimizations**:
   - Reduced idle WinUI 3 memory footprint and improved startup latency while preserving Fluent Design and localization.

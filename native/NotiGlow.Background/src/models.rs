@@ -233,12 +233,12 @@ pub struct AppSettings {
     #[serde(default)]
     pub BurstMode: BurstMode,
 
-    // Phase 3A / 3D Feature Flags (all default false to preserve legacy v4.2 behavior)
-    #[serde(default)]
+    // v5.0 Rust Architecture Feature Flags (default true — primary runtime engine)
+    #[serde(default = "default_true")]
     pub UseRustBackgroundWorker: bool,
-    #[serde(default)]
+    #[serde(default = "default_true")]
     pub UseRustGameDetection: bool,
-    #[serde(default)]
+    #[serde(default = "default_true")]
     pub UseRustGlowEngine: bool,
 
     // Gaming Mode Settings
@@ -301,9 +301,9 @@ impl Default for AppSettings {
             CornerRadius: 0.0,
             MonitorMode: MonitorMode::ActiveMonitor,
             BurstMode: BurstMode::Restart,
-            UseRustBackgroundWorker: false,
-            UseRustGameDetection: false,
-            UseRustGlowEngine: false,
+            UseRustBackgroundWorker: true,
+            UseRustGameDetection: true,
+            UseRustGlowEngine: true,
             GamingModeEnabled: false,
             GlowDuringGames: true,
             ReduceIntensityInGames: true,

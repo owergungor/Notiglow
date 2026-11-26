@@ -49,12 +49,12 @@ namespace NotiGlow.Tests
         }
 
         [TestMethod]
-        public void FeatureFlags_DefaultFalse_AndExternalGlowPreventsDoubleOverlay()
+        public void FeatureFlags_DefaultTrueInV5_AndExternalGlowPreventsDoubleOverlay()
         {
             var settings = new AppSettings();
-            Assert.IsFalse(settings.UseRustBackgroundWorker, "UseRustBackgroundWorker must default to false");
-            Assert.IsFalse(settings.UseRustGameDetection, "UseRustGameDetection must default to false");
-            Assert.IsFalse(settings.UseRustGlowEngine, "UseRustGlowEngine must default to false");
+            Assert.IsTrue(settings.UseRustBackgroundWorker, "UseRustBackgroundWorker must default to true in v5.0");
+            Assert.IsTrue(settings.UseRustGameDetection, "UseRustGameDetection must default to true in v5.0");
+            Assert.IsTrue(settings.UseRustGlowEngine, "UseRustGlowEngine must default to true in v5.0");
 
             string cfgDir = CreateTempConfigDir(settings, new List<AppProfile>
             {

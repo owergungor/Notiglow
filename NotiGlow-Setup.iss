@@ -1,9 +1,9 @@
 [Setup]
 AppId={{8B84C3F0-7613-4B94-A3D9-9C9D7881B30E}
 AppName=NotiGlow
-AppVersion=4.2
-VersionInfoVersion=4.2.0.0
-VersionInfoTextVersion=4.2
+AppVersion=5.0
+VersionInfoVersion=5.0.0.0
+VersionInfoTextVersion=5.0
 AppPublisher=NotiGlow Project
 AppPublisherURL=https://github.com/owergungor/NotiGlow
 AppSupportURL=https://github.com/owergungor/NotiGlow/issues
@@ -12,7 +12,7 @@ DefaultDirName={autopf}\NotiGlow
 DefaultGroupName=NotiGlow
 UninstallDisplayIcon={app}\NotiGlow.exe
 OutputDir=release
-OutputBaseFilename=NotiGlow-Setup-v4.2
+OutputBaseFilename=NotiGlow-Setup-v5.0
 SetupIconFile=Assets\NotiGlow.ico
 Compression=lzma2/max
 SolidCompression=yes
