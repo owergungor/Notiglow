@@ -1,6 +1,8 @@
 param(
     [switch]$SkipPublish = $false,
-    [switch]$SignPackage = $true
+    [switch]$SignPackage = $true,
+    [string]$OutputPath = "",
+    [string]$ManifestVersionOverride = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,7 +26,7 @@ if (-not $makeAppxPath) {
     throw "makeappx.exe not found."
 }
 
-Write-Host "=== NotiGlow v4.1 MSIX Build Pipeline ===" -ForegroundColor Cyan
+Write-Host "=== NotiGlow v5.0 MSIX Build Pipeline ===" -ForegroundColor Cyan
 
 # 1. Publish self-contained x64 if requested
 $publishDir = Join-Path $repoRoot "bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
@@ -47,9 +49,24 @@ New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
 Write-Host "[2/5] Copying published binaries to staging directory..." -ForegroundColor Yellow
 Copy-Item -Path "$publishDir\*" -Destination $stagingDir -Recurse -Force
 
-# 3. Copy Manifest and Assets
-Write-Host "[3/5] Copying AppxManifest and Assets..." -ForegroundColor Yellow
+# 3. Copy Manifest, Rust Background Worker, and Assets
+Write-Host "[3/5] Copying AppxManifest, NotiGlow_Background.exe, and Assets..." -ForegroundColor Yellow
+$workerSrc = Join-Path $repoRoot "native\NotiGlow.Background\target\release\NotiGlow_Background.exe"
+$workerDst = Join-Path $stagingDir "NotiGlow_Background.exe"
+if (-not (Test-Path $workerDst)) {
+    if (Test-Path $workerSrc) {
+        Copy-Item -Path $workerSrc -Destination $workerDst -Force
+    } else {
+        throw "NotiGlow_Background.exe not found at $workerSrc. Run 'cargo build --release' first."
+    }
+}
 Copy-Item -Path "$repoRoot\Package\AppxManifest.xml" -Destination "$stagingDir\AppxManifest.xml" -Force
+if (-not [string]::IsNullOrWhiteSpace($ManifestVersionOverride)) {
+    $mPath = Join-Path $stagingDir "AppxManifest.xml"
+    $mContent = Get-Content -Path $mPath -Raw -Encoding UTF8
+    $mContent = [regex]::Replace($mContent, '(<Identity[\s\S]*?Version=")[^"]+(")', "`${1}$ManifestVersionOverride`${2}", 1)
+    [System.IO.File]::WriteAllText($mPath, $mContent, (New-Object System.Text.UTF8Encoding($false)))
+}
 $assetsTarget = Join-Path $stagingDir "Assets"
 New-Item -ItemType Directory -Path $assetsTarget -Force | Out-Null
 Copy-Item -Path "$repoRoot\Package\Assets\*" -Destination $assetsTarget -Recurse -Force
@@ -59,7 +76,13 @@ $outputDir = Join-Path $repoRoot "artifacts\store"
 if (-not (Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
 }
-$msixPath = Join-Path $outputDir "NotiGlow-v4.1-x64.msix"
+$msixPath = if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
+    $outParent = Split-Path -Path $OutputPath -Parent
+    if ($outParent -and -not (Test-Path $outParent)) { New-Item -ItemType Directory -Path $outParent -Force | Out-Null }
+    $OutputPath
+} else {
+    Join-Path $outputDir "NotiGlow-v5.0-x64.msix"
+}
 
 Write-Host "[4/5] Packaging MSIX: $msixPath..." -ForegroundColor Yellow
 & $makeAppxPath pack /v /h SHA256 /d $stagingDir /p $msixPath /o

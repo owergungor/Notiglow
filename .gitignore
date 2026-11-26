@@ -8,6 +8,7 @@
 [Dd]ebug/
 [Rr]elease/
 [Pp]ublish/
+native/**/target/
 [Ll]og/
 [Ll]ogs/
 [Tt]est[Rr]esults/

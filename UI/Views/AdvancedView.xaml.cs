@@ -29,6 +29,15 @@ namespace NotiGlow.UI.Views
             };
         }
 
+        public void DetachEvents()
+        {
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            if (_settingsService != null)
+            {
+                _settingsService.SettingsChanged -= OnSettingsChanged;
+            }
+        }
+
         public void Initialize(SettingsService settingsService, ProfileService profileService, GlowManager? glowManager = null)
         {
             _settingsService = settingsService;

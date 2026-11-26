@@ -304,6 +304,11 @@ namespace NotiGlow.Services
             return cleaned;
         }
 
+        public void ClearInMemoryBitmaps()
+        {
+            _iconCache.Clear();
+        }
+
         public void ClearCache()
         {
             _iconCache.Clear();

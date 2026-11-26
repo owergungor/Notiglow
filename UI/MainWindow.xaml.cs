@@ -73,8 +73,14 @@ namespace NotiGlow.UI
 
                 if (!_isExplicitExit)
                 {
+                    if (App.IsRustWorkerOwningTray)
+                    {
+                        _isExplicitExit = true;
+                        App.CurrentInstance?.CloseUiLeavingWorkerRunning();
+                        return;
+                    }
                     e.Cancel = true;
-                    _appWindow.Hide();
+                    HideToTray();
                 }
             };
 
@@ -87,6 +93,7 @@ namespace NotiGlow.UI
             ToastNotificationService.Instance.ToastRequested += OnToastRequested;
             Closed += (s, e) =>
             {
+                ReleaseSecondaryViews(keepTag: null);
                 ToastNotificationService.Instance.ToastRequested -= OnToastRequested;
                 LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
                 ThemeService.ThemeChanged -= OnThemeChanged;
@@ -103,24 +110,46 @@ namespace NotiGlow.UI
             UpdateLanguageButtonVisuals();
         }
 
+        public void HideToTray()
+        {
+            _appWindow.Hide();
+            ReleaseSecondaryViews(keepTag: null);
+            ViewGeneral.Visibility = Visibility.Collapsed;
+            AppIconService.Instance.ClearInMemoryBitmaps();
+            try
+            {
+                SystemBackdrop = null;
+                _lastAppliedMaterial = null;
+            }
+            catch { }
+        }
+
+        public void ShowFromTray()
+        {
+            if (_settingsService != null)
+            {
+                ApplyBackdropMaterial(_settingsService.Current.WindowMaterial);
+                ApplyThemeVisuals(_settingsService.Current.ColorTheme, _settingsService.Current.ThemeMode);
+            }
+            NavigateToTag(string.IsNullOrEmpty(_currentTag) ? "General" : _currentTag);
+            _appWindow.Show();
+            if (_appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                if (presenter.State == OverlappedPresenterState.Minimized)
+                {
+                    presenter.Restore();
+                }
+            }
+            NativeMethods.SetForegroundWindow(_hwnd);
+            Activate();
+        }
+
         private IntPtr WndProcSubclass(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam, UIntPtr uIdSubclass, IntPtr dwRefData)
         {
             if (uMsg == NativeMethods.WM_SHOW_NOTIGLOW)
             {
                 LoggerService.LogInfo("Received WM_SHOW_NOTIGLOW signal. Restoring and activating MainWindow.");
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    _appWindow.Show();
-                    if (_appWindow.Presenter is OverlappedPresenter presenter)
-                    {
-                        if (presenter.State == OverlappedPresenterState.Minimized)
-                        {
-                            presenter.Restore();
-                        }
-                    }
-                    NativeMethods.SetForegroundWindow(_hwnd);
-                    Activate();
-                });
+                DispatcherQueue.TryEnqueue(ShowFromTray);
                 return IntPtr.Zero;
             }
 
@@ -526,6 +555,46 @@ namespace NotiGlow.UI
         private void RootNavigationView_PaneClosed(NavigationView sender, object args)
         {
             UpdateLanguageButtonDisplay(false);
+        }
+
+        public void ReleaseSecondaryViews(string? keepTag)
+        {
+            if (_viewApplications != null && !string.Equals(keepTag, "Applications", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewApplications.DetachEvents();
+                RootContentGrid.Children.Remove(_viewApplications);
+                _viewApplications = null;
+            }
+            if (_viewAppearance != null && !string.Equals(keepTag, "Appearance", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewAppearance.DetachEvents();
+                RootContentGrid.Children.Remove(_viewAppearance);
+                _viewAppearance = null;
+            }
+            if (_viewDisplay != null && !string.Equals(keepTag, "Display", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewDisplay.DetachEvents();
+                RootContentGrid.Children.Remove(_viewDisplay);
+                _viewDisplay = null;
+            }
+            if (_viewGaming != null && !string.Equals(keepTag, "Gaming", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewGaming.DetachEvents();
+                RootContentGrid.Children.Remove(_viewGaming);
+                _viewGaming = null;
+            }
+            if (_viewNotifications != null && !string.Equals(keepTag, "Notifications", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewNotifications.DetachEvents();
+                RootContentGrid.Children.Remove(_viewNotifications);
+                _viewNotifications = null;
+            }
+            if (_viewAdvanced != null && !string.Equals(keepTag, "Advanced", StringComparison.OrdinalIgnoreCase))
+            {
+                _viewAdvanced.DetachEvents();
+                RootContentGrid.Children.Remove(_viewAdvanced);
+                _viewAdvanced = null;
+            }
         }
 
         public void NavigateToTag(string tag)

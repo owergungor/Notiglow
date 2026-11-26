@@ -56,6 +56,14 @@ namespace NotiGlow.Models
         public bool ShowIdentityDebugInfo { get; set; } = false;
         public bool FirstRunCompleted { get; set; } = false;
 
+        // v5.0 Settings Schema Version (tracks one-time v4.x -> v5.0 Rust default migration)
+        public int SettingsSchemaVersion { get; set; } = 5;
+
+        // v5.0 Rust Native Background Worker Architecture (default true — primary runtime engine)
+        public bool UseRustBackgroundWorker { get; set; } = true;
+        public bool UseRustGameDetection { get; set; } = true;
+        public bool UseRustGlowEngine { get; set; } = true;
+
         // Gaming Mode Settings
         public bool GamingModeEnabled { get; set; } = false;
         public bool GlowDuringGames { get; set; } = true;

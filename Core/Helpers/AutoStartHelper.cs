@@ -9,9 +9,24 @@ namespace NotiGlow.Core.Helpers
         private const string RunRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
         private const string AppName = "NotiGlow";
         private const string LegacyAppName = "GlowBorder";
+        public const string MsixStartupTaskId = "NotiGlowStartupTask";
 
         public static bool IsAutoStartEnabled()
         {
+            if (PackageService.IsPackaged)
+            {
+                try
+                {
+                    var task = Windows.ApplicationModel.StartupTask.GetAsync(MsixStartupTaskId).AsTask().GetAwaiter().GetResult();
+                    return task.State == Windows.ApplicationModel.StartupTaskState.Enabled ||
+                           task.State == Windows.ApplicationModel.StartupTaskState.EnabledByPolicy;
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"MSIX StartupTask query fallback: {ex.Message}");
+                }
+            }
+
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey, false);
@@ -27,6 +42,29 @@ namespace NotiGlow.Core.Helpers
 
         public static void SetAutoStart(bool enable)
         {
+            if (PackageService.IsPackaged)
+            {
+                try
+                {
+                    var task = Windows.ApplicationModel.StartupTask.GetAsync(MsixStartupTaskId).AsTask().GetAwaiter().GetResult();
+                    if (enable)
+                    {
+                        var state = task.RequestEnableAsync().AsTask().GetAwaiter().GetResult();
+                        LoggerService.LogInfo($"MSIX StartupTask enable state: {state}");
+                    }
+                    else
+                    {
+                        task.Disable();
+                        LoggerService.LogInfo("MSIX StartupTask disabled");
+                    }
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    LoggerService.LogWarning($"MSIX StartupTask update fallback: {ex.Message}");
+                }
+            }
+
             try
             {
                 using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey, true);

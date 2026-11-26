@@ -19,11 +19,38 @@ namespace NotiGlow.Services
         private bool _isAnimating = false;
         private AppProfile? _activeProfile = null;
         private readonly Queue<AppProfile> _notificationQueue = new();
+        private System.Threading.Timer? _overlayIdleTimer;
+        private readonly object _overlayTimerLock = new();
+        private const int OverlayIdleDisposeDelayMs = 15000;
+
+        public int ActiveOverlayWindowCount => _activeOverlayWindows.Count;
 
         public bool IsAnimating => _isAnimating;
         public GameDetectionService GameDetectionService => _gameDetectionService;
         public bool SuppressOverlayWindowsForTesting { get; set; } = false;
         public AppProfile? LastTriggeredProfile { get; private set; }
+        public bool IsExternalGlowOwnerActive { get; private set; } = false;
+        public bool SuppressNotificationTriggerWhenExternallyOwned { get; set; } = true;
+
+        private Func<AppProfile, AppSettings, bool, string?, bool>? _externalGlowDispatcher;
+        private Action? _externalGlowStopAction;
+
+        public void EnableExternalGlowOwnership(
+            Func<AppProfile, AppSettings, bool, string?, bool> dispatcher,
+            Action? stopAction = null)
+        {
+            CloseAllOverlays();
+            _externalGlowDispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _externalGlowStopAction = stopAction;
+            IsExternalGlowOwnerActive = true;
+        }
+
+        public void DisableExternalGlowOwnership()
+        {
+            IsExternalGlowOwnerActive = false;
+            _externalGlowDispatcher = null;
+            _externalGlowStopAction = null;
+        }
 
         public GlowManager(SettingsService settingsService, ProfileService profileService, GameDetectionService? gameDetectionService = null)
         {
@@ -35,6 +62,13 @@ namespace NotiGlow.Services
         public void TriggerNotification(NotificationItem notification)
         {
             if (!_settingsService.Current.MasterEnabled) return;
+
+            // Phase 3D Dual-Overlay Guard: when Rust Glow Engine owns notifications autonomously,
+            // do NOT render a second C# WinUI OverlayWindow for the same toast.
+            if (IsExternalGlowOwnerActive && SuppressNotificationTriggerWhenExternallyOwned)
+            {
+                return;
+            }
 
             // Notification Deduplication
             if (_deduplicator.IsDuplicate(notification))
@@ -146,6 +180,17 @@ namespace NotiGlow.Services
                     LoggerService.LogInfo("Non-high priority notification suppressed in Gaming Mode");
                     return false;
                 }
+            }
+
+            // Phase 3D: Route explicit UI triggers (TestAnimation, TriggerProfile, GameAnimationTest)
+            // to the Rust Glow Engine when it owns Glow so C# and Rust never render double overlays.
+            if (IsExternalGlowOwnerActive && _externalGlowDispatcher != null)
+            {
+                LastTriggeredProfile = AdjustProfileParameters(profile, settings, isTest);
+                string? activeId = _gameDetectionService.IsGameRunning()
+                    ? (_gameDetectionService.ActiveGameIdentifier ?? _gameDetectionService.ActiveGameName)
+                    : null;
+                return _externalGlowDispatcher(profile, settings, isTest, activeId);
             }
 
             // Apply adjustments (Gaming multipliers, OLED Mode, Accessibility)
@@ -290,8 +335,51 @@ namespace NotiGlow.Services
             };
         }
 
+        private void CancelOverlayIdleDisposal()
+        {
+            lock (_overlayTimerLock)
+            {
+                _overlayIdleTimer?.Dispose();
+                _overlayIdleTimer = null;
+            }
+        }
+
+        private void ScheduleOverlayIdleDisposal()
+        {
+            lock (_overlayTimerLock)
+            {
+                _overlayIdleTimer?.Dispose();
+                _overlayIdleTimer = new System.Threading.Timer(_ =>
+                {
+                    if (_isAnimating || _notificationQueue.Count > 0) return;
+                    DisposeIdleOverlays();
+                }, null, OverlayIdleDisposeDelayMs, System.Threading.Timeout.Infinite);
+            }
+        }
+
+        public void DisposeIdleOverlays()
+        {
+            if (_isAnimating || _notificationQueue.Count > 0 || _activeOverlayWindows.Count == 0) return;
+
+            var dispatcher = NotiGlow.App.MainWindowInstance?.DispatcherQueue;
+            if (dispatcher != null && !dispatcher.HasThreadAccess)
+            {
+                dispatcher.TryEnqueue(DisposeIdleOverlays);
+                return;
+            }
+
+            if (_isAnimating || _notificationQueue.Count > 0) return;
+            foreach (var win in _activeOverlayWindows.Values)
+            {
+                try { win.Close(); } catch { }
+            }
+            _activeOverlayWindows.Clear();
+            CancelOverlayIdleDisposal();
+        }
+
         private void PlayGlowInternal(AppProfile profile)
         {
+            CancelOverlayIdleDisposal();
             _isAnimating = true;
             _activeProfile = profile;
             LastTriggeredProfile = profile;
@@ -319,6 +407,10 @@ namespace NotiGlow.Services
                     {
                         var nextProfile = _notificationQueue.Dequeue();
                         PlayGlowInternal(nextProfile);
+                    }
+                    else
+                    {
+                        ScheduleOverlayIdleDisposal();
                     }
                 }
             };
@@ -367,12 +459,17 @@ namespace NotiGlow.Services
             {
                 win.StopGlow();
             }
+            if (IsExternalGlowOwnerActive)
+            {
+                try { _externalGlowStopAction?.Invoke(); } catch { }
+            }
             _isAnimating = false;
             _activeProfile = null;
         }
 
         public void CloseAllOverlays()
         {
+            CancelOverlayIdleDisposal();
             StopAllOverlays();
             foreach (var win in _activeOverlayWindows.Values)
             {

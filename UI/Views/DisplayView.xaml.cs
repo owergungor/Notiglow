@@ -24,6 +24,11 @@ namespace NotiGlow.UI.Views
             };
         }
 
+        public void DetachEvents()
+        {
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        }
+
         private void OnLanguageChanged(object? sender, string languageCode)
         {
             DispatcherQueue.TryEnqueue(() =>

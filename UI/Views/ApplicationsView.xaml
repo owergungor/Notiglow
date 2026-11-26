@@ -92,7 +92,7 @@
                 </TransitionCollection>
             </Grid.ChildrenTransitions>
 
-            <!-- App Profile List ScrollViewer (Scrollbar flush right) -->
+            <!-- App Profile List ScrollViewer (Scrollbar flush right, UI Virtualized via ItemsRepeater) -->
             <ScrollViewer x:Name="ListScrollViewer"
                           Background="Transparent"
                           VerticalScrollBarVisibility="Auto"
@@ -102,11 +102,24 @@
                           ScrollViewer.VerticalScrollMode="Enabled"
                           Padding="32,0,32,24"
                           Margin="0">
-                <StackPanel x:Name="PnlAppCards" HorizontalAlignment="Stretch"/>
+                <ItemsRepeater x:Name="PnlAppCards"
+                               HorizontalAlignment="Stretch"
+                               ElementPrepared="PnlAppCards_ElementPrepared"
+                               ElementClearing="PnlAppCards_ElementClearing">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Vertical"/>
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <controls:AppProfileCard/>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
             </ScrollViewer>
 
-            <!-- Reusable Edit / Add Profile Drawer Overlay -->
+            <!-- Reusable Edit / Add Profile Drawer Overlay (Deferred via x:Load) -->
             <controls:ProfileEditorControl x:Name="PnlEditProfile"
+                                           x:Load="False"
                                            Margin="32,0,32,24"
                                            Visibility="Collapsed"
                                            VerticalAlignment="Stretch"

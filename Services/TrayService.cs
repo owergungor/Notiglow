@@ -23,6 +23,8 @@ namespace NotiGlow.Services
         private ToolStripMenuItem _updateItem = null!;
         private ToolStripMenuItem _exitItem = null!;
         private ContextMenuStrip _menu = null!;
+        private Icon? _ownedTrayIcon;
+        private Font? _menuFont;
 
         private long _lastOpenTicks = 0;
 
@@ -37,7 +39,8 @@ namespace NotiGlow.Services
             _testAnimationAction = testAnimationAction;
             _exitAppAction = exitAppAction;
             _updateAction = updateAction ?? openSettingsAction;
-            _notifyIcon = new NotifyIcon { Text = LocalizationService.Instance.GetString("Tray.Tooltip"), Icon = LoadTrayIcon() };
+            _ownedTrayIcon = LoadTrayIcon();
+            _notifyIcon = new NotifyIcon { Text = LocalizationService.Instance.GetString("Tray.Tooltip"), Icon = _ownedTrayIcon };
             BuildContextMenu();
             _notifyIcon.MouseUp += (s, e) =>
             {
@@ -82,7 +85,8 @@ namespace NotiGlow.Services
 
         private void BuildContextMenu()
         {
-            _menu = new ContextMenuStrip { ShowImageMargin = false, Font = new Font("Segoe UI", 9F), Renderer = new TrayMenuRenderer() };
+            _menuFont = new Font("Segoe UI", 9F);
+            _menu = new ContextMenuStrip { ShowImageMargin = false, Font = _menuFont, Renderer = new TrayMenuRenderer() };
             _openItem = new ToolStripMenuItem(LocalizationService.Instance.GetString("Tray.Show"), null, (s, e) => _openSettingsAction());
             _enableMenuItem = new ToolStripMenuItem(GetNotificationToggleLabel(), null, (s, e) =>
             {
@@ -156,8 +160,16 @@ namespace NotiGlow.Services
             _settingsService.SettingsChanged -= OnSettingsChanged;
             LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
             _notifyIcon.Visible = false;
+            _notifyIcon.Icon = null;
             _notifyIcon.Dispose();
             _menu.Dispose();
+            _menuFont?.Dispose();
+            _menuFont = null;
+            if (_ownedTrayIcon != null && !ReferenceEquals(_ownedTrayIcon, SystemIcons.Application))
+            {
+                _ownedTrayIcon.Dispose();
+            }
+            _ownedTrayIcon = null;
         }
 
         private sealed class TrayMenuRenderer : ToolStripProfessionalRenderer

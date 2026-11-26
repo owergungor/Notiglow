@@ -2,13 +2,14 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  IgnorableNamespaces="uap desktop rescap">
 
   <Identity
     Name="crius.Notiglow"
     Publisher="CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1"
-    Version="4.1.0.0"
+    Version="5.0.0.0"
     ProcessorArchitecture="x64" />
 
   <Properties>
@@ -44,6 +45,12 @@
         </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <desktop:Extension Category="windows.startupTask" Executable="NotiGlow.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="NotiGlowStartupTask" Enabled="false" DisplayName="NotiGlow" />
+        </desktop:Extension>
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="NotiGlow_Background.exe" />
+      </Extensions>
     </Application>
   </Applications>
 
