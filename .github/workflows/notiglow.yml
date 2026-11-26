@@ -18,6 +18,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Rust Worker Tests
+        run: cargo test --manifest-path native/NotiGlow.Background/Cargo.toml
+
+      - name: Build Rust Background Worker (Release)
+        run: cargo build --release --manifest-path native/NotiGlow.Background/Cargo.toml
+
+      - name: Verify Rust Worker Binary
+        shell: pwsh
+        run: |
+          $worker = "native/NotiGlow.Background/target/release/NotiGlow_Background.exe"
+          if (-not (Test-Path $worker)) {
+            Write-Error "Rust worker binary missing at $worker"
+            exit 1
+          }
+          Write-Host "Verified Rust worker binary: $worker"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:

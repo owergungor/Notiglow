@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Release tag to build and publish'
         required: true
-        default: 'v1.2'
+        default: 'v5.0'
         type: string
 
 permissions:
@@ -27,6 +27,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run Rust Worker Tests
+        run: cargo test --manifest-path native/NotiGlow.Background/Cargo.toml
+
+      - name: Build Rust Background Worker (Release)
+        run: cargo build --release --manifest-path native/NotiGlow.Background/Cargo.toml
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -49,15 +58,21 @@ jobs:
         run: |
           $tag = "$env:RELEASE_TAG"
           if ($tag -notmatch '^v[0-9]+\.[0-9]+$') {
-            Write-Error "Invalid tag format '$tag'. Expected version tag like v1.2."
+            Write-Error "Invalid tag format '$tag'. Expected version tag like v5.0."
             exit 1
           }
-          $publishExe = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish/NotiGlow.exe"
+          $publishDir = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish"
+          $publishExe = "$publishDir/NotiGlow.exe"
+          $publishWorker = "$publishDir/NotiGlow_Background.exe"
           if (-not (Test-Path $publishExe)) {
             Write-Error "Published executable $publishExe was not found."
             exit 1
           }
-          Write-Host "Tag $tag validated and publish output confirmed."
+          if (-not (Test-Path $publishWorker)) {
+            Write-Error "Published Rust worker $publishWorker was not found."
+            exit 1
+          }
+          Write-Host "Tag $tag validated and publish output (UI + Rust worker) confirmed."
 
       - name: Compile Inno Setup Installer
         shell: pwsh
@@ -91,9 +106,17 @@ jobs:
           $hash = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash
           $shaLines = @("$hash  $zipName")
 
-          $installerPath = "release/NotiGlow-Setup-v$cleanVersion.exe"
-          if (Test-Path $installerPath) {
-            $installerHash = (Get-FileHash -Path $installerPath -Algorithm SHA256).Hash
+          $installerCandidates = @(
+            "release/v$cleanVersion/NotiGlow-Setup-v$cleanVersion.exe",
+            "release/NotiGlow-Setup-v$cleanVersion.exe"
+          )
+          $installerPath = $installerCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ($installerPath) {
+            $destInstaller = "release/NotiGlow-Setup-v$cleanVersion.exe"
+            if ($installerPath -ne $destInstaller) {
+              Copy-Item -Path $installerPath -Destination $destInstaller -Force
+            }
+            $installerHash = (Get-FileHash -Path $destInstaller -Algorithm SHA256).Hash
             $shaLines += "$installerHash  NotiGlow-Setup-v$cleanVersion.exe"
           }
 
