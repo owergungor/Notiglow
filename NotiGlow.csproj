@@ -12,10 +12,10 @@
     <AssemblyTitle>NotiGlow</AssemblyTitle>
     <Product>NotiGlow Ambient Notification Utility</Product>
     <Description>Transform your Windows notifications into sleek fullscreen edge glow animations</Description>
-    <Version>4.1</Version>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0.0</FileVersion>
-    <InformationalVersion>4.1</InformationalVersion>
+    <Version>4.2</Version>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+    <InformationalVersion>4.2</InformationalVersion>
     <StartupObject>NotiGlow.Program</StartupObject>
     <ApplicationIcon>Assets\NotiGlow.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -27,6 +27,8 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <PublishTrimmed>false</PublishTrimmed>
     <PublishReadyToRun>false</PublishReadyToRun>
+    <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
+    <TieredCompilation>true</TieredCompilation>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
@@ -49,6 +51,13 @@
 
   <ItemGroup>
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('native\NotiGlow.Background\target\release\NotiGlow_Background.exe')">
+    <Content Include="native\NotiGlow.Background\target\release\NotiGlow_Background.exe"
+             Link="NotiGlow_Background.exe"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

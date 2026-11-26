@@ -51,11 +51,54 @@ namespace NotiGlow.UI.Views
             {
                 UpdateLocalizedTexts();
                 RenderTrackedGameCards();
-                if (PnlEditGameOverride.Visibility == Visibility.Visible)
+                if (PnlEditGameOverride != null && PnlEditGameOverride.Visibility == Visibility.Visible)
                 {
                     PnlEditGameOverride.RefreshLocalizedTitle();
                 }
             });
+        }
+
+        private void OnProfilesChanged(object? sender, EventArgs e)
+        {
+            _isDirty = true;
+            if (Visibility == Visibility.Visible)
+            {
+                DispatcherQueue.TryEnqueue(() => RenderTrackedGameCards());
+            }
+        }
+
+        public void DetachEvents()
+        {
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            if (_profileService != null)
+            {
+                _profileService.ProfilesChanged -= OnProfilesChanged;
+            }
+            NavigateToCategoryRequested = null;
+            PnlTrackedGames.Children.Clear();
+            UnloadEditorIfLoaded();
+        }
+
+        private ProfileEditorControl EnsureEditorLoaded()
+        {
+            if (PnlEditGameOverride == null)
+            {
+                FindName(nameof(PnlEditGameOverride));
+            }
+            return PnlEditGameOverride!;
+        }
+
+        private void UnloadEditorIfLoaded()
+        {
+            if (PnlEditGameOverride != null)
+            {
+                PnlEditGameOverride.Visibility = Visibility.Collapsed;
+                try
+                {
+                    Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(PnlEditGameOverride);
+                }
+                catch { }
+            }
         }
 
         public void Initialize(
@@ -71,14 +114,7 @@ namespace NotiGlow.UI.Views
 
             if (_profileService != null)
             {
-                _profileService.ProfilesChanged += (s, e) =>
-                {
-                    _isDirty = true;
-                    if (Visibility == Visibility.Visible)
-                    {
-                        DispatcherQueue.TryEnqueue(() => RenderTrackedGameCards());
-                    }
-                };
+                _profileService.ProfilesChanged += OnProfilesChanged;
             }
 
             LoadSettings();
@@ -399,7 +435,7 @@ namespace NotiGlow.UI.Views
         public void RefreshAndHighlightGame(string identifier)
         {
             _highlightedIdentifier = identifier;
-            PnlEditGameOverride.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
             RenderTrackedGameCards();
 
             string targetNorm = AppSettings.NormalizeGameIdentifier(identifier);
@@ -506,12 +542,13 @@ namespace NotiGlow.UI.Views
                 IsCustom = existingProfile?.IsCustom ?? true
             };
 
-            PnlEditGameOverride.OpenForProfile(
+            var editor = EnsureEditorLoaded();
+            editor.OpenForProfile(
                 editorProfile,
                 isNew: false,
                 isGameMode: true,
                 customGlowEnabled: ov?.CustomGlowEnabled ?? true);
-            PnlEditGameOverride.Visibility = Visibility.Visible;
+            editor.Visibility = Visibility.Visible;
         }
 
         private void PnlEditGameOverride_SaveRequested(object? sender, ProfileEditorSaveEventArgs e)
@@ -523,7 +560,7 @@ namespace NotiGlow.UI.Views
                 e.CustomGlowEnabled,
                 e.OriginalIdentifier);
 
-            PnlEditGameOverride.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
             RenderTrackedGameCards();
 
             string targetId = AppCategoryHelper.GetPrimaryIdentifier(e.Profile);
@@ -539,7 +576,7 @@ namespace NotiGlow.UI.Views
 
         private void PnlEditGameOverride_CancelRequested(object? sender, EventArgs e)
         {
-            PnlEditGameOverride.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
         }
 
         private async void BtnScanGames_Click(object sender, RoutedEventArgs e)

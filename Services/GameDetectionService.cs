@@ -21,6 +21,38 @@ namespace NotiGlow.Services
         private string _activeGameName = string.Empty;
         private string _activeGameIdentifier = string.Empty;
         private string? _simulatedGameName = null;
+        private bool _externalWorkerOwnership = false;
+        private bool _externalIsGameRunning = false;
+
+        public bool IsExternalWorkerOwned => _externalWorkerOwnership;
+
+        public void EnableExternalWorkerOwnership()
+        {
+            _externalWorkerOwnership = true;
+        }
+
+        public void DisableExternalWorkerOwnership()
+        {
+            _externalWorkerOwnership = false;
+            _externalIsGameRunning = false;
+            _lastCheckTime = DateTime.MinValue;
+        }
+
+        public void UpdateExternalActiveGame(string? gameName, string? identifier)
+        {
+            if (string.IsNullOrWhiteSpace(gameName) && string.IsNullOrWhiteSpace(identifier))
+            {
+                _externalIsGameRunning = false;
+                _activeGameName = string.Empty;
+                _activeGameIdentifier = string.Empty;
+            }
+            else
+            {
+                _externalIsGameRunning = true;
+                _activeGameName = gameName ?? identifier ?? string.Empty;
+                _activeGameIdentifier = AppSettings.NormalizeGameIdentifier(identifier ?? gameName);
+            }
+        }
 
         public string ActiveGameName
         {
@@ -319,6 +351,11 @@ namespace NotiGlow.Services
             {
                 _activeGameName = string.Empty;
                 return false;
+            }
+
+            if (_externalWorkerOwnership)
+            {
+                return _externalIsGameRunning;
             }
 
             // Cache check for 1.5 seconds to minimize CPU load

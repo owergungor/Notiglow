@@ -56,6 +56,12 @@ namespace NotiGlow.Models
         public bool ShowIdentityDebugInfo { get; set; } = false;
         public bool FirstRunCompleted { get; set; } = false;
 
+        // Phase 3A/3D Feature Flags: Rust Native Background Worker, Game Detection, Glow Engine
+        // All default to false — v4.2 C# behavior unchanged unless explicitly enabled
+        public bool UseRustBackgroundWorker { get; set; } = false;
+        public bool UseRustGameDetection { get; set; } = false;
+        public bool UseRustGlowEngine { get; set; } = false;
+
         // Gaming Mode Settings
         public bool GamingModeEnabled { get; set; } = false;
         public bool GlowDuringGames { get; set; } = true;

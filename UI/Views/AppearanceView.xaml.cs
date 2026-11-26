@@ -27,6 +27,14 @@ namespace NotiGlow.UI.Views
             Unloaded += (s, e) => FlushPendingSave();
         }
 
+        public void DetachEvents()
+        {
+            FlushPendingSave();
+            _saveDebounceTimer?.Stop();
+            _saveDebounceTimer = null;
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        }
+
         private void OnLanguageChanged(object? sender, string lang)
         {
             DispatcherQueue.TryEnqueue(() =>

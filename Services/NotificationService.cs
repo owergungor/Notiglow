@@ -22,6 +22,7 @@ namespace NotiGlow.Services
         public event EventHandler<UserNotificationListenerAccessStatus>? AccessStatusChanged;
 
         public bool IsListening => _isListening;
+        public bool IsExternallyOwnedByWorker { get; private set; } = false;
         public bool AutoStartPolling { get; set; } = true;
         public UserNotificationListenerAccessStatus CurrentAccessStatus { get; private set; } = UserNotificationListenerAccessStatus.Unspecified;
 
@@ -34,8 +35,42 @@ namespace NotiGlow.Services
             _reader = reader ?? throw new ArgumentNullException(nameof(reader));
         }
 
+        public void EnableExternalWorkerOwnership(UserNotificationListenerAccessStatus initialStatus = UserNotificationListenerAccessStatus.Allowed)
+        {
+            Stop();
+            IsExternallyOwnedByWorker = true;
+            CurrentAccessStatus = initialStatus;
+            AccessStatusChanged?.Invoke(this, CurrentAccessStatus);
+            LoggerService.LogInfo("NotificationService ownership delegated to Rust Background Worker (local C# listener disabled).");
+        }
+
+        public void DisableExternalWorkerOwnership()
+        {
+            IsExternallyOwnedByWorker = false;
+        }
+
+        public void UpdateExternalAccessStatus(UserNotificationListenerAccessStatus status)
+        {
+            if (CurrentAccessStatus != status)
+            {
+                CurrentAccessStatus = status;
+                AccessStatusChanged?.Invoke(this, CurrentAccessStatus);
+            }
+        }
+
+        public void ForwardExternalNotification(NotificationItem item)
+        {
+            if (item == null) return;
+            NotificationReceived?.Invoke(this, item);
+        }
+
         public async Task InitializeAsync()
         {
+            if (IsExternallyOwnedByWorker)
+            {
+                return;
+            }
+
             try
             {
                 CurrentAccessStatus = await _reader.RequestAccessAsync();
@@ -95,7 +130,7 @@ namespace NotiGlow.Services
 
         public async Task StartListeningAsync()
         {
-            if (_isListening) return;
+            if (_isListening || IsExternallyOwnedByWorker) return;
 
             try
             {
@@ -166,15 +201,17 @@ namespace NotiGlow.Services
             try
             {
                 var currentNotifications = await _reader.GetCurrentNotificationsAsync();
-                var newNotifications = new List<RawNotificationData>();
+                List<RawNotificationData>? newNotifications = null;
 
                 lock (_lock)
                 {
-                    foreach (var n in currentNotifications)
+                    int count = currentNotifications.Count;
+                    for (int i = 0; i < count; i++)
                     {
-                        if (!_processedNotificationIds.Contains(n.NotificationId))
+                        var n = currentNotifications[i];
+                        if (_processedNotificationIds.Add(n.NotificationId))
                         {
-                            _processedNotificationIds.Add(n.NotificationId);
+                            newNotifications ??= new List<RawNotificationData>(4);
                             newNotifications.Add(n);
                         }
                     }
@@ -182,16 +219,21 @@ namespace NotiGlow.Services
                     // Keep processed IDs collection bounded
                     if (_processedNotificationIds.Count > 500)
                     {
-                        var activeIds = new HashSet<uint>();
-                        foreach (var n in currentNotifications) activeIds.Add(n.NotificationId);
+                        var activeIds = new HashSet<uint>(count);
+                        for (int i = 0; i < count; i++) activeIds.Add(currentNotifications[i].NotificationId);
 
                         _processedNotificationIds.RemoveWhere(id => !activeIds.Contains(id));
                     }
                 }
 
-                foreach (var raw in newNotifications)
+                if (newNotifications == null)
                 {
-                    ProcessNewNotification(raw);
+                    return 0;
+                }
+
+                for (int i = 0; i < newNotifications.Count; i++)
+                {
+                    ProcessNewNotification(newNotifications[i]);
                 }
 
                 return newNotifications.Count;

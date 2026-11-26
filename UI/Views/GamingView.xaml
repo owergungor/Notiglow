@@ -170,8 +170,9 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Shared Profile / Game Glow Override Editor Drawer Overlay -->
+        <!-- Shared Profile / Game Glow Override Editor Drawer Overlay (Deferred via x:Load) -->
         <controls:ProfileEditorControl x:Name="PnlEditGameOverride"
+                                       x:Load="False"
                                        Margin="32,20,32,24"
                                        Visibility="Collapsed"
                                        VerticalAlignment="Stretch"

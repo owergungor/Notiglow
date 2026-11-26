@@ -1,5 +1,16 @@
 ﻿# Changelog
 
+## [4.2] - 2026-11-26
+- **Memory & Startup Optimizations**:
+  - Reduced idle WinUI 3 memory footprint and improved startup latency while preserving Fluent Design and localization.
+- **Native Rust Background Worker Architecture (Opt-In Preview, Phases 3A–3E)**:
+  - Bundled `NotiGlow_Background.exe` (~3.1–3.3 MB Private Working Set when UI is closed) alongside `NotiGlow.exe` for both unpackaged EXE and MSIX distributions.
+  - Added Named Pipe IPC (`NotiGlow_IPC_v1_<sessionId>`) with current-user SID DACL, version/path upgrade recycling, crash auto-restart, and single-writer settings protection (`SettingsService`/`ProfileService` remain sole writers).
+  - Implemented Rust system tray (with Explorer restart recovery), Windows notification listener with periodic permission state-machine detection, Steam/Epic/Xbox/Store/Manual EXE game detection, and Win32 layered Glow Engine (all 6 modes with two-layer Sweep/Comet bloom, BurstMode, OLED, ReduceMotion, DPI, and multi-monitor support).
+  - Controlled via three independent opt-in feature flags in `settings.json` (all default to **`false`** to preserve 100% v4.x compatibility): `UseRustBackgroundWorker`, `UseRustGameDetection`, `UseRustGlowEngine`.
+- **MSIX & Installer Lifecycle Hardening**:
+  - Added MSIX `windows.startupTask` (`NotiGlowStartupTask`) and `windows.fullTrustProcess` (`NotiGlow_Background.exe`), plus path-scoped process stop in `NotiGlow-Setup.iss`.
+
 ## [3.3] - 2026-11-08
 - **Xbox App & Microsoft Store Game Detection**:
   - Full game detection support for PC Game Pass, Xbox App, and Microsoft Store titles.

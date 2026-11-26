@@ -15,6 +15,13 @@ namespace NotiGlow.Services
 
         public static string GetDefaultSettingsPath()
         {
+            string? customConfigDir = Environment.GetEnvironmentVariable("NOTIGLOW_CONFIG_DIR");
+            if (!string.IsNullOrWhiteSpace(customConfigDir))
+            {
+                Directory.CreateDirectory(customConfigDir);
+                return Path.Combine(customConfigDir, "settings.json");
+            }
+
             if (ProfileService.IsTestEnvironment)
             {
                 string testDir = Path.Combine(Path.GetTempPath(), "NotiGlow_TestEnv");

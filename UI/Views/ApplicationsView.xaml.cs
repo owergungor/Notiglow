@@ -21,6 +21,7 @@ namespace NotiGlow.UI.Views
         private bool _isDirty = true;
         private bool _isLoadedOnce = false;
         private string? _highlightedIdentifier;
+        private List<AppProfile> _displayedProfiles = new();
 
         public bool IsDirty => _isDirty;
 
@@ -37,6 +38,41 @@ namespace NotiGlow.UI.Views
                 UpdateLocalizedTexts();
                 RefreshSortLabels();
             };
+        }
+
+        public void DetachEvents()
+        {
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            if (_profileService != null)
+            {
+                _profileService.ProfilesChanged -= OnProfilesChanged;
+            }
+            NavigateToCategoryRequested = null;
+            PnlAppCards.ItemsSource = null;
+            _displayedProfiles.Clear();
+            UnloadEditorIfLoaded();
+        }
+
+        private ProfileEditorControl EnsureEditorLoaded()
+        {
+            if (PnlEditProfile == null)
+            {
+                FindName(nameof(PnlEditProfile));
+            }
+            return PnlEditProfile!;
+        }
+
+        private void UnloadEditorIfLoaded()
+        {
+            if (PnlEditProfile != null)
+            {
+                PnlEditProfile.Visibility = Visibility.Collapsed;
+                try
+                {
+                    Microsoft.UI.Xaml.Markup.XamlMarkupHelper.UnloadObject(PnlEditProfile);
+                }
+                catch { }
+            }
         }
 
         private void UpdateLocalizedTexts()
@@ -89,11 +125,20 @@ namespace NotiGlow.UI.Views
                 UpdateLocalizedTexts();
                 RefreshAppCards();
                 RefreshSortLabels();
-                if (PnlEditProfile.Visibility == Visibility.Visible)
+                if (PnlEditProfile != null && PnlEditProfile.Visibility == Visibility.Visible)
                 {
                     PnlEditProfile.RefreshLocalizedTitle();
                 }
             });
+        }
+
+        private void OnProfilesChanged(object? sender, EventArgs e)
+        {
+            _isDirty = true;
+            if (Visibility == Visibility.Visible)
+            {
+                DispatcherQueue.TryEnqueue(() => RefreshAppCards());
+            }
         }
 
         public void Initialize(ProfileService profileService, GlowManager glowManager, SettingsService? settingsService = null)
@@ -113,14 +158,7 @@ namespace NotiGlow.UI.Views
                 _settingsService.Save(_settingsService.Current);
             }
 
-            _profileService.ProfilesChanged += (s, e) =>
-            {
-                _isDirty = true;
-                if (Visibility == Visibility.Visible)
-                {
-                    DispatcherQueue.TryEnqueue(() => RefreshAppCards());
-                }
-            };
+            _profileService.ProfilesChanged += OnProfilesChanged;
             RefreshAppCards();
         }
 
@@ -163,11 +201,10 @@ namespace NotiGlow.UI.Views
             _isDirty = false;
             _isLoadedOnce = true;
 
-            PnlAppCards.Children.Clear();
-
             var settings = _settingsService?.Current ?? new AppSettings();
             var trackedGames = settings.TrackedGames ?? new List<string>();
 
+            var filtered = new List<AppProfile>();
             foreach (var profile in ApplicationProfileSorter.Sort(_profileService.Profiles, _sortCriterion, _sortDescending))
             {
                 // Strictly exclude Gaming profiles — they belong exclusively in the Gaming tab
@@ -175,46 +212,73 @@ namespace NotiGlow.UI.Views
                 {
                     continue;
                 }
+                filtered.Add(profile);
+            }
 
-                var listCard = new AppProfileCard();
-                listCard.ConfigureForApplicationsList();
-                listCard.SetProfile(profile);
-                listCard.EditRequested += (s, p) => OpenEditor(p, false);
-                listCard.DuplicateRequested += (s, p) => DuplicateProfile(p);
-                listCard.DeleteRequested += (s, p) => DeleteProfileAsync(p);
-                listCard.PreviewRequested += (s, p) => _glowManager?.TriggerProfile(p);
-                listCard.ToggleChanged += (s, p) => _profileService.AddOrUpdateProfile(p);
+            _displayedProfiles = filtered;
+            PnlAppCards.ItemsSource = null;
+            PnlAppCards.ItemsSource = _displayedProfiles;
+        }
 
-                if (!string.IsNullOrEmpty(_highlightedIdentifier) &&
-                    AppCategoryHelper.MatchesIdentifier(profile, _highlightedIdentifier))
-                {
-                    listCard.SetHighlighted(true);
-                }
+        private void PnlAppCards_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+        {
+            if (args.Element is not AppProfileCard card) return;
+            if (args.Index < 0 || args.Index >= _displayedProfiles.Count) return;
 
-                PnlAppCards.Children.Add(listCard);
+            var profile = _displayedProfiles[args.Index];
+            card.ConfigureForApplicationsList();
+            card.SetProfile(profile);
+
+            // Detach before re-attaching so recycled cards never duplicate handlers
+            card.EditRequested -= OnCardEditRequested;
+            card.DuplicateRequested -= OnCardDuplicateRequested;
+            card.DeleteRequested -= OnCardDeleteRequested;
+            card.PreviewRequested -= OnCardPreviewRequested;
+            card.ToggleChanged -= OnCardToggleChanged;
+
+            card.EditRequested += OnCardEditRequested;
+            card.DuplicateRequested += OnCardDuplicateRequested;
+            card.DeleteRequested += OnCardDeleteRequested;
+            card.PreviewRequested += OnCardPreviewRequested;
+            card.ToggleChanged += OnCardToggleChanged;
+
+            bool isHighlighted = !string.IsNullOrEmpty(_highlightedIdentifier) &&
+                                 AppCategoryHelper.MatchesIdentifier(profile, _highlightedIdentifier);
+            card.SetHighlighted(isHighlighted);
+        }
+
+        private void PnlAppCards_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+        {
+            if (args.Element is AppProfileCard card)
+            {
+                card.EditRequested -= OnCardEditRequested;
+                card.DuplicateRequested -= OnCardDuplicateRequested;
+                card.DeleteRequested -= OnCardDeleteRequested;
+                card.PreviewRequested -= OnCardPreviewRequested;
+                card.ToggleChanged -= OnCardToggleChanged;
+                card.SetHighlighted(false);
             }
         }
+
+        private void OnCardEditRequested(object? sender, AppProfile p) => OpenEditor(p, false);
+        private void OnCardDuplicateRequested(object? sender, AppProfile p) => DuplicateProfile(p);
+        private void OnCardDeleteRequested(object? sender, AppProfile p) => DeleteProfileAsync(p);
+        private void OnCardPreviewRequested(object? sender, AppProfile p) => _glowManager?.TriggerProfile(p);
+        private void OnCardToggleChanged(object? sender, AppProfile p) => _profileService?.AddOrUpdateProfile(p);
 
         public void RefreshAndHighlightProfile(string identifier)
         {
             _highlightedIdentifier = identifier;
-            PnlEditProfile.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
             RefreshAppCards();
 
             DispatcherQueue.TryEnqueue(async () =>
             {
-                AppProfileCard? matchedCard = null;
-                foreach (var child in PnlAppCards.Children)
-                {
-                    if (child is AppProfileCard card && card.Profile != null &&
-                        AppCategoryHelper.MatchesIdentifier(card.Profile, identifier))
-                    {
-                        matchedCard = card;
-                        break;
-                    }
-                }
+                int targetIndex = _displayedProfiles.FindIndex(p => AppCategoryHelper.MatchesIdentifier(p, identifier));
+                if (targetIndex < 0) return;
 
-                if (matchedCard != null)
+                var element = PnlAppCards.GetOrCreateElement(targetIndex);
+                if (element is AppProfileCard matchedCard)
                 {
                     matchedCard.SetHighlighted(true);
                     matchedCard.StartBringIntoView();
@@ -258,8 +322,9 @@ namespace NotiGlow.UI.Views
 
         public void OpenEditor(AppProfile profile, bool isNew)
         {
-            PnlEditProfile.OpenForProfile(profile, isNew, isGameMode: false, customGlowEnabled: true);
-            PnlEditProfile.Visibility = Visibility.Visible;
+            var editor = EnsureEditorLoaded();
+            editor.OpenForProfile(profile, isNew, isGameMode: false, customGlowEnabled: true);
+            editor.Visibility = Visibility.Visible;
         }
 
         private void BtnAddApplication_Click(object sender, RoutedEventArgs e)
@@ -292,7 +357,7 @@ namespace NotiGlow.UI.Views
                 e.CustomGlowEnabled,
                 e.OriginalIdentifier);
 
-            PnlEditProfile.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
             RefreshAppCards();
 
             string targetId = AppCategoryHelper.GetPrimaryIdentifier(e.Profile);
@@ -308,7 +373,7 @@ namespace NotiGlow.UI.Views
 
         private void PnlEditProfile_CancelRequested(object? sender, EventArgs e)
         {
-            PnlEditProfile.Visibility = Visibility.Collapsed;
+            UnloadEditorIfLoaded();
         }
 
         private async void BtnScanApplications_Click(object sender, RoutedEventArgs e)

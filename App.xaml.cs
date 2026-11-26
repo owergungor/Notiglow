@@ -19,14 +19,20 @@ namespace NotiGlow
         private NotificationService _notificationService = null!;
         private GlowManager _glowManager = null!;
         private TrayService? _trayService;
+        private NotiGlow.Services.Ipc.WorkerSupervisor? _workerSupervisor;
+        private NotiGlow.Services.Ipc.WorkerSyncCoordinator? _workerSyncCoordinator;
+        private long _settingsSyncRevision = 0;
         private MainWindow? _mainWindow;
 
+        public static App? CurrentInstance { get; private set; }
+        public static bool IsRustWorkerOwningTray { get; internal set; } = false;
         public static MainWindow? MainWindowInstance { get; private set; }
         public static MainWindow? CurrentMainWindow => MainWindowInstance;
         public static string[] StartupArgs { get; set; } = Array.Empty<string>();
 
         public App()
         {
+            CurrentInstance = this;
             this.InitializeComponent();
 
             UnhandledException += (s, e) =>
@@ -162,6 +168,15 @@ namespace NotiGlow
                             LocalizationService.Instance.SetLanguage(lastKnownLanguage, persist: false);
                         }
                         NotiGlow.UI.Animations.MotionPolicy.Update(_settingsService.Current.ReduceMotion, _settingsService.Current.ReduceAnimations);
+                        if (_settingsService.Current.UseRustBackgroundWorker && _workerSyncCoordinator != null)
+                        {
+                            _ = _workerSyncCoordinator.BroadcastLocalSettingsChangeAsync();
+                        }
+                        else if (_settingsService.Current.UseRustBackgroundWorker && _workerSupervisor?.State == NotiGlow.Services.Ipc.WorkerHealthState.Healthy)
+                        {
+                            long rev = System.Threading.Interlocked.Increment(ref _settingsSyncRevision);
+                            _ = _workerSupervisor.IpcClient.ReloadSettingsAsync(clearPendingUiSync: false, clientRevision: rev);
+                        }
                     }
 
                     if (_mainWindow?.DispatcherQueue != null && !_mainWindow.DispatcherQueue.HasThreadAccess)
@@ -180,22 +195,23 @@ namespace NotiGlow
                     _glowManager.TriggerNotification(notification);
                 };
 
-                // System Tray Setup
-                try
+                bool useRustWorker = _settingsService.Current.UseRustBackgroundWorker;
+                bool useRustGameDetection = useRustWorker && _settingsService.Current.UseRustGameDetection;
+                bool useRustGlowEngine = useRustWorker && _settingsService.Current.UseRustGlowEngine;
+                if (useRustWorker)
                 {
-                    _trayService = new TrayService(
-                        _settingsService,
-                        OpenSettingsWindow,
-                        TestAnimation,
-                        ExitApplication,
-                        OpenUpdateSettings
-                    );
-                    LoggerService.LogStartupPhase("Tray initialized");
+                    // Phase 3C/3D Dual-Run Guard: prevent C# services from duplicating Rust worker ownership.
+                    IsRustWorkerOwningTray = true;
+                    _notificationService.EnableExternalWorkerOwnership();
+                    if (useRustGameDetection)
+                    {
+                        _glowManager.GameDetectionService.EnableExternalWorkerOwnership();
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    LoggerService.LogError("Failed to initialize System Tray", ex);
-                    LoggerService.LogStartupPhase("Tray initialized (with error)");
+                    IsRustWorkerOwningTray = false;
+                    InitializeLegacyCSharpTray();
                 }
 
                 bool isAutoStart = StartupArgs.Contains("--autostart");
@@ -223,8 +239,71 @@ namespace NotiGlow
                     LoggerService.LogInfo($"NotiGlow started successfully after update to version {UpdateService.CurrentVersionString} (--updated).");
                 }
 
-                // Start Notification listener asynchronously
-                _ = InitializeNotificationServiceAsync();
+                if (!useRustWorker)
+                {
+                    // Legacy v4.2 path: start C# Notification listener asynchronously
+                    _ = InitializeNotificationServiceAsync();
+                }
+                else
+                {
+                    // Phase 3C path: start/attach Rust Tray & Notification Worker with controlled fallback
+                    string? customCfgDir = Environment.GetEnvironmentVariable("NOTIGLOW_CONFIG_DIR");
+                    _workerSupervisor = new NotiGlow.Services.Ipc.WorkerSupervisor(
+                        configDir: customCfgDir,
+                        ipcOnly: false,
+                        uiExecutablePath: Environment.ProcessPath)
+                    {
+                        AutoRestartOnCrash = true,
+                        ExpectedWorkerVersion = "4.3.0"
+                    };
+                    _workerSyncCoordinator = new NotiGlow.Services.Ipc.WorkerSyncCoordinator(
+                        _workerSupervisor,
+                        _settingsService,
+                        _notificationService,
+                        onOpenUi: OpenSettingsWindow,
+                        onOpenUpdates: OpenUpdateSettings,
+                        onTestAnimation: () => _mainWindow?.DispatcherQueue?.TryEnqueue(TestAnimation),
+                        onExitApp: () => _mainWindow?.DispatcherQueue?.TryEnqueue(ExitApplication),
+                        gameDetectionService: _glowManager.GameDetectionService);
+
+                    if (useRustGlowEngine)
+                    {
+                        _glowManager.EnableExternalGlowOwnership(
+                            dispatcher: (profile, settings, isTest, activeGameId) =>
+                            {
+                                _ = _workerSupervisor.IpcClient.PlayGlowAsync(
+                                    profile,
+                                    settings,
+                                    isTest: isTest,
+                                    activeGameId: activeGameId);
+                                return true;
+                            },
+                            stopAction: () => { _ = _workerSupervisor.IpcClient.StopGlowAsync(); });
+                    }
+
+                    _ = System.Threading.Tasks.Task.Run(async () =>
+                    {
+                        try
+                        {
+                            bool ok = await _workerSupervisor.EnsureStartedAsync().ConfigureAwait(false);
+                            if (ok)
+                            {
+                                await _workerSyncCoordinator.SyncPendingStateFromWorkerAsync().ConfigureAwait(false);
+                                _workerSyncCoordinator.StartEventPump(350);
+                                LoggerService.LogInfo($"Rust Tray & Notification Worker active (PID={_workerSupervisor.WorkerPid}, Version={_workerSupervisor.ConnectedWorkerVersion}, Attached={_workerSupervisor.AttachedToExisting}).");
+                            }
+                            else
+                            {
+                                ActivateLegacyFallbackOnUiThread();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggerService.LogWarning($"Rust Worker startup fallback: {ex.Message}");
+                            ActivateLegacyFallbackOnUiThread();
+                        }
+                    });
+                }
 
                 // Background update check if enabled
                 if (!PackageService.IsPackaged && UpdateService.ShouldCheckForUpdates(_settingsService.Current, DateTime.UtcNow) && !isUpdatedRestart)
@@ -366,20 +445,7 @@ namespace NotiGlow
         public void OpenSettingsWindow()
         {
             if (_mainWindow == null) return;
-            _mainWindow.DispatcherQueue.TryEnqueue(() =>
-            {
-                _mainWindow.AppWindow.Show();
-                if (_mainWindow.AppWindow.Presenter is OverlappedPresenter presenter)
-                {
-                    if (presenter.State == OverlappedPresenterState.Minimized)
-                    {
-                        presenter.Restore();
-                    }
-                }
-                var hwnd = WindowNative.GetWindowHandle(_mainWindow);
-                NotiGlow.Core.Win32.NativeMethods.SetForegroundWindow(hwnd);
-                _mainWindow.Activate();
-            });
+            _mainWindow.DispatcherQueue.TryEnqueue(_mainWindow.ShowFromTray);
         }
 
         private void OpenUpdateSettings()
@@ -408,20 +474,88 @@ namespace NotiGlow
             _glowManager.TriggerProfile(testProfile);
         }
 
-        public void ExitApplication()
+        private void InitializeLegacyCSharpTray()
         {
-            CleanupResources();
+            if (_trayService != null) return;
+            try
+            {
+                _trayService = new TrayService(
+                    _settingsService,
+                    OpenSettingsWindow,
+                    TestAnimation,
+                    ExitApplication,
+                    OpenUpdateSettings
+                );
+                LoggerService.LogStartupPhase("Tray initialized");
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogError("Failed to initialize System Tray", ex);
+                LoggerService.LogStartupPhase("Tray initialized (with error)");
+            }
+        }
+
+        private void ActivateLegacyFallbackOnUiThread()
+        {
+            LoggerService.LogWarning("Rust Background Worker unavailable; falling back to legacy C# TrayService + NotificationService + GameDetectionService + GlowManager.");
+            IsRustWorkerOwningTray = false;
+            _notificationService.DisableExternalWorkerOwnership();
+            _glowManager?.GameDetectionService.DisableExternalWorkerOwnership();
+            _glowManager?.DisableExternalGlowOwnership();
+            if (_mainWindow?.DispatcherQueue != null)
+            {
+                _mainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    InitializeLegacyCSharpTray();
+                    _ = InitializeNotificationServiceAsync();
+                });
+            }
+            else
+            {
+                _ = InitializeNotificationServiceAsync();
+            }
+        }
+
+        public void CloseUiLeavingWorkerRunning()
+        {
+            CleanupResources(shutdownWorker: false);
             _mainWindow?.ForceExit();
             Exit();
         }
 
-        private void CleanupResources()
+        public void ExitApplication()
+        {
+            CleanupResources(shutdownWorker: true);
+            _mainWindow?.ForceExit();
+            Exit();
+        }
+
+        private void CleanupResources(bool shutdownWorker = false)
         {
             try
             {
+                _workerSyncCoordinator?.Dispose();
+                _workerSyncCoordinator = null;
                 _glowManager?.CloseAllOverlays();
                 _trayService?.Dispose();
                 _notificationService?.Stop();
+                if (_workerSupervisor != null)
+                {
+                    try
+                    {
+                        if (shutdownWorker)
+                        {
+                            _workerSupervisor.ShutdownAsync(1500).GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            _workerSupervisor.Detach();
+                        }
+                    }
+                    catch { }
+                    _workerSupervisor.Dispose();
+                    _workerSupervisor = null;
+                }
 
                 if (_singleInstanceMutex != null)
                 {
