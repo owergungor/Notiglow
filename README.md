@@ -45,9 +45,6 @@ Starting with **v5.0**, NotiGlow runs its **Native Rust Background Worker (`Noti
 <div align="center">
   <img width="3840" height="2160" alt="NotiGlow Overview" src="https://github.com/user-attachments/assets/7b3f4394-7ec9-4b12-892b-8de67129cac8" />
   <br/><br/>
-  <img src="Package/Assets/SplashScreen.png" alt="NotiGlow Ambient Edge Glow" width="640" />
-  <p><em>Customizable ambient screen-edge glow with real-time live preview and per-app color profiles.</em></p>
-</div>
 
 ---
 
