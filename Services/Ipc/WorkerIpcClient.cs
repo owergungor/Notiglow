@@ -16,6 +16,7 @@ namespace NotiGlow.Services.Ipc
     public sealed class WorkerIpcClient : IWorkerIpcClient
     {
         private static readonly UTF8Encoding Utf8NoBom = new(false);
+        private static readonly object EmptyPayload = new();
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
@@ -46,7 +47,7 @@ namespace NotiGlow.Services.Ipc
             {
                 Version = IpcProtocolConstants.ProtocolVersion,
                 Command = command,
-                Payload = payload ?? new { }
+                Payload = payload ?? EmptyPayload
             };
 
             string json = JsonSerializer.Serialize(req, JsonOptions);
@@ -122,7 +123,7 @@ namespace NotiGlow.Services.Ipc
                 await client.WriteAsync(payloadBytes, ct).ConfigureAwait(false);
                 await client.FlushAsync(ct).ConfigureAwait(false);
 
-                using var reader = new StreamReader(client, Utf8NoBom, detectEncodingFromByteOrderMarks: false, bufferSize: 4096, leaveOpen: true);
+                using var reader = new StreamReader(client, Utf8NoBom, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true);
                 string? line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -159,20 +160,21 @@ namespace NotiGlow.Services.Ipc
             }
         }
 
+        private static T? DeserializeData<T>(IpcResponse resp) where T : class =>
+            resp.Ok && resp.Data.HasValue
+                ? resp.Data.Value.Deserialize<T>(JsonOptions)
+                : null;
+
         public async Task<WorkerPingData?> PingAsync(int timeoutMs = 1000, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("PING", null, timeoutMs, maxRetries: 1, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerPingData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerPingData>(resp);
         }
 
         public async Task<WorkerStatusData?> GetStatusAsync(int timeoutMs = 1500, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("GET_STATUS", null, timeoutMs, maxRetries: 1, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerStatusData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerStatusData>(resp);
         }
 
         public async Task<WorkerReloadData?> ReloadSettingsAsync(bool clearPendingUiSync = false, long? clientRevision = null, int timeoutMs = 2000, CancellationToken cancellationToken = default)
@@ -181,18 +183,14 @@ namespace NotiGlow.Services.Ipc
                 ? new { clearPendingUiSync, clientRevision = clientRevision.Value, schemaVersion = 1 }
                 : new { clearPendingUiSync, schemaVersion = 1 };
             var resp = await SendCommandAsync("RELOAD_SETTINGS", payload, timeoutMs, maxRetries: 1, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerReloadData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerReloadData>(resp);
         }
 
         public async Task<WorkerReloadData?> NotifySettingsChangedAsync(long clientRevision, bool clearPendingUiSync = true, int timeoutMs = 2000, CancellationToken cancellationToken = default)
         {
             var payload = new { clearPendingUiSync, clientRevision, schemaVersion = 1 };
             var resp = await SendCommandAsync("SETTINGS_CHANGED", payload, timeoutMs, maxRetries: 1, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerReloadData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerReloadData>(resp);
         }
 
         public async Task<bool> SetMasterEnabledAsync(bool enabled, bool pendingUiSync = true, int timeoutMs = 1500, CancellationToken cancellationToken = default)
@@ -210,17 +208,13 @@ namespace NotiGlow.Services.Ipc
         public async Task<WorkerNotificationBatchData?> DrainNotificationEventsAsync(long ackSeq, int maxCount = 32, int timeoutMs = 1500, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("NOTIFICATION_EVENT", new { ackSeq, maxCount }, timeoutMs, maxRetries: 0, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerNotificationBatchData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerNotificationBatchData>(resp);
         }
 
         public async Task<WorkerTrayActionBatchData?> DrainTrayActionsAsync(long ackSeq, int timeoutMs = 1500, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("TRAY_ACTION", new { action = "Drain", ackSeq }, timeoutMs, maxRetries: 0, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerTrayActionBatchData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerTrayActionBatchData>(resp);
         }
 
         public Task<IpcResponse> ExecuteTrayActionAsync(string action, int timeoutMs = 1500, CancellationToken cancellationToken = default) =>
@@ -243,9 +237,7 @@ namespace NotiGlow.Services.Ipc
                 is_test = isTest
             };
             var resp = await SendCommandAsync("PLAY_GLOW", payload, timeoutMs, maxRetries: 1, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerGlowResultData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerGlowResultData>(resp);
         }
 
         public async Task<bool> StopGlowAsync(int timeoutMs = 1000, CancellationToken cancellationToken = default)
@@ -269,17 +261,38 @@ namespace NotiGlow.Services.Ipc
         public async Task<WorkerGameStatusData?> GetGameStatusAsync(long ackSeq = 0, int maxCount = 32, int timeoutMs = 1500, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("GAME_STATUS", new { ackSeq, maxCount }, timeoutMs, maxRetries: 0, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerGameStatusData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerGameStatusData>(resp);
         }
 
         public async Task<WorkerGlowStatusData?> GetGlowStatusAsync(long ackSeq = 0, int maxCount = 32, int timeoutMs = 1500, CancellationToken cancellationToken = default)
         {
             var resp = await SendCommandAsync("GLOW_STATUS", new { ackSeq, maxCount }, timeoutMs, maxRetries: 0, cancellationToken).ConfigureAwait(false);
-            return resp.Ok && resp.Data.HasValue
-                ? JsonSerializer.Deserialize<WorkerGlowStatusData>(resp.Data.Value.GetRawText(), JsonOptions)
-                : null;
+            return DeserializeData<WorkerGlowStatusData>(resp);
+        }
+
+        public async Task<WorkerPollEventsBatchData?> PollEventsAsync(
+            long notifAckSeq,
+            long trayAckSeq,
+            long gameAckSeq,
+            long glowAckSeq,
+            bool includeGame = true,
+            bool includeGlow = true,
+            int maxCount = 32,
+            int timeoutMs = 1200,
+            CancellationToken cancellationToken = default)
+        {
+            var payload = new
+            {
+                notifAckSeq,
+                trayAckSeq,
+                gameAckSeq,
+                glowAckSeq,
+                includeGame,
+                includeGlow,
+                maxCount
+            };
+            var resp = await SendCommandAsync("POLL_EVENTS", payload, timeoutMs, maxRetries: 0, cancellationToken).ConfigureAwait(false);
+            return DeserializeData<WorkerPollEventsBatchData>(resp);
         }
 
         public Task<IpcResponse> SetGlowConfigAsync(object configPayload, int timeoutMs = 1500, CancellationToken cancellationToken = default) =>

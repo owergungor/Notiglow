@@ -13,9 +13,10 @@ namespace NotiGlow.Services
     {
         private readonly SettingsService _settingsService;
         private readonly ProfileService? _profileService;
-        private readonly SteamGameDetector _steamDetector;
-        private readonly EpicGameDetector _epicDetector;
-        private readonly XboxAndStoreGameDetector _xboxStoreDetector;
+        private SteamGameDetector? _steamDetector;
+        private EpicGameDetector? _epicDetector;
+        private XboxAndStoreGameDetector? _xboxStoreDetector;
+        private readonly bool _isMockContext;
         private DateTime _lastCheckTime = DateTime.MinValue;
         private bool _cachedIsGaming = false;
         private string _activeGameName = string.Empty;
@@ -92,11 +93,16 @@ namespace NotiGlow.Services
         {
             _settingsService = settingsService;
             _profileService = profileService;
-            _steamDetector = steamDetector ?? new SteamGameDetector();
-            _epicDetector = epicDetector ?? new EpicGameDetector();
-            bool isMockContext = steamDetector != null || epicDetector != null;
-            _xboxStoreDetector = xboxStoreDetector ?? (isMockContext ? XboxAndStoreGameDetector.CreateEmpty() : new XboxAndStoreGameDetector());
+            _steamDetector = steamDetector;
+            _epicDetector = epicDetector;
+            _isMockContext = steamDetector != null || epicDetector != null;
+            _xboxStoreDetector = xboxStoreDetector;
         }
+
+        private SteamGameDetector SteamDetector => _steamDetector ??= new SteamGameDetector();
+        private EpicGameDetector EpicDetector => _epicDetector ??= new EpicGameDetector();
+        private XboxAndStoreGameDetector XboxStoreDetector =>
+            _xboxStoreDetector ??= (_isMockContext ? XboxAndStoreGameDetector.CreateEmpty() : new XboxAndStoreGameDetector());
 
         public async System.Threading.Tasks.Task<IReadOnlyList<DetectedGameInfo>> DetectInstalledGamesAsync()
         {
@@ -106,7 +112,7 @@ namespace NotiGlow.Services
 
                 try
                 {
-                    var steamGames = _steamDetector.DetectGames();
+                    var steamGames = SteamDetector.DetectGames();
                     combined.AddRange(steamGames);
                 }
                 catch (Exception ex)
@@ -116,7 +122,7 @@ namespace NotiGlow.Services
 
                 try
                 {
-                    var epicGames = _epicDetector.DetectGames();
+                    var epicGames = EpicDetector.DetectGames();
                     combined.AddRange(epicGames);
                 }
                 catch (Exception ex)
@@ -126,7 +132,7 @@ namespace NotiGlow.Services
 
                 try
                 {
-                    var xboxStoreGames = _xboxStoreDetector.DetectGames();
+                    var xboxStoreGames = XboxStoreDetector.DetectGames();
                     combined.AddRange(xboxStoreGames);
                 }
                 catch (Exception ex)

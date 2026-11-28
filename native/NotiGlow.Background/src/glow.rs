@@ -677,10 +677,72 @@ fn pack_premul_bgra(a: u8, r: u8, g: u8, b: u8) -> u32 {
     (af << 24) | (pr << 16) | (pg << 8) | pb
 }
 
-fn fill_base_border_pixels(
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StripRect {
+    /// Offset relative to monitor top-left (0..mon.width, 0..mon.height)
+    pub off_x: i32,
+    pub off_y: i32,
+    pub width: i32,
+    pub height: i32,
+}
+
+/// Computes four strictly non-overlapping edge strips (Top, Bottom, Left, Right)
+/// covering every pixel within `band_px` of the monitor edges (including full rounded corners).
+/// Falls back to a single full-monitor rect if `2 * band_px` covers the monitor.
+pub fn compute_four_strip_rects(mon_w: i32, mon_h: i32, band_px: i32) -> Vec<StripRect> {
+    if mon_w <= 0 || mon_h <= 0 {
+        return Vec::new();
+    }
+    let s = band_px.max(1).min(mon_w / 2).min(mon_h / 2);
+    if s * 2 >= mon_h || s * 2 >= mon_w {
+        return vec![StripRect {
+            off_x: 0,
+            off_y: 0,
+            width: mon_w,
+            height: mon_h,
+        }];
+    }
+    let mid_h = mon_h - 2 * s;
+    vec![
+        // Top (full width, owns top-left & top-right corners)
+        StripRect {
+            off_x: 0,
+            off_y: 0,
+            width: mon_w,
+            height: s,
+        },
+        // Bottom (full width, owns bottom-left & bottom-right corners)
+        StripRect {
+            off_x: 0,
+            off_y: mon_h - s,
+            width: mon_w,
+            height: s,
+        },
+        // Left (strictly between top and bottom — zero overlap)
+        StripRect {
+            off_x: 0,
+            off_y: s,
+            width: s,
+            height: mid_h,
+        },
+        // Right (strictly between top and bottom — zero overlap)
+        StripRect {
+            off_x: mon_w - s,
+            off_y: s,
+            width: s,
+            height: mid_h,
+        },
+    ]
+}
+
+fn fill_base_border_region(
     pixels: &mut [u32],
-    w: i32,
-    h: i32,
+    strip_w: i32,
+    strip_h: i32,
+    off_x: i32,
+    off_y: i32,
+    mon_w: i32,
+    mon_h: i32,
     border_px: f64,
     thickness_px: f64,
     corner_radius_px: f64,
@@ -688,18 +750,23 @@ fn fill_base_border_pixels(
     is_rgb: bool,
     opacity_scale: f64,
 ) {
-    let wf = w as f64;
-    let hf = h as f64;
-    let b_int = (border_px.ceil() as i32 + corner_radius_px.ceil() as i32 + 2).min(w / 2).min(h / 2);
+    let wf = mon_w as f64;
+    let hf = mon_h as f64;
+    let full_surface = off_x == 0 && off_y == 0 && strip_w == mon_w && strip_h == mon_h;
+    let b_int = (border_px.ceil() as i32 + corner_radius_px.ceil() as i32 + 2)
+        .min(mon_w / 2)
+        .min(mon_h / 2);
 
-    for y in 0..h {
-        let in_y_strip = y < b_int || y >= h - b_int;
-        let row_off = (y * w) as usize;
-        for x in 0..w {
-            if !in_y_strip && x >= b_int && x < w - b_int {
+    for ly in 0..strip_h {
+        let gy = off_y + ly;
+        let in_y_strip = !full_surface || gy < b_int || gy >= mon_h - b_int;
+        let row_off = (ly * strip_w) as usize;
+        for lx in 0..strip_w {
+            let gx = off_x + lx;
+            if full_surface && !in_y_strip && gx >= b_int && gx < mon_w - b_int {
                 continue;
             }
-            let d = rounded_border_inward_dist(x as f64, y as f64, wf, hf, corner_radius_px);
+            let d = rounded_border_inward_dist(gx as f64, gy as f64, wf, hf, corner_radius_px);
             if d < 0.0 || d >= border_px {
                 continue;
             }
@@ -714,21 +781,52 @@ fn fill_base_border_pixels(
                 continue;
             }
             let (r, g, b) = if is_rgb {
-                // Screen-space diagonal linear gradient (0,0) -> (w,h)
-                let u = ((x as f64 / wf) + (y as f64 / hf)) * 0.5;
+                let u = ((gx as f64 / wf) + (gy as f64 / hf)) * 0.5;
                 sample_rgb_spectrum(u)
             } else {
                 base_color
             };
-            pixels[row_off + x as usize] = pack_premul_bgra(a, r, g, b);
+            pixels[row_off + lx as usize] = pack_premul_bgra(a, r, g, b);
         }
     }
 }
 
-fn render_animated_border_frame(
+fn fill_base_border_pixels(
     pixels: &mut [u32],
     w: i32,
     h: i32,
+    border_px: f64,
+    thickness_px: f64,
+    corner_radius_px: f64,
+    base_color: (u8, u8, u8),
+    is_rgb: bool,
+    opacity_scale: f64,
+) {
+    fill_base_border_region(
+        pixels,
+        w,
+        h,
+        0,
+        0,
+        w,
+        h,
+        border_px,
+        thickness_px,
+        corner_radius_px,
+        base_color,
+        is_rgb,
+        opacity_scale,
+    );
+}
+
+fn render_animated_border_region(
+    pixels: &mut [u32],
+    strip_w: i32,
+    strip_h: i32,
+    off_x: i32,
+    off_y: i32,
+    mon_w: i32,
+    mon_h: i32,
     border_px: f64,
     thickness_px: f64,
     dpi_scale: f64,
@@ -738,8 +836,9 @@ fn render_animated_border_frame(
     style: GlowStyle,
     cycle_progress: f64,
 ) {
-    let wf = w as f64;
-    let hf = h as f64;
+    let wf = mon_w as f64;
+    let hf = mon_h as f64;
+    let full_surface = off_x == 0 && off_y == 0 && strip_w == mon_w && strip_h == mon_h;
     // Exact C# GlowBorderControl two-layer geometry:
     // - Core border: max(8, Thickness * 2.2) * dpi_scale
     // - Bloom border: Sweep -> max(26, GlowSize) * dpi_scale; Comet -> max(28, GlowSize * 1.1) * dpi_scale
@@ -751,8 +850,8 @@ fn render_animated_border_frame(
     };
     let max_span_px = border_px.max(bloom_px).max(core_px);
     let b_int = (max_span_px.ceil() as i32 + corner_radius_px.ceil() as i32 + 2)
-        .min(w / 2)
-        .min(h / 2);
+        .min(mon_w / 2)
+        .min(mon_h / 2);
 
     // Precompute stops for Sweep / Comet (matching GlowBorderControl + GlowSpectrumBrushFactory)
     let (start_x, start_y, dx, dy, inv_len2) = match style {
@@ -843,21 +942,23 @@ fn render_animated_border_frame(
         (1.0, 0, 255, 0, 77),
     ];
 
-    for y in 0..h {
-        let in_y_strip = y < b_int || y >= h - b_int;
-        let row_off = (y * w) as usize;
-        let ny = y as f64 / hf;
-        for x in 0..w {
-            if !in_y_strip && x >= b_int && x < w - b_int {
+    for ly in 0..strip_h {
+        let gy = off_y + ly;
+        let in_y_strip = !full_surface || gy < b_int || gy >= mon_h - b_int;
+        let row_off = (ly * strip_w) as usize;
+        let ny = gy as f64 / hf;
+        for lx in 0..strip_w {
+            let gx = off_x + lx;
+            if full_surface && !in_y_strip && gx >= b_int && gx < mon_w - b_int {
                 continue;
             }
-            let d = rounded_border_inward_dist(x as f64, y as f64, wf, hf, corner_radius_px);
+            let d = rounded_border_inward_dist(gx as f64, gy as f64, wf, hf, corner_radius_px);
             if d < 0.0 || d >= max_span_px {
-                pixels[row_off + x as usize] = 0;
+                pixels[row_off + lx as usize] = 0;
                 continue;
             }
 
-            let nx = x as f64 / wf;
+            let nx = gx as f64 / wf;
             let (br, bg, bb) = if is_rgb {
                 sample_rgb_spectrum((nx + ny) * 0.5)
             } else {
@@ -930,15 +1031,48 @@ fn render_animated_border_frame(
 
             let final_a = (out_af * 255.0).clamp(0.0, 255.0) as u8;
             if final_a == 0 {
-                pixels[row_off + x as usize] = 0;
+                pixels[row_off + lx as usize] = 0;
             } else {
                 let r = (out_r / out_af).clamp(0.0, 255.0) as u8;
                 let g = (out_g / out_af).clamp(0.0, 255.0) as u8;
                 let b = (out_b / out_af).clamp(0.0, 255.0) as u8;
-                pixels[row_off + x as usize] = pack_premul_bgra(final_a, r, g, b);
+                pixels[row_off + lx as usize] = pack_premul_bgra(final_a, r, g, b);
             }
         }
     }
+}
+
+#[allow(dead_code)]
+fn render_animated_border_frame(
+    pixels: &mut [u32],
+    w: i32,
+    h: i32,
+    border_px: f64,
+    thickness_px: f64,
+    dpi_scale: f64,
+    corner_radius_px: f64,
+    base_color: (u8, u8, u8),
+    is_rgb: bool,
+    style: GlowStyle,
+    cycle_progress: f64,
+) {
+    render_animated_border_region(
+        pixels,
+        w,
+        h,
+        0,
+        0,
+        w,
+        h,
+        border_px,
+        thickness_px,
+        dpi_scale,
+        corner_radius_px,
+        base_color,
+        is_rgb,
+        style,
+        cycle_progress,
+    );
 }
 
 fn render_ripple_frame(
@@ -1106,6 +1240,16 @@ fn dump_premul_dib_to_bmp(path: &str, pixels: &[u32], w: i32, h: i32, const_alph
     let _ = std::fs::write(path, out);
 }
 
+struct StripSurface {
+    rect: StripRect,
+    hwnd: HWND,
+    hdc_mem: HDC,
+    hbmp: windows::Win32::Graphics::Gdi::HBITMAP,
+    old_obj: windows::Win32::Graphics::Gdi::HGDIOBJ,
+    bits_ptr: *mut u32,
+    len: usize,
+}
+
 fn render_glow_on_monitor(
     engine: &Arc<GlowEngine>,
     my_gen: u64,
@@ -1131,61 +1275,115 @@ fn render_glow_on_monitor(
             | WS_EX_TOOLWINDOW
             | WS_EX_NOACTIVATE;
 
-        let hwnd = match CreateWindowExW(
-            ex_style,
-            PCWSTR(class_name.as_ptr()),
-            PCWSTR::null(),
-            WS_POPUP,
-            mon.left,
-            mon.top,
-            mon.width,
-            mon.height,
-            HWND(std::ptr::null_mut()),
-            None,
-            hinst,
-            None,
-        ) {
-            Ok(h) => h,
-            Err(_) => return,
+        let scale = mon.dpi_scale();
+        let is_rgb = is_rgb_spectrum(&req.profile.ColorHex);
+        let base_color = parse_color_rgb(&req.profile.ColorHex);
+        let border_px = (req.profile.GlowSize.clamp(4.0, 256.0) * scale).max(6.0);
+        let thickness_px = (req.profile.Thickness.clamp(1.0, 32.0) * scale).max(2.0);
+        let corner_radius_px = req.profile.CornerRadius.clamp(0.0, 48.0) * scale;
+        let max_opacity = req.profile.Intensity.clamp(0.05, 1.0);
+        let style = req.profile.Style;
+        let static_only = req.reduce_motion_static
+            || matches!(style, GlowStyle::Pulse | GlowStyle::Ambient);
+
+        // Four-strip optimization applies to all edge-only modes (Pulse, Ambient, Sweep, Comet, RGB Spectrum, ReduceMotion).
+        // Ripple renders an expanding center-screen shockwave, so it retains a single full-monitor surface.
+        let use_four_strips = static_only || !matches!(style, GlowStyle::Ripple);
+        let strip_rects = if use_four_strips {
+            let core_px = (thickness_px * 2.2).max(8.0 * scale);
+            let bloom_px = match style {
+                GlowStyle::Sweep => border_px.max(26.0 * scale),
+                GlowStyle::Comet => (border_px * 1.1).max(28.0 * scale),
+                _ => border_px,
+            };
+            let max_span_px = border_px.max(bloom_px).max(core_px);
+            let band_px = max_span_px.ceil() as i32 + corner_radius_px.ceil() as i32 + 2;
+            compute_four_strip_rects(mon.width, mon.height, band_px)
+        } else {
+            vec![StripRect {
+                off_x: 0,
+                off_y: 0,
+                width: mon.width,
+                height: mon.height,
+            }]
         };
 
-        engine.active_windows.fetch_add(1, Ordering::SeqCst);
-        engine.windows_created.fetch_add(1, Ordering::Relaxed);
-
         let hdc_screen = HDC(std::ptr::null_mut());
-        let hdc_mem = CreateCompatibleDC(hdc_screen);
-        let mut bmi: BITMAPINFO = std::mem::zeroed();
-        bmi.bmiHeader.biSize = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
-        bmi.bmiHeader.biWidth = mon.width;
-        bmi.bmiHeader.biHeight = -mon.height;
-        bmi.bmiHeader.biPlanes = 1;
-        bmi.bmiHeader.biBitCount = 32;
-        bmi.bmiHeader.biCompression = BI_RGB.0;
+        let mut surfaces: Vec<StripSurface> = Vec::with_capacity(strip_rects.len());
 
-        let mut bits_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
-        if let Ok(hbmp) = CreateDIBSection(hdc_mem, &bmi, DIB_RGB_COLORS, &mut bits_ptr, None, 0) {
-            engine.dibs_created.fetch_add(1, Ordering::Relaxed);
-            if !bits_ptr.is_null() {
-                let old_obj = SelectObject(hdc_mem, hbmp);
-                let pixels = std::slice::from_raw_parts_mut(
-                    bits_ptr as *mut u32,
-                    (mon.width * mon.height) as usize,
-                );
+        for rect in strip_rects {
+            let hwnd = match CreateWindowExW(
+                ex_style,
+                PCWSTR(class_name.as_ptr()),
+                PCWSTR::null(),
+                WS_POPUP,
+                mon.left + rect.off_x,
+                mon.top + rect.off_y,
+                rect.width,
+                rect.height,
+                HWND(std::ptr::null_mut()),
+                None,
+                hinst,
+                None,
+            ) {
+                Ok(h) => h,
+                Err(_) => continue,
+            };
+            engine.active_windows.fetch_add(1, Ordering::SeqCst);
+            engine.windows_created.fetch_add(1, Ordering::Relaxed);
 
-                let scale = mon.dpi_scale();
-                let is_rgb = is_rgb_spectrum(&req.profile.ColorHex);
-                let base_color = parse_color_rgb(&req.profile.ColorHex);
-                let border_px = (req.profile.GlowSize.clamp(4.0, 256.0) * scale).max(6.0);
-                let thickness_px = (req.profile.Thickness.clamp(1.0, 32.0) * scale).max(2.0);
-                let corner_radius_px = req.profile.CornerRadius.clamp(0.0, 48.0) * scale;
-                let max_opacity = req.profile.Intensity.clamp(0.05, 1.0);
-                let style = req.profile.Style;
-                let static_only = req.reduce_motion_static
-                    || matches!(style, GlowStyle::Pulse | GlowStyle::Ambient);
+            let hdc_mem = CreateCompatibleDC(hdc_screen);
+            let mut bmi: BITMAPINFO = std::mem::zeroed();
+            bmi.bmiHeader.biSize = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
+            bmi.bmiHeader.biWidth = rect.width;
+            bmi.bmiHeader.biHeight = -rect.height;
+            bmi.bmiHeader.biPlanes = 1;
+            bmi.bmiHeader.biBitCount = 32;
+            bmi.bmiHeader.biCompression = BI_RGB.0;
 
-                if static_only {
-                    fill_base_border_pixels(
+            let mut bits_ptr: *mut std::ffi::c_void = std::ptr::null_mut();
+            match CreateDIBSection(hdc_mem, &bmi, DIB_RGB_COLORS, &mut bits_ptr, None, 0) {
+                Ok(hbmp) if !bits_ptr.is_null() => {
+                    engine.dibs_created.fetch_add(1, Ordering::Relaxed);
+                    let old_obj = SelectObject(hdc_mem, hbmp);
+                    surfaces.push(StripSurface {
+                        rect,
+                        hwnd,
+                        hdc_mem,
+                        hbmp,
+                        old_obj,
+                        bits_ptr: bits_ptr as *mut u32,
+                        len: (rect.width * rect.height) as usize,
+                    });
+                }
+                Ok(hbmp) => {
+                    engine.dibs_created.fetch_add(1, Ordering::Relaxed);
+                    let _ = DeleteObject(hbmp);
+                    engine.dibs_destroyed.fetch_add(1, Ordering::Relaxed);
+                    let _ = DeleteDC(hdc_mem);
+                    let _ = DestroyWindow(hwnd);
+                    engine.windows_destroyed.fetch_add(1, Ordering::Relaxed);
+                    engine.active_windows.fetch_sub(1, Ordering::SeqCst);
+                }
+                Err(_) => {
+                    let _ = DeleteDC(hdc_mem);
+                    let _ = DestroyWindow(hwnd);
+                    engine.windows_destroyed.fetch_add(1, Ordering::Relaxed);
+                    engine.active_windows.fetch_sub(1, Ordering::SeqCst);
+                }
+            }
+        }
+
+        if !surfaces.is_empty() {
+            if static_only {
+                for surf in &mut surfaces {
+                    let pixels = std::slice::from_raw_parts_mut(surf.bits_ptr, surf.len);
+                    fill_base_border_region(
                         pixels,
+                        surf.rect.width,
+                        surf.rect.height,
+                        surf.rect.off_x,
+                        surf.rect.off_y,
                         mon.width,
                         mon.height,
                         border_px,
@@ -1196,64 +1394,64 @@ fn render_glow_on_monitor(
                         1.0,
                     );
                 }
+            }
 
-                let _ = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
-                engine
-                    .last_start_latency_us
-                    .store(t_request.elapsed().as_micros() as u64, Ordering::Relaxed);
+            for surf in &surfaces {
+                let _ = ShowWindow(surf.hwnd, SW_SHOWNOACTIVATE);
+            }
+            engine
+                .last_start_latency_us
+                .store(t_request.elapsed().as_micros() as u64, Ordering::Relaxed);
 
-                let pt_dst = POINT {
-                    x: mon.left,
-                    y: mon.top,
-                };
-                let sz = SIZE {
-                    cx: mon.width,
-                    cy: mon.height,
-                };
-                let pt_src = POINT { x: 0, y: 0 };
+            let pt_src = POINT { x: 0, y: 0 };
+            let cycle_ms: f64 = match style {
+                GlowStyle::Sweep => (1500.0 / req.profile.Speed.max(0.5)).max(1000.0),
+                GlowStyle::Comet => (1300.0 / req.profile.Speed.max(0.5)).max(900.0),
+                GlowStyle::Ripple => (1500.0 / req.profile.Speed.max(0.5)).max(1100.0),
+                _ => 1500.0,
+            };
 
-                let cycle_ms: f64 = match style {
-                    GlowStyle::Sweep => (1500.0 / req.profile.Speed.max(0.5)).max(1000.0),
-                    GlowStyle::Comet => (1300.0 / req.profile.Speed.max(0.5)).max(900.0),
-                    GlowStyle::Ripple => (1500.0 / req.profile.Speed.max(0.5)).max(1100.0),
-                    _ => 1500.0,
-                };
+            let mut prev_ring = (0i32, 0i32, 0i32, 0i32);
+            let mut dumped = false;
+            let frame_sleep = if static_only {
+                Duration::from_millis(16)
+            } else {
+                Duration::from_millis(24)
+            };
 
-                let mut prev_ring = (0i32, 0i32, 0i32, 0i32);
-                let mut dumped = false;
-                let frame_sleep = if static_only {
-                    Duration::from_millis(16)
-                } else {
-                    Duration::from_millis(24) // ~40 FPS for dynamic per-pixel Sweep/Comet/Ripple keeps CPU low
-                };
+            let anim_start = Instant::now();
+            let mut frame_count = 0u64;
+            let mut total_frame_us = 0u64;
+            while engine.global_running.load(Ordering::Relaxed)
+                && engine.generation.load(Ordering::SeqCst) == my_gen
+            {
+                let frame_t0 = Instant::now();
+                let total_ms = engine.extend_total_ms.load(Ordering::Relaxed).max(500) as f64;
+                let elapsed = anim_start.elapsed().as_secs_f64() * 1000.0;
+                if elapsed >= total_ms {
+                    break;
+                }
 
-                let anim_start = Instant::now();
-                let mut frame_count = 0u64;
-                let mut total_frame_us = 0u64;
-                while engine.global_running.load(Ordering::Relaxed)
-                    && engine.generation.load(Ordering::SeqCst) == my_gen
-                {
-                    let frame_t0 = Instant::now();
-                    let total_ms = engine.extend_total_ms.load(Ordering::Relaxed).max(500) as f64;
-                    let elapsed = anim_start.elapsed().as_secs_f64() * 1000.0;
-                    if elapsed >= total_ms {
-                        break;
-                    }
+                let p = elapsed / total_ms;
+                let env = evaluate_opacity_envelope(
+                    style,
+                    req.reduce_motion_static,
+                    p,
+                    max_opacity,
+                );
 
-                    let p = elapsed / total_ms;
-                    let env = evaluate_opacity_envelope(
-                        style,
-                        req.reduce_motion_static,
-                        p,
-                        max_opacity,
-                    );
-
-                    if !static_only {
-                        let cyc_p = (elapsed % cycle_ms) / cycle_ms;
-                        match style {
-                            GlowStyle::Sweep | GlowStyle::Comet => {
-                                render_animated_border_frame(
+                if !static_only {
+                    let cyc_p = (elapsed % cycle_ms) / cycle_ms;
+                    match style {
+                        GlowStyle::Sweep | GlowStyle::Comet => {
+                            for surf in &mut surfaces {
+                                let pixels = std::slice::from_raw_parts_mut(surf.bits_ptr, surf.len);
+                                render_animated_border_region(
                                     pixels,
+                                    surf.rect.width,
+                                    surf.rect.height,
+                                    surf.rect.off_x,
+                                    surf.rect.off_y,
                                     mon.width,
                                     mon.height,
                                     border_px,
@@ -1266,7 +1464,10 @@ fn render_glow_on_monitor(
                                     cyc_p,
                                 );
                             }
-                            GlowStyle::Ripple => {
+                        }
+                        GlowStyle::Ripple => {
+                            if let Some(surf) = surfaces.first_mut() {
+                                let pixels = std::slice::from_raw_parts_mut(surf.bits_ptr, surf.len);
                                 render_ripple_frame(
                                     pixels,
                                     mon.width,
@@ -1280,69 +1481,96 @@ fn render_glow_on_monitor(
                                     &mut prev_ring,
                                 );
                             }
-                            _ => {}
                         }
+                        _ => {}
                     }
+                }
 
-                    let const_alpha = (env * 255.0).clamp(0.0, 255.0) as u8;
-                    if !dumped {
-                        if let Some(ref dump_path) = req.dump_bmp_path {
-                            let target_p = match style {
-                                GlowStyle::Pulse => 0.16,
-                                GlowStyle::Ambient => 0.30,
-                                GlowStyle::Sweep => 0.42,
-                                GlowStyle::Comet => 0.35,
-                                GlowStyle::Ripple => 0.48,
-                            };
-                            if p >= target_p {
+                let const_alpha = (env * 255.0).clamp(0.0, 255.0) as u8;
+                if !dumped {
+                    if let Some(ref dump_path) = req.dump_bmp_path {
+                        let target_p = match style {
+                            GlowStyle::Pulse => 0.16,
+                            GlowStyle::Ambient => 0.30,
+                            GlowStyle::Sweep => 0.42,
+                            GlowStyle::Comet => 0.35,
+                            GlowStyle::Ripple => 0.48,
+                        };
+                        if p >= target_p {
+                            if surfaces.len() == 1
+                                && surfaces[0].rect.width == mon.width
+                                && surfaces[0].rect.height == mon.height
+                            {
+                                let pixels = std::slice::from_raw_parts(surfaces[0].bits_ptr, surfaces[0].len);
                                 dump_premul_dib_to_bmp(dump_path, pixels, mon.width, mon.height, const_alpha);
-                                dumped = true;
+                            } else {
+                                let mut full_buf = vec![0u32; (mon.width * mon.height) as usize];
+                                for surf in &surfaces {
+                                    let sp = std::slice::from_raw_parts(surf.bits_ptr, surf.len);
+                                    for ly in 0..surf.rect.height {
+                                        let dst_row = ((surf.rect.off_y + ly) * mon.width + surf.rect.off_x) as usize;
+                                        let src_row = (ly * surf.rect.width) as usize;
+                                        full_buf[dst_row..dst_row + surf.rect.width as usize]
+                                            .copy_from_slice(&sp[src_row..src_row + surf.rect.width as usize]);
+                                    }
+                                }
+                                dump_premul_dib_to_bmp(dump_path, &full_buf, mon.width, mon.height, const_alpha);
                             }
+                            dumped = true;
                         }
                     }
+                }
 
-                    let blend = BLENDFUNCTION {
-                        BlendOp: AC_SRC_OVER as u8,
-                        BlendFlags: 0,
-                        SourceConstantAlpha: const_alpha,
-                        AlphaFormat: AC_SRC_ALPHA as u8,
+                let blend = BLENDFUNCTION {
+                    BlendOp: AC_SRC_OVER as u8,
+                    BlendFlags: 0,
+                    SourceConstantAlpha: const_alpha,
+                    AlphaFormat: AC_SRC_ALPHA as u8,
+                };
+                for surf in &surfaces {
+                    let pt_dst = POINT {
+                        x: mon.left + surf.rect.off_x,
+                        y: mon.top + surf.rect.off_y,
+                    };
+                    let sz = SIZE {
+                        cx: surf.rect.width,
+                        cy: surf.rect.height,
                     };
                     let _ = UpdateLayeredWindow(
-                        hwnd,
+                        surf.hwnd,
                         hdc_screen,
                         Some(&pt_dst),
                         Some(&sz),
-                        hdc_mem,
+                        surf.hdc_mem,
                         Some(&pt_src),
                         COLORREF(0),
                         Some(&blend),
                         ULW_ALPHA,
                     );
-
-                    frame_count += 1;
-                    total_frame_us += frame_t0.elapsed().as_micros() as u64;
-                    thread::sleep(frame_sleep);
                 }
 
-                if frame_count > 0 {
-                    engine.last_frame_count.store(frame_count, Ordering::Relaxed);
-                    engine
-                        .last_avg_frame_us
-                        .store(total_frame_us / frame_count, Ordering::Relaxed);
-                }
+                frame_count += 1;
+                total_frame_us += frame_t0.elapsed().as_micros() as u64;
+                thread::sleep(frame_sleep);
+            }
 
-                SelectObject(hdc_mem, old_obj);
-                let _ = DeleteObject(hbmp);
-                engine.dibs_destroyed.fetch_add(1, Ordering::Relaxed);
-            } else {
-                let _ = DeleteObject(hbmp);
-                engine.dibs_destroyed.fetch_add(1, Ordering::Relaxed);
+            if frame_count > 0 {
+                engine.last_frame_count.store(frame_count, Ordering::Relaxed);
+                engine
+                    .last_avg_frame_us
+                    .store(total_frame_us / frame_count, Ordering::Relaxed);
             }
         }
-        let _ = DeleteDC(hdc_mem);
-        let _ = DestroyWindow(hwnd);
-        engine.windows_destroyed.fetch_add(1, Ordering::Relaxed);
-        engine.active_windows.fetch_sub(1, Ordering::SeqCst);
+
+        for surf in surfaces {
+            SelectObject(surf.hdc_mem, surf.old_obj);
+            let _ = DeleteObject(surf.hbmp);
+            engine.dibs_destroyed.fetch_add(1, Ordering::Relaxed);
+            let _ = DeleteDC(surf.hdc_mem);
+            let _ = DestroyWindow(surf.hwnd);
+            engine.windows_destroyed.fetch_add(1, Ordering::Relaxed);
+            engine.active_windows.fetch_sub(1, Ordering::SeqCst);
+        }
     }
 }
 
@@ -1497,5 +1725,109 @@ mod tests {
         let (evs, _) = engine.drain_events(0, 16);
         assert!(evs.iter().any(|e| e.kind == "GLOW_STARTED" && e.color_hex == "#FF00AA"));
         assert!(evs.iter().any(|e| e.kind == "MONITOR_CHANGED"));
+    }
+
+    #[test]
+    fn test_four_strip_geometry_disjoint_negative_coords_and_pixel_parity() {
+        // 1. Resolution & memory footprint verification: 1920x1080, 2560x1440, 2560x1600
+        for (w, h, band) in [(1920, 1080, 70), (2560, 1440, 96), (2560, 1600, 104)] {
+            let strips = compute_four_strip_rects(w, h, band);
+            assert_eq!(strips.len(), 4);
+            let full_bytes = (w as u64) * (h as u64) * 4;
+            let strip_bytes: u64 = strips
+                .iter()
+                .map(|s| (s.width as u64) * (s.height as u64) * 4)
+                .sum();
+            // Verify > 70% bitmap memory reduction across all standard resolutions
+            assert!(
+                strip_bytes * 100 < full_bytes * 30,
+                "{}x{}: expected strip_bytes ({}) < 30% of full_bytes ({})",
+                w,
+                h,
+                strip_bytes,
+                full_bytes
+            );
+
+            // Verify strips are strictly disjoint (no overlapping pixels, no double-blending)
+            for i in 0..strips.len() {
+                for j in (i + 1)..strips.len() {
+                    let a = strips[i];
+                    let b = strips[j];
+                    let x_overlap = a.off_x < b.off_x + b.width && b.off_x < a.off_x + a.width;
+                    let y_overlap = a.off_y < b.off_y + b.height && b.off_y < a.off_y + a.height;
+                    assert!(!(x_overlap && y_overlap), "Strips {} and {} overlap!", i, j);
+                }
+            }
+        }
+
+        // 2. Degenerate fallback when 2*band >= height
+        let tiny = compute_four_strip_rects(320, 200, 120);
+        assert_eq!(tiny.len(), 1);
+        assert_eq!(tiny[0], StripRect { off_x: 0, off_y: 0, width: 320, height: 200 });
+
+        // 3. Bit-for-bit pixel parity: 4-strip vs full-screen across Pulse, Sweep, Comet, RGB Spectrum with rounded corners
+        let w = 320;
+        let h = 200;
+        let border_px: f64 = 28.0;
+        let thickness_px: f64 = 5.0;
+        let cr: f64 = 18.0;
+        let bloom_px = (border_px * 1.1).max(28.0);
+        let core_px = (thickness_px * 2.2).max(8.0);
+        let band = border_px.max(bloom_px).max(core_px).ceil() as i32 + cr.ceil() as i32 + 2;
+        let strips = compute_four_strip_rects(w, h, band);
+        assert_eq!(strips.len(), 4);
+
+        // Static Pulse + RGB Spectrum parity
+        for is_rgb in [false, true] {
+            let mut full_buf = vec![0u32; (w * h) as usize];
+            fill_base_border_pixels(&mut full_buf, w, h, border_px, thickness_px, cr, (0, 229, 255), is_rgb, 1.0);
+            let mut covered = vec![false; (w * h) as usize];
+            for s in &strips {
+                let mut sbuf = vec![0u32; (s.width * s.height) as usize];
+                fill_base_border_region(&mut sbuf, s.width, s.height, s.off_x, s.off_y, w, h, border_px, thickness_px, cr, (0, 229, 255), is_rgb, 1.0);
+                for ly in 0..s.height {
+                    for lx in 0..s.width {
+                        let gx = s.off_x + lx;
+                        let gy = s.off_y + ly;
+                        let fidx = (gy * w + gx) as usize;
+                        assert!(!covered[fidx], "Duplicate coverage at ({},{})", gx, gy);
+                        covered[fidx] = true;
+                        assert_eq!(sbuf[(ly * s.width + lx) as usize], full_buf[fidx]);
+                    }
+                }
+            }
+            for idx in 0..full_buf.len() {
+                if !covered[idx] {
+                    assert_eq!(full_buf[idx], 0, "Non-zero pixel outside 4 strips!");
+                }
+            }
+        }
+
+        // Dynamic Sweep & Comet parity (solid & RGB)
+        for style in [GlowStyle::Sweep, GlowStyle::Comet] {
+            for is_rgb in [false, true] {
+                let mut full_buf = vec![0u32; (w * h) as usize];
+                render_animated_border_frame(&mut full_buf, w, h, border_px, thickness_px, 1.0, cr, (0, 229, 255), is_rgb, style, 0.37);
+                let mut covered = vec![false; (w * h) as usize];
+                for s in &strips {
+                    let mut sbuf = vec![0u32; (s.width * s.height) as usize];
+                    render_animated_border_region(&mut sbuf, s.width, s.height, s.off_x, s.off_y, w, h, border_px, thickness_px, 1.0, cr, (0, 229, 255), is_rgb, style, 0.37);
+                    for ly in 0..s.height {
+                        for lx in 0..s.width {
+                            let gx = s.off_x + lx;
+                            let gy = s.off_y + ly;
+                            let fidx = (gy * w + gx) as usize;
+                            covered[fidx] = true;
+                            assert_eq!(sbuf[(ly * s.width + lx) as usize], full_buf[fidx]);
+                        }
+                    }
+                }
+                for idx in 0..full_buf.len() {
+                    if !covered[idx] {
+                        assert_eq!(full_buf[idx], 0, "Non-zero animated pixel outside 4 strips!");
+                    }
+                }
+            }
+        }
     }
 }

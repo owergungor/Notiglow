@@ -490,16 +490,33 @@ pub fn run_game_monitor_service(state: Arc<WorkerState>) {
 
     while state.running.load(Ordering::Relaxed) && !state.shutting_down.load(Ordering::Relaxed) {
         let gaming_enabled = state.effective_gaming_mode();
-        let mut settings = state
-            .config
-            .read()
-            .map(|c| c.settings.clone())
-            .unwrap_or_default();
-        settings.GamingModeEnabled = gaming_enabled;
-
-        let _ = state
-            .game_detector
-            .poll_foreground_with(&provider, &settings);
+        if !gaming_enabled {
+            if state.game_detector.current_active_game().is_some() {
+                let disabled_settings = AppSettings {
+                    GamingModeEnabled: false,
+                    ..AppSettings::default()
+                };
+                let _ = state
+                    .game_detector
+                    .poll_foreground_with(&provider, &disabled_settings);
+            }
+        } else if let Ok(cfg) = state.config.read() {
+            if !cfg.settings.TrackedGames.is_empty()
+                || state.game_detector.current_active_game().is_some()
+            {
+                if cfg.settings.GamingModeEnabled {
+                    let _ = state
+                        .game_detector
+                        .poll_foreground_with(&provider, &cfg.settings);
+                } else {
+                    let mut override_settings = cfg.settings.clone();
+                    override_settings.GamingModeEnabled = true;
+                    let _ = state
+                        .game_detector
+                        .poll_foreground_with(&provider, &override_settings);
+                }
+            }
+        }
 
         let mut slept = 0u64;
         while slept < GAME_POLL_INTERVAL_MS

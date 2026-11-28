@@ -197,12 +197,54 @@ namespace NotiGlow.Services.Ipc
                 await BroadcastLocalSettingsChangeAsync(ct).ConfigureAwait(false);
             }
 
-            // 1. Drain notification events with monotonic sequence acknowledgment
             long curNotifAck = Interlocked.Read(ref _lastNotifSeq);
-            var notifBatch = await _supervisor.IpcClient
-                .DrainNotificationEventsAsync(curNotifAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
+            long curTrayAck = Interlocked.Read(ref _lastTraySeq);
+            long curGameAck = Interlocked.Read(ref _lastGameSeq);
+            long curGlowAck = Interlocked.Read(ref _lastGlowSeq);
+            bool includeGame = _settingsService.Current.UseRustGameDetection;
+            bool includeGlow = _settingsService.Current.UseRustGlowEngine;
+
+            // Try single batched POLL_EVENTS round-trip (reduces 4 pipe handshakes to 1);
+            // gracefully falls back to individual commands for legacy workers or mock clients.
+            WorkerNotificationBatchData? notifBatch;
+            WorkerTrayActionBatchData? trayBatch;
+            WorkerGameStatusData? gameStatus = null;
+            WorkerGlowStatusData? glowStatus = null;
+
+            var batched = await _supervisor.IpcClient
+                .PollEventsAsync(curNotifAck, curTrayAck, curGameAck, curGlowAck, includeGame, includeGlow, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
                 .ConfigureAwait(false);
 
+            if (batched != null)
+            {
+                notifBatch = batched.Notif;
+                trayBatch = batched.Tray;
+                gameStatus = batched.Game;
+                glowStatus = batched.Glow;
+            }
+            else
+            {
+                notifBatch = await _supervisor.IpcClient
+                    .DrainNotificationEventsAsync(curNotifAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
+                    .ConfigureAwait(false);
+                trayBatch = await _supervisor.IpcClient
+                    .DrainTrayActionsAsync(curTrayAck, timeoutMs: 1200, cancellationToken: ct)
+                    .ConfigureAwait(false);
+                if (includeGame)
+                {
+                    gameStatus = await _supervisor.IpcClient
+                        .GetGameStatusAsync(curGameAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
+                        .ConfigureAwait(false);
+                }
+                if (includeGlow)
+                {
+                    glowStatus = await _supervisor.IpcClient
+                        .GetGlowStatusAsync(curGlowAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            // 1. Process notification events with monotonic sequence acknowledgment
             if (notifBatch != null && notifBatch.Events.Count > 0)
             {
                 foreach (var ev in notifBatch.Events)
@@ -233,12 +275,7 @@ namespace NotiGlow.Services.Ipc
                 Interlocked.Exchange(ref _lastNotifSeq, Math.Max(curNotifAck, notifBatch.LatestSeq));
             }
 
-            // 2. Drain tray actions
-            long curTrayAck = Interlocked.Read(ref _lastTraySeq);
-            var trayBatch = await _supervisor.IpcClient
-                .DrainTrayActionsAsync(curTrayAck, timeoutMs: 1200, cancellationToken: ct)
-                .ConfigureAwait(false);
-
+            // 2. Process tray actions
             if (trayBatch != null && trayBatch.Actions.Count > 0)
             {
                 bool needsPendingSync = false;
@@ -276,56 +313,40 @@ namespace NotiGlow.Services.Ipc
                 }
             }
 
-            // 3. Drain Phase 3D game detection events when Rust Game Detection is enabled
-            if (_settingsService.Current.UseRustGameDetection)
+            // 3. Process Phase 3D game detection events when Rust Game Detection is enabled
+            if (includeGame && gameStatus != null)
             {
-                long curGameAck = Interlocked.Read(ref _lastGameSeq);
-                var gameStatus = await _supervisor.IpcClient
-                    .GetGameStatusAsync(curGameAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
-                    .ConfigureAwait(false);
-
-                if (gameStatus != null)
+                if (_gameDetectionService != null && _gameDetectionService.IsExternalWorkerOwned)
                 {
-                    if (_gameDetectionService != null && _gameDetectionService.IsExternalWorkerOwned)
-                    {
-                        _gameDetectionService.UpdateExternalActiveGame(
-                            gameStatus.ActiveGame?.Name,
-                            gameStatus.ActiveGame?.Identifier);
-                    }
+                    _gameDetectionService.UpdateExternalActiveGame(
+                        gameStatus.ActiveGame?.Name,
+                        gameStatus.ActiveGame?.Identifier);
+                }
 
-                    if (gameStatus.Events.Count > 0)
+                if (gameStatus.Events.Count > 0)
+                {
+                    foreach (var ev in gameStatus.Events)
                     {
-                        foreach (var ev in gameStatus.Events)
-                        {
-                            if (ev.Seq <= curGameAck) continue;
-                            curGameAck = ev.Seq;
-                            GameEventReceived?.Invoke(this, ev);
-                            processed++;
-                        }
-                        Interlocked.Exchange(ref _lastGameSeq, Math.Max(curGameAck, gameStatus.LatestSeq));
+                        if (ev.Seq <= curGameAck) continue;
+                        curGameAck = ev.Seq;
+                        GameEventReceived?.Invoke(this, ev);
+                        processed++;
                     }
+                    Interlocked.Exchange(ref _lastGameSeq, Math.Max(curGameAck, gameStatus.LatestSeq));
                 }
             }
 
-            // 4. Drain Phase 3D glow & monitor events when Rust Glow Engine is enabled
-            if (_settingsService.Current.UseRustGlowEngine)
+            // 4. Process Phase 3D glow & monitor events when Rust Glow Engine is enabled
+            if (includeGlow && glowStatus != null && glowStatus.Events.Count > 0)
             {
-                long curGlowAck = Interlocked.Read(ref _lastGlowSeq);
-                var glowStatus = await _supervisor.IpcClient
-                    .GetGlowStatusAsync(curGlowAck, maxCount: 32, timeoutMs: 1200, cancellationToken: ct)
-                    .ConfigureAwait(false);
-
-                if (glowStatus != null && glowStatus.Events.Count > 0)
+                foreach (var ev in glowStatus.Events)
                 {
-                    foreach (var ev in glowStatus.Events)
-                    {
-                        if (ev.Seq <= curGlowAck) continue;
-                        curGlowAck = ev.Seq;
-                        GlowEventReceived?.Invoke(this, ev);
-                        processed++;
-                    }
-                    Interlocked.Exchange(ref _lastGlowSeq, Math.Max(curGlowAck, glowStatus.LatestSeq));
+                    if (ev.Seq <= curGlowAck) continue;
+                    curGlowAck = ev.Seq;
+                    GlowEventReceived?.Invoke(this, ev);
+                    processed++;
                 }
+                Interlocked.Exchange(ref _lastGlowSeq, Math.Max(curGlowAck, glowStatus.LatestSeq));
             }
 
             return processed;
@@ -336,15 +357,19 @@ namespace NotiGlow.Services.Ipc
             if (_pumpTask != null) return;
             _pumpCts = new CancellationTokenSource();
             var ct = _pumpCts.Token;
+            int minInterval = Math.Max(150, intervalMs);
+            int maxIdleInterval = Math.Max(minInterval, 1000);
             _pumpTask = Task.Run(async () =>
             {
+                int emptyPolls = 0;
                 while (!ct.IsCancellationRequested)
                 {
+                    int processed = 0;
                     try
                     {
                         if (_supervisor.State == WorkerHealthState.Healthy)
                         {
-                            await PumpEventsOnceAsync(ct).ConfigureAwait(false);
+                            processed = await PumpEventsOnceAsync(ct).ConfigureAwait(false);
                         }
                     }
                     catch (OperationCanceledException)
@@ -353,9 +378,12 @@ namespace NotiGlow.Services.Ipc
                     }
                     catch { }
 
+                    emptyPolls = processed > 0 ? 0 : Math.Min(emptyPolls + 1, 10);
+                    int delayMs = emptyPolls >= 5 ? maxIdleInterval : minInterval;
+
                     try
                     {
-                        await Task.Delay(intervalMs, ct).ConfigureAwait(false);
+                        await Task.Delay(delayMs, ct).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {

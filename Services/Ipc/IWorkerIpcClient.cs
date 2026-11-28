@@ -39,6 +39,17 @@ namespace NotiGlow.Services.Ipc
         Task<IpcResponse> SetGlowConfigAsync(object configPayload, int timeoutMs = 1500, CancellationToken cancellationToken = default);
         Task<IpcResponse> SetGameGlowOverrideAsync(string gameIdentifier, GameGlowOverride? overrideSettings, int timeoutMs = 1500, CancellationToken cancellationToken = default);
         Task<IpcResponse> NotifyMonitorChangedAsync(bool trigger = false, int timeoutMs = 1500, CancellationToken cancellationToken = default);
+        Task<WorkerPollEventsBatchData?> PollEventsAsync(
+            long notifAckSeq,
+            long trayAckSeq,
+            long gameAckSeq,
+            long glowAckSeq,
+            bool includeGame = true,
+            bool includeGlow = true,
+            int maxCount = 32,
+            int timeoutMs = 1200,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<WorkerPollEventsBatchData?>(null);
         Task<bool> ShutdownAsync(string reason = "UserExit", int timeoutMs = 3000, CancellationToken cancellationToken = default);
     }
 }
