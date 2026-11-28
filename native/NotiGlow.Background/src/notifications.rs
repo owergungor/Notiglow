@@ -227,6 +227,12 @@ pub trait NotificationBackend {
     fn start_listener_session(&mut self, state: &Arc<WorkerState>) -> bool;
     fn stop_listener_session(&mut self);
     fn fetch_toasts(&mut self) -> Result<Vec<PolledToast>, i32>;
+    fn fetch_toasts_incremental(
+        &mut self,
+        _known_ids: &HashMap<u32, (String, String)>,
+    ) -> Result<Vec<PolledToast>, i32> {
+        self.fetch_toasts()
+    }
 }
 
 /// Single-instance permission & notification monitor state machine.
@@ -242,6 +248,7 @@ pub struct NotificationMonitorCore<B: NotificationBackend> {
     has_initialized_access: bool,
     listener_running: bool,
     active_meta: HashMap<u32, (String, String)>,
+    current_ids_scratch: HashSet<u32>,
     consecutive_fetch_errors: u32,
     empty_polls: u32,
     last_permission_check: Option<Instant>,
@@ -257,6 +264,7 @@ impl<B: NotificationBackend> NotificationMonitorCore<B> {
             has_initialized_access: false,
             listener_running: false,
             active_meta: HashMap::with_capacity(64),
+            current_ids_scratch: HashSet::with_capacity(64),
             consecutive_fetch_errors: 0,
             empty_polls: 0,
             last_permission_check: None,
@@ -368,7 +376,7 @@ impl<B: NotificationBackend> NotificationMonitorCore<B> {
         }
 
         // 3. Poll notifications (empty list is NEVER treated as permission loss!)
-        match self.backend.fetch_toasts() {
+        match self.backend.fetch_toasts_incremental(&self.active_meta) {
             Ok(toasts) => {
                 self.consecutive_fetch_errors = 0;
                 state.notif_polls.fetch_add(1, Ordering::Relaxed);
@@ -376,11 +384,11 @@ impl<B: NotificationBackend> NotificationMonitorCore<B> {
                     .notif_history
                     .store(toasts.len() as u64, Ordering::Relaxed);
 
-                let mut current_ids: HashSet<u32> = HashSet::with_capacity(toasts.len());
+                self.current_ids_scratch.clear();
                 let mut new_in_this_poll = 0u32;
 
                 for t in toasts {
-                    current_ids.insert(t.id);
+                    self.current_ids_scratch.insert(t.id);
                     if !self.active_meta.contains_key(&t.id) {
                         self.active_meta
                             .insert(t.id, (t.app_id.clone(), t.app_name.clone()));
@@ -444,6 +452,7 @@ impl<B: NotificationBackend> NotificationMonitorCore<B> {
                 }
 
                 // Detect dismissed/removed notifications
+                let current_ids = &self.current_ids_scratch;
                 let removed_ids: Vec<u32> = self
                     .active_meta
                     .keys()
@@ -488,9 +497,9 @@ impl<B: NotificationBackend> NotificationMonitorCore<B> {
         if state.notif_event_mode.load(Ordering::Relaxed) {
             1000
         } else if self.empty_polls > 20 {
-            400
+            750
         } else if self.empty_polls > 8 {
-            300
+            400
         } else {
             200
         }
@@ -580,6 +589,14 @@ impl NotificationBackend for WinRtNotificationBackend {
     }
 
     fn fetch_toasts(&mut self) -> Result<Vec<PolledToast>, i32> {
+        let empty = HashMap::new();
+        self.fetch_toasts_incremental(&empty)
+    }
+
+    fn fetch_toasts_incremental(
+        &mut self,
+        known_ids: &HashMap<u32, (String, String)>,
+    ) -> Result<Vec<PolledToast>, i32> {
         let Some(listener) = self.ensure_listener() else {
             return Err(-1);
         };
@@ -592,13 +609,23 @@ impl NotificationBackend for WinRtNotificationBackend {
         for i in 0..sz {
             if let Ok(n) = list.GetAt(i) {
                 if let Ok(id) = n.Id() {
-                    let (app_id, app_name, timestamp_unix_ms) = extract_safe_app_identity(&n);
-                    out.push(PolledToast {
-                        id,
-                        app_id,
-                        app_name,
-                        timestamp_unix_ms,
-                    });
+                    if known_ids.contains_key(&id) {
+                        // Already tracked: skip expensive WinRT AppInfo/DisplayInfo COM calls & string allocations
+                        out.push(PolledToast {
+                            id,
+                            app_id: String::new(),
+                            app_name: String::new(),
+                            timestamp_unix_ms: 0,
+                        });
+                    } else {
+                        let (app_id, app_name, timestamp_unix_ms) = extract_safe_app_identity(&n);
+                        out.push(PolledToast {
+                            id,
+                            app_id,
+                            app_name,
+                            timestamp_unix_ms,
+                        });
+                    }
                 }
             }
         }

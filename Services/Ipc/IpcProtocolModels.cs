@@ -557,4 +557,19 @@ namespace NotiGlow.Services.Ipc
         [JsonPropertyName("latestSeq")]
         public long LatestSeq { get; set; }
     }
+
+    public sealed class WorkerPollEventsBatchData
+    {
+        [JsonPropertyName("notif")]
+        public WorkerNotificationBatchData? Notif { get; set; }
+
+        [JsonPropertyName("tray")]
+        public WorkerTrayActionBatchData? Tray { get; set; }
+
+        [JsonPropertyName("game")]
+        public WorkerGameStatusData? Game { get; set; }
+
+        [JsonPropertyName("glow")]
+        public WorkerGlowStatusData? Glow { get; set; }
+    }
 }

@@ -201,12 +201,6 @@ namespace NotiGlow.Services
 
                 _activeLocalizationDictionary = newDict;
                 app.Resources.MergedDictionaries.Add(_activeLocalizationDictionary);
-
-                // Also mirror directly onto app.Resources for direct lookups
-                foreach (var kvp in newDict)
-                {
-                    app.Resources[kvp.Key] = kvp.Value;
-                }
             }
             catch (Exception ex)
             {

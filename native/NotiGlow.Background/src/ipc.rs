@@ -1219,6 +1219,84 @@ pub fn dispatch_json_request(raw: &str, state: &Arc<WorkerState>) -> (String, bo
                 false,
             )
         }
+        "POLL_EVENTS" => {
+            let notif_ack = req.payload.get("notifAckSeq").and_then(|v| v.as_u64()).unwrap_or(0);
+            let tray_ack = req.payload.get("trayAckSeq").and_then(|v| v.as_u64()).unwrap_or(0);
+            let game_ack = req.payload.get("gameAckSeq").and_then(|v| v.as_u64()).unwrap_or(0);
+            let glow_ack = req.payload.get("glowAckSeq").and_then(|v| v.as_u64()).unwrap_or(0);
+            let include_game = req.payload.get("includeGame").and_then(|v| v.as_bool()).unwrap_or(true);
+            let include_glow = req.payload.get("includeGlow").and_then(|v| v.as_bool()).unwrap_or(true);
+            let max_count = req
+                .payload
+                .get("maxCount")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(32)
+                .clamp(1, 128) as usize;
+
+            let (notif_events, notif_latest) = if let Ok(mut q) = state.notif_events.lock() {
+                while q.front().map(|e| e.seq <= notif_ack).unwrap_or(false) {
+                    q.pop_front();
+                }
+                let out: Vec<NotificationEventRecord> = q.iter().take(max_count).cloned().collect();
+                let latest = out
+                    .last()
+                    .map(|e| e.seq)
+                    .unwrap_or(state.next_notif_seq.load(Ordering::Relaxed));
+                (out, latest)
+            } else {
+                (Vec::new(), state.next_notif_seq.load(Ordering::Relaxed))
+            };
+
+            let (tray_actions, tray_latest) = if let Ok(mut q) = state.tray_actions.lock() {
+                while q.front().map(|a| a.seq <= tray_ack).unwrap_or(false) {
+                    q.pop_front();
+                }
+                let out: Vec<TrayActionRecord> = q.iter().take(max_count).cloned().collect();
+                let latest = out
+                    .last()
+                    .map(|a| a.seq)
+                    .unwrap_or(state.next_tray_seq.load(Ordering::Relaxed));
+                (out, latest)
+            } else {
+                (Vec::new(), state.next_tray_seq.load(Ordering::Relaxed))
+            };
+
+            let game_block = if include_game {
+                let (events, latest_seq) = state.game_detector.drain_events(game_ack, max_count);
+                let active_info = state.game_detector.current_active_game();
+                json!({
+                    "activeGame": active_info,
+                    "events": events,
+                    "latestSeq": latest_seq
+                })
+            } else {
+                Value::Null
+            };
+
+            let glow_block = if include_glow {
+                let (events, latest_seq) = state.glow_engine.drain_events(glow_ack, max_count);
+                json!({
+                    "events": events,
+                    "latestSeq": latest_seq
+                })
+            } else {
+                Value::Null
+            };
+
+            (
+                IpcResponse::ok(
+                    req.id,
+                    json!({
+                        "notif": { "events": notif_events, "latestSeq": notif_latest },
+                        "tray": { "actions": tray_actions, "latestSeq": tray_latest },
+                        "game": game_block,
+                        "glow": glow_block
+                    }),
+                )
+                .to_ndjson(),
+                false,
+            )
+        }
         "SCAN_GAMES" => {
             let (games, elapsed_ms) = state.game_detector.scan_installed_games();
             let count = games.len();
@@ -1613,5 +1691,35 @@ mod tests {
         let v_gs: Value = serde_json::from_str(&r_gs).unwrap();
         assert_eq!(v_gs["ok"], true);
         assert!(v_gs["data"]["monitorChanges"].as_u64().unwrap() >= 1);
+    }
+
+    #[test]
+    fn test_poll_events_batched_ipc() {
+        let st = make_test_state();
+        let _ = dispatch_json_request(
+            r#"{"v":1,"id":"p1","cmd":"NOTIFICATION_EVENT","payload":{"inject":{"notificationId":7,"appId":"Slack","appName":"Slack"}}}"#,
+            &st,
+        );
+        st.push_tray_action("TestAnimation", None);
+
+        let (r_poll, _) = dispatch_json_request(
+            r#"{"v":1,"id":"p2","cmd":"POLL_EVENTS","payload":{"notifAckSeq":0,"trayAckSeq":0,"gameAckSeq":0,"glowAckSeq":0,"includeGame":true,"includeGlow":true,"maxCount":32}}"#,
+            &st,
+        );
+        let v: Value = serde_json::from_str(&r_poll).unwrap();
+        assert_eq!(v["ok"], true);
+        assert_eq!(v["data"]["notif"]["events"].as_array().unwrap().len(), 1);
+        assert_eq!(v["data"]["tray"]["actions"].as_array().unwrap().len(), 1);
+        let n_seq = v["data"]["notif"]["latestSeq"].as_u64().unwrap();
+        let t_seq = v["data"]["tray"]["latestSeq"].as_u64().unwrap();
+
+        let (r_poll2, _) = dispatch_json_request(
+            &format!(r#"{{"v":1,"id":"p3","cmd":"POLL_EVENTS","payload":{{"notifAckSeq":{},"trayAckSeq":{},"gameAckSeq":0,"glowAckSeq":0,"includeGame":true,"includeGlow":true,"maxCount":32}}}}"#, n_seq, t_seq),
+            &st,
+        );
+        let v2: Value = serde_json::from_str(&r_poll2).unwrap();
+        assert_eq!(v2["ok"], true);
+        assert_eq!(v2["data"]["notif"]["events"].as_array().unwrap().len(), 0);
+        assert_eq!(v2["data"]["tray"]["actions"].as_array().unwrap().len(), 0);
     }
 }
