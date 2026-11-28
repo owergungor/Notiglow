@@ -1,5 +1,15 @@
 ﻿# Changelog
 
+## [5.1] - 2026-11-28
+- **Four-Strip Edge Border Overlay (`glow.rs`)**:
+  - Replaced the single full-screen `W × H × 4` DIBSection with 4 strictly non-overlapping edge strips (Top, Bottom, Left, Right) for `Pulse`, `Ambient`, `Sweep`, `Comet`, `RGB Spectrum`, and `ReduceMotion`, cutting full-worker `Comet` mid-animation Private Working Set from `18.95 MB` to **`5.96 MB`** (`-68.5%`) on a `2560×1600` display with bit-for-bit pixel parity.
+  - Preserved full-screen layered rendering for non-`ReduceMotion` `Ripple` so its center-expanding circular shockwave renders without clipping.
+- **IPC Batching & `.NET` Allocation Reduction**:
+  - Consolidated 4 Named Pipe event polls per `350 ms` tick into a single batched `POLL_EVENTS` command with adaptive idle backoff (`350 ms` → `1000 ms`) and zero-copy `JsonElement.Deserialize<T>()`, reducing `.NET` idle allocation rate by **`-83.1%`** (`229.9 KB/s` → `38.9 KB/s`) and ThreadPool work items by **`-89.0%`**.
+- **Rust Idle CPU & WinUI Startup Memory Optimization**:
+  - Added incremental WinRT notification identity extraction (skipping redundant COM queries for already-seen toast IDs) and zero-allocation game monitor polling, reducing 45s pure-idle Rust worker CPU by **`-60.2%`** (`3,062.5 ms` → `1,218.7 ms`) and idle Private Working Set to **`~2.8–3.3 MB`**.
+  - Removed duplicate WinUI `Application.Resources` localization mirroring and made legacy C# game detectors lazy, reducing UI-open Private Working Set by **`-7.72 MB`** (`56.70 MB` → `48.98 MB`).
+
 ## [5.0] - 2026-11-26
 - **Rust Background Worker Architecture Now Default**:
   - `UseRustBackgroundWorker`, `UseRustGameDetection`, and `UseRustGlowEngine` are now enabled by default (`true`) for fresh installations and automatically migrated from v4.x (`SettingsSchemaVersion = 5`) while preserving all existing user settings and profiles.

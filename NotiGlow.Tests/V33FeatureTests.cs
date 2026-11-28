@@ -88,13 +88,13 @@ namespace NotiGlow.Tests
 
         {
 
-            Assert.AreEqual("5.0", UpdateService.CurrentVersionString);
+            Assert.AreEqual("5.1", UpdateService.CurrentVersionString);
 
             ReleaseVersionAssertions.AssertApplicationVersionMetadata();
 
-            ReleaseVersionAssertions.AssertInstallerVersionMetadata("5.0");
+            ReleaseVersionAssertions.AssertInstallerVersionMetadata("5.1");
 
-            ReleaseVersionAssertions.AssertPackageManifestVersionMetadata("5.0");
+            ReleaseVersionAssertions.AssertPackageManifestVersionMetadata("5.1");
 
         }
 
