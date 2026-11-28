@@ -254,7 +254,7 @@ namespace NotiGlow
                         uiExecutablePath: Environment.ProcessPath)
                     {
                         AutoRestartOnCrash = true,
-                        ExpectedWorkerVersion = "5.0.0"
+                        ExpectedWorkerVersion = "5.1.0"
                     };
                     _workerSyncCoordinator = new NotiGlow.Services.Ipc.WorkerSyncCoordinator(
                         _workerSupervisor,

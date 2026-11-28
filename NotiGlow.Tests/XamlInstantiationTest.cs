@@ -10,7 +10,7 @@ namespace NotiGlow.Tests
         public void TestReleaseVersionAssertions()
         {
             var version = ReleaseVersionAssertions.AssertApplicationVersionMetadata();
-            Assert.AreEqual("5.0", version);
+            Assert.AreEqual("5.1", version);
             ReleaseVersionAssertions.AssertInstallerVersionMetadata(version);
             ReleaseVersionAssertions.AssertPackageManifestVersionMetadata(version);
             ReleaseVersionAssertions.AssertAdvancedViewUsesCurrentVersion();

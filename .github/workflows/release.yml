@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Release tag to build and publish'
         required: true
-        default: 'v5.0'
+        default: 'v5.1'
         type: string
 
 permissions:
@@ -58,7 +58,7 @@ jobs:
         run: |
           $tag = "$env:RELEASE_TAG"
           if ($tag -notmatch '^v[0-9]+\.[0-9]+$') {
-            Write-Error "Invalid tag format '$tag'. Expected version tag like v5.0."
+            Write-Error "Invalid tag format '$tag'. Expected version tag like v5.1."
             exit 1
           }
           $publishDir = "bin/Release/net9.0-windows10.0.19041.0/win-x64/publish"

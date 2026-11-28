@@ -1,15 +1,15 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/733963e8-6969-4c1d-86f2-8afd2f2c52fd" alt="NotiGlow Logo" width="96" height="96" />
-  <h1>NotiGlow v5.0</h1>
+  <h1>NotiGlow v5.1</h1>
   <p><strong>Ambient fullscreen edge glow notifications for Windows — powered by WinUI 3 and a native Rust background worker.</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/Version-5.0-9B7BFF?style=flat" alt="Version 5.0" />
+    <img src="https://img.shields.io/badge/Version-5.1-9B7BFF?style=flat" alt="Version 5.1" />
     <img src="https://img.shields.io/badge/Worker-Rust-38BDF8?style=flat&logo=rust&logoColor=white" alt="Rust Worker" />
     <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0067C0?style=flat&logo=windows11&logoColor=white" alt="Windows 10 / 11" />
     <img src="https://img.shields.io/badge/License-MIT-6D28D9?style=flat" alt="MIT License" />
   </p>
   <p>
-    <a href="https://github.com/owergungor/Notiglow/releases/tag/v5.0" target="_blank">
+    <a href="https://github.com/owergungor/Notiglow/releases/tag/v5.1" target="_blank">
       <img src="https://github.com/user-attachments/assets/91f67983-4f91-45b5-affe-af8e7b66e0f2" alt="Download from GitHub Releases" height="44" />
     </a>
   </p>
@@ -29,6 +29,10 @@
 
 Built on a **WinUI 3 + Rust hybrid architecture**, NotiGlow pairs a native Windows 11 Fluent Design settings app (`NotiGlow.exe`) with a lightweight Rust background worker (`NotiGlow_Background.exe`) that stays active after you close the window.
 
+### What's New in v5.1 (Performance & Memory)
+- **Four-Strip Edge Glow Overlay:** Renders edge-only modes (`Pulse`, `Ambient`, `Sweep`, `Comet`, `RGB Spectrum`, and `ReduceMotion`) on four non-overlapping edge surfaces instead of a full-screen bitmap, reducing measured full-worker `Comet` mid-animation Private Working Set from `18.95 MB` to **`5.96 MB`** (`-68.5%` on a `2560×1600` display). `Ripple` retains full-screen rendering so its center-expanding shockwave is never clipped.
+- **Batched IPC & Lower Idle Overhead:** Consolidates UI/worker polling into a single `POLL_EVENTS` round-trip with adaptive idle backoff (`-83.1%` `.NET` idle allocation rate, `-89.0%` ThreadPool work items), incremental WinRT notification polling (`-60.2%` Rust worker idle CPU), and `-7.72 MB` lower UI-open Private Working Set (`56.70 MB` → `48.98 MB`).
+
 ---
 
 ## Preview
@@ -45,7 +49,7 @@ Built on a **WinUI 3 + Rust hybrid architecture**, NotiGlow pairs a native Windo
 
 - **Smart Notifications** — Listens locally via Windows `UserNotificationListener` and matches apps by AUMID, executable, or display name. Supports Burst Handling (Restart, Extend, Queue, Ignore), OLED Mode, Subtle Glow, and Reduce Motion.
 - **Six Glow Modes** — Choose from **Pulse**, **Sweep** (two-layer bloom), **Comet** (two-layer bloom), **Ripple**, **Ambient**, and **RGB Spectrum** with configurable duration (`500 ms`–`15 s`), intensity (`10%`–`100%`), thickness, glow size (`0 px`–`256 px`), corner radius (`0 px`–`48 px`), multi-monitor targeting, and per-monitor DPI scaling.
-- **Rust Background Worker** — Runs `NotiGlow_Background.exe` by default (~3.1–3.3 MB Private Working Set when the UI is closed) to manage the system tray, notifications, game detection, and glow rendering with automatic crash and Explorer-restart recovery.
+- **Rust Background Worker** — Runs `NotiGlow_Background.exe` by default (`~2.8–3.3 MB` Private Working Set when the UI is closed; `5.96 MB` mid-animation peak for four-strip `Comet`) to manage the system tray, notifications, game detection, and glow rendering with automatic crash and Explorer-restart recovery.
 - **Gaming Detection** — Detects running games and applies Gaming Mode rules (Glow During Games, Dim Intensity, Shorten Duration, High Priority Only) plus optional per-game glow overrides.
 - **Custom Profiles** — Unified profile editor for Applications and Gaming with preset, HSV, and Hex color pickers, live edge preview, one-click app scanning, and automatic category routing.
 - **Fluent Design** — Native WinUI 3 interface with Acrylic, Mica, and Mica Alt backdrops, System/Light/Dark themes, Windows System Accent, and 5 languages (`en-US`, `es-ES`, `fr-FR`, `de-DE`, `tr-TR`).
@@ -65,13 +69,13 @@ Built on a **WinUI 3 + Rust hybrid architecture**, NotiGlow pairs a native Windo
 
 | Package | Architecture | Notes |
 | --- | --- | --- |
-| [**NotiGlow-Setup-v5.0.exe**](https://github.com/owergungor/Notiglow/releases/download/v5.0/NotiGlow-Setup-v5.0.exe) | `x64` | **Recommended** Windows installer (self-contained) |
-| [**NotiGlow_5.0_win-x64.zip**](https://github.com/owergungor/Notiglow/releases/download/v5.0/NotiGlow_5.0_win-x64.zip) | `x64` | Portable archive (keep `NotiGlow.exe` and `NotiGlow_Background.exe` together) |
-| [**NotiGlow-v5.0-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v5.0/NotiGlow-v5.0-x64.msix) | `x64` | Self-signed MSIX package |
-| [**SHA256.txt**](https://github.com/owergungor/Notiglow/releases/download/v5.0/SHA256.txt) | — | Checksum manifest on [v5.0 Release](https://github.com/owergungor/Notiglow/releases/tag/v5.0) |
+| [**NotiGlow-Setup-v5.1.exe**](https://github.com/owergungor/Notiglow/releases/download/v5.1/NotiGlow-Setup-v5.1.exe) | `x64` | **Recommended** Windows installer (self-contained) |
+| [**NotiGlow_5.1_win-x64.zip**](https://github.com/owergungor/Notiglow/releases/download/v5.1/NotiGlow_5.1_win-x64.zip) | `x64` | Portable archive (keep `NotiGlow.exe` and `NotiGlow_Background.exe` together) |
+| [**NotiGlow-v5.1-x64.msix**](https://github.com/owergungor/Notiglow/releases/download/v5.1/NotiGlow-v5.1-x64.msix) | `x64` | Self-signed MSIX package |
+| [**SHA256.txt**](https://github.com/owergungor/Notiglow/releases/download/v5.1/SHA256.txt) | — | Checksum manifest on [v5.1 Release](https://github.com/owergungor/Notiglow/releases/tag/v5.1) |
 
-- **Clean Install:** Run `NotiGlow-Setup-v5.0.exe` (or extract the portable ZIP and launch `NotiGlow.exe`), then grant Windows Notification access when prompted.
-- **Upgrading from v4.x:** Existing `%AppData%\NotiGlow\settings.json` files migrate automatically to `SettingsSchemaVersion = 5` with the Rust worker enabled by default while preserving all settings, tracked games, and `profiles.json`. Uninstalling also preserves `%AppData%\NotiGlow`.
+- **Clean Install:** Run `NotiGlow-Setup-v5.1.exe` (or extract the portable ZIP and launch `NotiGlow.exe`), then grant Windows Notification access when prompted.
+- **Upgrading from v4.x or v5.0:** Running the v5.1 installer updates in place and automatically recycles the background worker to `v5.1.0`. Existing `%AppData%\NotiGlow\settings.json` (auto-migrated from v4.x to `SettingsSchemaVersion = 5`) and `profiles.json` are preserved across upgrades and uninstalls.
 - **Optional Fallback:** To switch back to legacy C# background services, set `"UseRustBackgroundWorker": false` in `%AppData%\NotiGlow\settings.json`.
 
 ---
@@ -109,8 +113,8 @@ powershell -ExecutionPolicy Bypass -File Tools\build-msix.ps1
 
 ## Known Limitations
 
-- **Self-Signed MSIX Sideloading:** `NotiGlow-v5.0-x64.msix` is signed with a self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). Direct sideloading fails with `0x800B0109` unless the certificate is trusted locally; use `NotiGlow-Setup-v5.0.exe` or `NotiGlow_5.0_win-x64.zip` for standard installation.
-- **Distribution:** NotiGlow v5.0 is currently distributed exclusively via GitHub Releases and has not been submitted to the Microsoft Store.
+- **Self-Signed MSIX Sideloading:** `NotiGlow-v5.1-x64.msix` is signed with a self-signed publisher certificate (`CN=2F9A5694-FADC-405A-AF51-BB9269D3FFF1`). Direct sideloading fails with `0x800B0109` unless the certificate is trusted locally; use `NotiGlow-Setup-v5.1.exe` or `NotiGlow_5.1_win-x64.zip` for standard installation.
+- **Distribution:** NotiGlow v5.1 is currently distributed exclusively via GitHub Releases and has not been submitted to the Microsoft Store.
 
 ---
 
@@ -121,5 +125,5 @@ powershell -ExecutionPolicy Bypass -File Tools\build-msix.ps1
 - **Contributing:** Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue or pull request on [GitHub Issues](https://github.com/owergungor/Notiglow/issues).
 
 <div align="center">
-  <sub>NotiGlow v5.0 · <a href="https://github.com/owergungor/Notiglow/releases/tag/v5.0">Releases</a> · <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a> · <a href="LICENSE">MIT License</a></sub>
+  <sub>NotiGlow v5.1 · <a href="https://github.com/owergungor/Notiglow/releases/tag/v5.1">Releases</a> · <a href="https://owergungor.github.io/Notiglow/privacy-policy.html">Privacy Policy</a> · <a href="LICENSE">MIT License</a></sub>
 </div>
